@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(rm -rf .tmpcheck)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(mkdir -p .tmpcheck)",
+      "Bash(node --check .tmpcheck/classic0.js)",
+      "Bash(node .verify1.js)",
+      "Bash(npx playwright *)",
+      "Bash(node .verify.js)",
+      "Bash(node --check .tmpcheck/module0.mjs)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('manifest.json','utf8'\\)\\); console.log\\('manifest.json valid JSON'\\)\")",
+      "Bash(node --check sw.js)",
+      "Bash(awk '$1>1')",
+      "Bash(node .tagcheck.js)",
+      "Bash(node .tagcheck2.js)"
+    ]
+  },
+  "remote": {
+    "defaultEnvironmentId": "env_01JfGeSZfmLC15qPjGcCfKmk"
+  }
+}

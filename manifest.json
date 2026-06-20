@@ -1,0 +1,13 @@
+{
+  "name": "QA Interview Prep",
+  "short_name": "QA Prep",
+  "description": "Study, mock interview, simulate, and practice coding for QA interviews.",
+  "start_url": "./interview_prep.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
