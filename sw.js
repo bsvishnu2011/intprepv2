@@ -1,4 +1,4 @@
-const CACHE_NAME = "qa-interview-prep-v1";
+const CACHE_NAME = "qa-interview-prep-v2";
 const PRECACHE_URLS = ["interview_prep.html", "manifest.json", "icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -21,6 +21,11 @@ self.addEventListener("activate", (event) => {
 // falls back to the cached copy so the app still opens offline.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // Only handle our own same-origin app-shell files. Never intercept cross-origin
+  // requests (Firebase Auth, Firestore, the Firebase SDK CDN imports, Prism, Google
+  // Sign-In) — Firestore in particular uses long-lived streaming/polling connections
+  // that a generic caching fetch handler can silently break or serve stale data for.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
     fetch(event.request)
       .then((response) => {
