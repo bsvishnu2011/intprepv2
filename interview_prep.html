@@ -208,11 +208,16 @@ pre{background:#0d0f18;border:1px solid var(--border);border-radius:8px;padding:
 .code-grid{display:flex;overflow-x:auto;gap:8px;margin:6px 0 10px;padding-bottom:5px}
 .code-col{flex:0 0 auto;min-width:220px}
 .code-col pre{overflow:visible;width:max-content;min-width:100%;margin:0}
-.code-lang-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:6px 6px 0 0;display:block}
+.code-lang-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px 4px 10px;border-radius:6px 6px 0 0;display:flex;align-items:center;gap:5px}
 .lang-java .code-lang-lbl{background:rgba(245,166,35,.2);color:#f5a623}
 .lang-js   .code-lang-lbl{background:rgba(79,142,247,.2);color:#6ba3f9}
 .lang-py   .code-lang-lbl{background:rgba(72,187,120,.2);color:#48bb78}
 .lang-java pre,.lang-js pre,.lang-py pre{margin:0;border-radius:0 0 8px 8px;border-top:2px solid rgba(255,255,255,.04)}
+.code-edit-btn,.code-reset-btn{background:none;border:none;color:inherit;opacity:.55;cursor:pointer;font-size:11px;padding:1px 4px;line-height:1.4;border-radius:4px;letter-spacing:0;text-transform:none;font-weight:400}
+.code-edit-btn:hover,.code-reset-btn:hover{opacity:1;background:rgba(255,255,255,.15)}
+.code-edited-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-left:-1px}
+.code-block-wrap pre{cursor:text}
+.code-edit-area{display:block;width:100%;min-height:130px;background:#0d0f18;border:1px solid var(--accent);border-radius:0 0 8px 8px;border-top:2px solid rgba(255,255,255,.04);padding:13px;font-family:var(--mono);font-size:11.5px;line-height:1.65;color:#c8d0f0;resize:vertical;outline:none;white-space:pre;overflow:auto;box-sizing:border-box}
 .cmx-row{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
 .cmx-badge{font-size:11.5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:5px}
 .cmx-t{color:var(--accent)}
@@ -4950,6 +4955,1104 @@ var CODING = [
       {q:"Can you write FizzBuzz using streams or functional style?",a:"Java: IntStream.rangeClosed(1, n).mapToObj(i -> i%15==0?\"FizzBuzz\":i%3==0?\"Fizz\":i%5==0?\"Buzz\":String.valueOf(i)).collect(Collectors.toList()). Python: [fizz_buzz_value(i) for i in range(1, n+1)]. Shows knowledge of functional APIs."},
       {q:"Why does the order of if-else checks matter here?",a:"Because if i%3==0 is checked first, the number 15 matches and returns 'Fizz' before reaching i%15==0. The compound condition must come first. An alternative that avoids ordering issues: check i%3 and i%5 separately and concatenate the results, using the number only if the concatenation is empty."}
     ]
+  },
+  {
+    id:10004,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print a right-angled triangle of stars with height h",
+    logic:"Use a nested loop. The outer loop runs once per row, from 1 to h. The inner loop runs from 1 to the current row number i, printing one star per iteration. After the inner loop finishes, move to a new line. Row i always has exactly i stars — that's the entire trick.",
+    java:"public class RightTriangle {\n    public static void main(String[] args) {\n        int h = 5;\n        printRightTriangle(h);\n    }\n\n    static void printRightTriangle(int h) {\n        for (int i = 1; i <= h; i++) {\n            for (int j = 1; j <= i; j++) {\n                System.out.print(\"*\");\n            }\n            System.out.println();\n        }\n    }\n}",
+    js:"function printRightTriangle(h) {\n    let output = \"\";\n    for (let i = 1; i <= h; i++) {\n        output += \"*\".repeat(i) + \"\\n\";\n    }\n    console.log(output);\n}\n\nprintRightTriangle(5);",
+    python:"def print_right_triangle(h):\n    for i in range(1, h + 1):\n        print(\"*\" * i)\n\n\nprint_right_triangle(5)",
+    timeComplexity:"O(h²) — total stars printed across all rows.",
+    spaceComplexity:"O(1) extra (O(h) if you build a string first).",
+    tip:"Mention the mirror-image follow-up before they ask: printing (h - i) leading spaces before the stars turns this into a right-aligned triangle. Showing you instinctively reach for 'spaces + stars' demonstrates you understand the pattern, not just one memorized loop.",
+    edgeCases:["h = 0 → no output at all","h = 1 → prints a single '*'","Negative h → loop simply doesn't execute (guard against it explicitly if input is user-supplied)"],
+    followups:[
+      {q:"How would you print an inverted triangle (largest row first)?",a:"Run the outer loop from h down to 1 (or keep it 1 to h and print h - i + 1 stars per row). The inner loop logic stays identical — only the row size calculation changes."},
+      {q:"How would you print a pyramid (centered triangle)?",a:"Each row needs (h - i) leading spaces followed by (2*i - 1) stars. The leading spaces shrink as the star count grows, keeping the triangle visually centered."}
+    ]
+  },
+  {
+    id:10005,
+    category:"patterns",
+    diff:"Medium",
+    title:"Print a multiplication matrix of size n × n",
+    logic:"Two nested loops, both running from 1 to n. The outer loop is the row number i, the inner loop is the column number j. Print i * j at each position, separated by a tab or fixed-width space so columns stay aligned, then a newline after each row completes.",
+    java:"public class MultiplicationMatrix {\n    public static void main(String[] args) {\n        printMatrix(5);\n    }\n\n    static void printMatrix(int n) {\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= n; j++) {\n                System.out.printf(\"%4d\", i * j);\n            }\n            System.out.println();\n        }\n    }\n}",
+    js:"function printMatrix(n) {\n    for (let i = 1; i <= n; i++) {\n        let row = \"\";\n        for (let j = 1; j <= n; j++) {\n            row += String(i * j).padStart(4, \" \");\n        }\n        console.log(row);\n    }\n}\n\nprintMatrix(5);",
+    python:"def print_matrix(n):\n    for i in range(1, n + 1):\n        row = \"\".join(f\"{i * j:4d}\" for j in range(1, n + 1))\n        print(row)\n\n\nprint_matrix(5)",
+    timeComplexity:"O(n²) — n rows × n columns.",
+    spaceComplexity:"O(1) extra if printing per cell, O(n) per row if you build a string first.",
+    tip:"Use a fixed-width format specifier (%4d / padStart / f-string width) rather than plain concatenation — interviewers notice when columns don't line up, and it shows attention to real-world output quality, not just correctness.",
+    edgeCases:["n = 0 → no rows printed","n = 1 → single cell containing 1","Large n → products can get wide (e.g. 20×20 = 400), so the column width must accommodate the largest possible product, not just single digits"],
+    followups:[
+      {q:"How would you build this as a 2D array instead of printing directly?",a:"Allocate int[n][n], fill matrix[i][j] = (i+1)*(j+1) in the nested loop, then iterate the array separately to print. Useful when the matrix needs to be queried or reused, not just displayed once."},
+      {q:"How would you generate only the upper or lower triangular half?",a:"Change the inner loop bounds: for the lower triangle, loop j from 1 to i; for the upper triangle, loop j from i to n. Skip or leave blank the cells outside that range."}
+    ]
+  },
+  {
+    id:10006,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print number pattern: 1 / 1 2 / 1 2 3 / 1 2 3 4",
+    logic:"Same nested-loop shape as the star triangle, but the inner loop prints the running counter value j instead of a fixed character. Outer loop i goes from 1 to n (number of rows), inner loop j goes from 1 to i, printing j followed by a space.",
+    java:"public class NumberPattern {\n    public static void main(String[] args) {\n        printPattern(4);\n    }\n\n    static void printPattern(int n) {\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= i; j++) {\n                System.out.print(j + \" \");\n            }\n            System.out.println();\n        }\n    }\n}",
+    js:"function printPattern(n) {\n    for (let i = 1; i <= n; i++) {\n        const row = [];\n        for (let j = 1; j <= i; j++) {\n            row.push(j);\n        }\n        console.log(row.join(\" \"));\n    }\n}\n\nprintPattern(4);",
+    python:"def print_pattern(n):\n    for i in range(1, n + 1):\n        row = \" \".join(str(j) for j in range(1, i + 1))\n        print(row)\n\n\nprint_pattern(4)",
+    timeComplexity:"O(n²) total numbers printed.",
+    spaceComplexity:"O(1) extra (O(n) if building each row as a list/string first).",
+    tip:"Point out the relationship to the star-triangle pattern unprompted — the loop skeleton is identical, only the printed value changes from a literal '*' to the loop variable j. Interviewers like seeing you recognize the shared structure across 'different' pattern questions.",
+    edgeCases:["n = 0 → no output","n = 1 → single row containing just '1'","Trailing space after the last number on a row — usually acceptable, but mention you'd use String.join/array.join to avoid it if formatting is strict"],
+    followups:[
+      {q:"How would you print the same pattern but with each row repeating the row number instead of counting up (e.g. 1 / 2 2 / 3 3 3)?",a:"Keep the same loop bounds but print i instead of j inside the inner loop — the row number stays constant while the column index just controls how many times it repeats."},
+      {q:"How would you reverse each row (e.g. 1 / 2 1 / 3 2 1)?",a:"Run the inner loop backwards: for j from i down to 1, print j. Or build the row forward and reverse the resulting list/string before printing."}
+    ]
+  },
+  {
+    id:10007,
+    category:"patterns",
+    diff:"Medium",
+    title:"Print Pascal's Triangle",
+    logic:"Each row of Pascal's Triangle starts and ends with 1, and every interior value is the sum of the two values above it. Build it row by row: keep the previous row in memory, and compute the current row as prevRow[j-1] + prevRow[j] for each interior position (with 1 at both ends). This avoids recomputing factorials/combinations from scratch for every cell.",
+    java:"import java.util.ArrayList;\nimport java.util.List;\n\npublic class PascalsTriangle {\n    public static void main(String[] args) {\n        printPascal(6);\n    }\n\n    static void printPascal(int numRows) {\n        List<Integer> prevRow = new ArrayList<>();\n        for (int i = 0; i < numRows; i++) {\n            List<Integer> row = new ArrayList<>();\n            for (int j = 0; j <= i; j++) {\n                if (j == 0 || j == i) {\n                    row.add(1);\n                } else {\n                    row.add(prevRow.get(j - 1) + prevRow.get(j));\n                }\n            }\n            System.out.println(row);\n            prevRow = row;\n        }\n    }\n}",
+    js:"function printPascal(numRows) {\n    let prevRow = [];\n    for (let i = 0; i < numRows; i++) {\n        const row = [];\n        for (let j = 0; j <= i; j++) {\n            if (j === 0 || j === i) {\n                row.push(1);\n            } else {\n                row.push(prevRow[j - 1] + prevRow[j]);\n            }\n        }\n        console.log(row.join(\" \"));\n        prevRow = row;\n    }\n}\n\nprintPascal(6);",
+    python:"def print_pascal(num_rows):\n    prev_row = []\n    for i in range(num_rows):\n        row = []\n        for j in range(i + 1):\n            if j == 0 or j == i:\n                row.append(1)\n            else:\n                row.append(prev_row[j - 1] + prev_row[j])\n        print(\" \".join(map(str, row)))\n        prev_row = row\n\n\nprint_pascal(6)",
+    timeComplexity:"O(n²) — n rows, each row of average length n/2.",
+    spaceComplexity:"O(n) to hold one row at a time (O(n²) if all rows are stored).",
+    tip:"Explicitly name the recurrence relation — row[j] = prevRow[j-1] + prevRow[j] — and connect it to binomial coefficients (nCr). Interviewers want to hear that you recognize this as 'build from the previous row,' not 'recompute combinations with factorials every time,' which is far slower.",
+    edgeCases:["numRows = 0 → no rows printed","numRows = 1 → single row containing just '1'","Integer overflow for very large rows — values grow quickly (use long for big numRows in Java)"],
+    followups:[
+      {q:"How would you compute a single value at row r, column c directly without building the whole triangle?",a:"Use the binomial coefficient formula C(r, c) = r! / (c! * (r-c)!), or compute it iteratively to avoid overflow: result = result * (r - i) / (i + 1) for i from 0 to c-1. This is O(c) instead of O(r²)."},
+      {q:"How would you reduce the space complexity if you only need the last row?",a:"Update a single 1D array in place, iterating from right to left within each row, so you never overwrite a value before you've used it: row[j] = row[j] + row[j-1], computed from the highest index down to 1."}
+    ]
+  },
+  {
+    id:10008,
+    category:"strings",
+    diff:"Easy",
+    title:"Count vowels and consonants in a string",
+    logic:"Walk through every character. Skip anything that isn't a letter (spaces, digits, punctuation). For each letter, check membership in a fixed vowel set (a, e, i, o, u — both cases); if it matches, increment the vowel counter, otherwise increment the consonant counter.",
+    java:"public class VowelConsonantCount {\n    public static void main(String[] args) {\n        countVowelsConsonants(\"Hello World\");\n    }\n\n    static void countVowelsConsonants(String str) {\n        String vowelSet = \"aeiouAEIOU\";\n        int vowels = 0, consonants = 0;\n        for (char c : str.toCharArray()) {\n            if (Character.isLetter(c)) {\n                if (vowelSet.indexOf(c) != -1) vowels++;\n                else consonants++;\n            }\n        }\n        System.out.println(\"Vowels: \" + vowels);\n        System.out.println(\"Consonants: \" + consonants);\n    }\n}",
+    js:"function countVowelsConsonants(str) {\n    const vowelSet = new Set(\"aeiouAEIOU\");\n    let vowels = 0, consonants = 0;\n    for (const ch of str) {\n        if (/[a-zA-Z]/.test(ch)) {\n            if (vowelSet.has(ch)) vowels++;\n            else consonants++;\n        }\n    }\n    console.log(\"Vowels:\", vowels);\n    console.log(\"Consonants:\", consonants);\n}\n\ncountVowelsConsonants(\"Hello World\");",
+    python:"def count_vowels_consonants(s):\n    vowel_set = set(\"aeiouAEIOU\")\n    vowels = consonants = 0\n    for ch in s:\n        if ch.isalpha():\n            if ch in vowel_set:\n                vowels += 1\n            else:\n                consonants += 1\n    print(\"Vowels:\", vowels)\n    print(\"Consonants:\", consonants)\n\n\ncount_vowels_consonants(\"Hello World\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1) — the vowel set is a fixed size of 5.",
+    tip:"Mention that checking against a Set/fixed string is O(1) regardless of string length, and call out that you explicitly skip non-letters with isLetter/isalpha rather than assuming the input is only letters — interviewers often slip a digit or punctuation into the test string to see if your solution breaks.",
+    edgeCases:["Empty string → both counts are 0","String with only digits or punctuation → both counts are 0","Mixed case ('AEIOUaeiou') → all counted as vowels regardless of case"],
+    followups:[
+      {q:"How would you also count digits and special characters separately?",a:"Add an isDigit check before the letter check, incrementing a digit counter, and treat anything that's neither a letter nor a digit as a 'special character' bucket in a final else branch."},
+      {q:"How would you do this with Java streams?",a:"str.chars().filter(Character::isLetter).mapToObj(c -> (char) c).collect(Collectors.partitioningBy(c -> vowelSet.indexOf(c) != -1)) gives you a Map<Boolean, List<Character>> split into vowels and consonants in one pass."}
+    ]
+  },
+  {
+    id:10009,
+    category:"strings",
+    diff:"Easy",
+    title:"Count vowels and create a new string with them removed",
+    logic:"Iterate the string once. For each character, check if it's a vowel (case-insensitive). If it is, increment a counter and skip it; otherwise append it to a result builder. The result builder becomes the vowel-free string, and the counter is the vowel count.",
+    java:"public class RemoveVowels {\n    public static void main(String[] args) {\n        removeVowels(\"Programming\");\n    }\n\n    static void removeVowels(String str) {\n        String vowelSet = \"aeiouAEIOU\";\n        int count = 0;\n        StringBuilder result = new StringBuilder();\n        for (char c : str.toCharArray()) {\n            if (vowelSet.indexOf(c) != -1) {\n                count++;\n            } else {\n                result.append(c);\n            }\n        }\n        System.out.println(\"Vowel count: \" + count);\n        System.out.println(\"Without vowels: \" + result);\n    }\n}",
+    js:"function removeVowels(str) {\n    const vowelSet = new Set(\"aeiouAEIOU\");\n    let count = 0;\n    let result = \"\";\n    for (const ch of str) {\n        if (vowelSet.has(ch)) {\n            count++;\n        } else {\n            result += ch;\n        }\n    }\n    console.log(\"Vowel count:\", count);\n    console.log(\"Without vowels:\", result);\n}\n\nremoveVowels(\"Programming\");",
+    python:"def remove_vowels(s):\n    vowel_set = set(\"aeiouAEIOU\")\n    count = sum(1 for ch in s if ch in vowel_set)\n    result = \"\".join(ch for ch in s if ch not in vowel_set)\n    print(\"Vowel count:\", count)\n    print(\"Without vowels:\", result)\n\n\nremove_vowels(\"Programming\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the result string.",
+    tip:"Use a StringBuilder (Java) instead of string concatenation in a loop — concatenating immutable strings repeatedly is O(n²). Mentioning this unprompted is a strong signal you understand string immutability costs.",
+    edgeCases:["String with no vowels → result equals the original string, count is 0","String of only vowels → result is an empty string","Empty input string → result is empty, count is 0"],
+    followups:[
+      {q:"How would you remove vowels in place without creating a new string (in a language with mutable strings)?",a:"In Java/JS strings are immutable, so 'in place' isn't possible — you must build a new one. In a language with a mutable char array/buffer, you'd use a two-pointer write technique: a write index that only advances when a non-vowel is found."},
+      {q:"How would you remove only lowercase vowels, keeping uppercase vowels?",a:"Use a vowel set containing only lowercase characters ('aeiou') and skip the case-insensitive check — uppercase vowels then simply fall through to the 'append' branch like any consonant."}
+    ]
+  },
+  {
+    id:10010,
+    category:"strings",
+    diff:"Easy",
+    title:"Count occurrence of a specific character in a string",
+    logic:"Walk through the string once, comparing each character against the target character. Increment a counter on every match. A single pass is all that's needed — there's no benefit to scanning more than once.",
+    java:"public class CountCharOccurrence {\n    public static void main(String[] args) {\n        countOccurrence(\"interview preparation\", 'r');\n    }\n\n    static void countOccurrence(String str, char target) {\n        int count = 0;\n        for (char c : str.toCharArray()) {\n            if (c == target) count++;\n        }\n        System.out.println(\"'\" + target + \"' occurs \" + count + \" time(s)\");\n    }\n}",
+    js:"function countOccurrence(str, target) {\n    let count = 0;\n    for (const ch of str) {\n        if (ch === target) count++;\n    }\n    console.log(`'${target}' occurs ${count} time(s)`);\n}\n\ncountOccurrence(\"interview preparation\", \"r\");",
+    python:"def count_occurrence(s, target):\n    count = sum(1 for ch in s if ch == target)\n    print(f\"'{target}' occurs {count} time(s)\")\n\n\ncount_occurrence(\"interview preparation\", \"r\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention the built-in shortcut too — Python's s.count(target) or a regex-based count in Java/JS — but lead with the manual loop since that's almost always what's actually being tested in an interview setting.",
+    edgeCases:["Target character never appears → count is 0","Case sensitivity — 'R' and 'r' are different characters unless you explicitly lowercase both sides first","Empty string → count is 0"],
+    followups:[
+      {q:"How would you count occurrences of a substring instead of a single character?",a:"Use indexOf in a loop, advancing the search start index past each match found, until indexOf returns -1. Each match increments a counter; for overlapping matches, advance by 1 instead of the substring length."},
+      {q:"How would you make the count case-insensitive?",a:"Lowercase (or uppercase) both the string and the target character before comparing, e.g. str.toLowerCase() and Character.toLowerCase(target) in Java."}
+    ]
+  },
+  {
+    id:10011,
+    category:"strings",
+    diff:"Easy",
+    title:"Count total words in a string using split()",
+    logic:"Trim leading/trailing whitespace first so empty strings don't get counted as words. Split the string on one-or-more whitespace characters (a regex like \\s+), which collapses multiple consecutive spaces into a single delimiter. The resulting array's length is the word count.",
+    java:"public class WordCount {\n    public static void main(String[] args) {\n        countWords(\"  The quick   brown fox  \");\n    }\n\n    static void countWords(String str) {\n        String trimmed = str.trim();\n        if (trimmed.isEmpty()) {\n            System.out.println(\"Word count: 0\");\n            return;\n        }\n        String[] words = trimmed.split(\"\\\\s+\");\n        System.out.println(\"Word count: \" + words.length);\n    }\n}",
+    js:"function countWords(str) {\n    const trimmed = str.trim();\n    if (trimmed === \"\") {\n        console.log(\"Word count: 0\");\n        return;\n    }\n    const words = trimmed.split(/\\s+/);\n    console.log(\"Word count:\", words.length);\n}\n\ncountWords(\"  The quick   brown fox  \");",
+    python:"def count_words(s):\n    words = s.split()  # split() with no args already collapses whitespace and trims\n    print(\"Word count:\", len(words))\n\n\ncount_words(\"  The quick   brown fox  \")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the resulting word array.",
+    tip:"Call out the empty-string trap explicitly: splitting an untrimmed string with multiple spaces on a plain single-space delimiter produces empty-string entries in the array, inflating the count. Using \\s+ (or Python's whitespace-collapsing default split()) avoids that bug entirely.",
+    edgeCases:["String with only whitespace → trimmed is empty, word count is 0","Multiple consecutive spaces between words → \\s+ collapses them so they don't count as extra words","Leading/trailing whitespace → trim() before splitting prevents phantom empty entries"],
+    followups:[
+      {q:"What's wrong with just calling str.split(\" \") without trimming or using \\s+?",a:"Multiple consecutive spaces produce empty-string elements in the result, and leading/trailing spaces produce a leading or trailing empty element — both silently inflate the word count above the true number of words."},
+      {q:"How would you count words without using split() at all?",a:"Scan character by character tracking a boolean 'insideWord' flag. Increment the word counter on the transition from whitespace to a non-whitespace character. This is O(n) and uses O(1) extra space, unlike split() which allocates an array."}
+    ]
+  },
+  {
+    id:10012,
+    category:"strings",
+    diff:"Easy",
+    title:"Remove all spaces from a string (two approaches)",
+    logic:"There are two common ways to strip every space character from a string. Approach A: use a direct string-replace call targeting the space character — simplest and most readable. Approach B: split the string on spaces (producing the non-space chunks) and rejoin them with an empty separator — useful when you want to demonstrate split/join fluency instead of relying on replace.",
+    java:"public class RemoveSpaces {\n    public static void main(String[] args) {\n        String str = \"H e l l o  W o r l d\";\n\n        // Approach A: direct replace\n        String approachA = str.replace(\" \", \"\");\n        System.out.println(\"Approach A: \" + approachA);\n\n        // Approach B: split then join\n        String approachB = String.join(\"\", str.split(\" \"));\n        System.out.println(\"Approach B: \" + approachB);\n    }\n}",
+    js:"function removeSpaces(str) {\n    // Approach A: regex replace (handles all whitespace, not just plain spaces)\n    const approachA = str.replace(/\\s/g, \"\");\n\n    // Approach B: split then join\n    const approachB = str.split(\" \").join(\"\");\n\n    console.log(\"Approach A:\", approachA);\n    console.log(\"Approach B:\", approachB);\n}\n\nremoveSpaces(\"H e l l o  W o r l d\");",
+    python:"def remove_spaces(s):\n    # Approach A: direct replace\n    approach_a = s.replace(\" \", \"\")\n\n    # Approach B: split then join (split() with no args also collapses all whitespace)\n    approach_b = \"\".join(s.split())\n\n    print(\"Approach A:\", approach_a)\n    print(\"Approach B:\", approach_b)\n\n\nremove_spaces(\"H e l l o  W o r l d\")",
+    timeComplexity:"O(n) for either approach.",
+    spaceComplexity:"O(n) for the new string (and the intermediate array in approach B).",
+    tip:"Point out the subtle difference: a plain replace(\" \", \"\") only removes literal space characters, while a regex \\s removes all whitespace (tabs, newlines too). Python's split() with no arguments also collapses all whitespace types, not just spaces — worth mentioning if asked to handle tabs/newlines.",
+    edgeCases:["String with no spaces → output equals the input unchanged","String that is entirely spaces → result is an empty string","Tabs or newlines mixed in → only approach A with \\s (not a literal space) or Python's default split() removes those too"],
+    followups:[
+      {q:"How would you remove only leading and trailing spaces but keep internal ones?",a:"Use trim() / strip() instead of a global replace — that only removes whitespace from the start and end of the string, leaving everything in between untouched."},
+      {q:"Which approach is more efficient for a very long string?",a:"Approach A (a single replace/regex pass) is generally faster since it doesn't allocate an intermediate array of substrings the way split() does. For huge strings, the direct replace approach is preferable."}
+    ]
+  },
+  {
+    id:10013,
+    category:"strings",
+    diff:"Easy",
+    title:"Count total characters in a string excluding spaces",
+    logic:"The straightforward way is str.length() minus however many space characters exist. Equivalently, loop through every character and increment a counter only when the character is not a space — both give the same answer, but the loop version generalizes more easily to excluding other characters too.",
+    java:"public class CountCharsExcludingSpaces {\n    public static void main(String[] args) {\n        countChars(\"Hello World QA\");\n    }\n\n    static void countChars(String str) {\n        int count = 0;\n        for (char c : str.toCharArray()) {\n            if (c != ' ') count++;\n        }\n        System.out.println(\"Characters excluding spaces: \" + count);\n    }\n}",
+    js:"function countChars(str) {\n    let count = 0;\n    for (const ch of str) {\n        if (ch !== \" \") count++;\n    }\n    console.log(\"Characters excluding spaces:\", count);\n}\n\ncountChars(\"Hello World QA\");",
+    python:"def count_chars(s):\n    count = sum(1 for ch in s if ch != \" \")\n    print(\"Characters excluding spaces:\", count)\n\n\ncount_chars(\"Hello World QA\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention the one-liner shortcut too — str.length() - (str.length() - str.replace(\" \", \"\").length()), or more simply str.replace(\" \", \"\").length() — but explain the manual loop first since it's the version that generalizes to 'exclude multiple kinds of characters.'",
+    edgeCases:["String with only spaces → count is 0","String with no spaces → count equals the full length","Tabs/newlines — decide explicitly whether 'spaces' means just ' ' or all whitespace, and say so out loud in the interview"],
+    followups:[
+      {q:"How would you extend this to exclude all whitespace, not just the space character?",a:"Replace the equality check c != ' ' with !Character.isWhitespace(c) (Java) or a regex test against \\s (JS) — that covers tabs, newlines, and other whitespace variants in one check."},
+      {q:"How would you count characters excluding both spaces and punctuation?",a:"Use Character.isLetterOrDigit(c) as the inclusion test instead of a space-only exclusion — that counts only alphanumeric characters, dropping spaces and punctuation in one condition."}
+    ]
+  },
+  {
+    id:10014,
+    category:"strings",
+    diff:"Medium",
+    title:"Find all duplicate characters in a string",
+    logic:"Build a frequency map by scanning the string once, counting how many times each character appears. Then scan the map: any character with a count greater than 1 is a duplicate. You can either print duplicates directly as you find them, or accumulate them into a separate result string — both come from the same frequency map.",
+    java:"import java.util.LinkedHashMap;\nimport java.util.Map;\n\npublic class FindDuplicateChars {\n    public static void main(String[] args) {\n        findDuplicates(\"programming\");\n    }\n\n    static void findDuplicates(String str) {\n        Map<Character, Integer> freq = new LinkedHashMap<>();\n        for (char c : str.toCharArray()) {\n            freq.put(c, freq.getOrDefault(c, 0) + 1);\n        }\n\n        StringBuilder duplicates = new StringBuilder();\n        for (Map.Entry<Character, Integer> entry : freq.entrySet()) {\n            if (entry.getValue() > 1) {\n                System.out.println(entry.getKey() + \": \" + entry.getValue());\n                duplicates.append(entry.getKey());\n            }\n        }\n        System.out.println(\"Duplicate characters: \" + duplicates);\n    }\n}",
+    js:"function findDuplicates(str) {\n    const freq = new Map();\n    for (const ch of str) {\n        freq.set(ch, (freq.get(ch) || 0) + 1);\n    }\n\n    let duplicates = \"\";\n    for (const [ch, count] of freq) {\n        if (count > 1) {\n            console.log(`${ch}: ${count}`);\n            duplicates += ch;\n        }\n    }\n    console.log(\"Duplicate characters:\", duplicates);\n}\n\nfindDuplicates(\"programming\");",
+    python:"from collections import Counter\n\ndef find_duplicates(s):\n    freq = Counter(s)\n    duplicates = \"\"\n    for ch, count in freq.items():\n        if count > 1:\n            print(f\"{ch}: {count}\")\n            duplicates += ch\n    print(\"Duplicate characters:\", duplicates)\n\n\nfind_duplicates(\"programming\")",
+    timeComplexity:"O(n) — one pass to build the map, one pass over the map (bounded by the alphabet size).",
+    spaceComplexity:"O(k) where k is the number of distinct characters.",
+    tip:"Use a LinkedHashMap (Java) or Map/Counter (JS/Python) so duplicates are reported in first-seen order rather than arbitrary hash order — interviewers notice when output order looks random and will ask why.",
+    edgeCases:["String with no duplicates → result is empty","All characters identical (e.g. 'aaaa') → single duplicate entry with a high count","Case sensitivity — 'A' and 'a' are counted as different characters unless explicitly normalized first"],
+    followups:[
+      {q:"How would you find only the first repeated character (not all duplicates)?",a:"Use a Set instead of a full frequency map. Scan left to right; if the current character is already in the set, that's the first repeat — return immediately. Otherwise add it to the set and continue. This short-circuits instead of always scanning the full string."},
+      {q:"How would you solve this without any extra data structure, using O(1) space?",a:"Only works for a known small fixed alphabet (e.g. lowercase a-z): use a 26-bit integer as a bitmask. For each character, check and set its corresponding bit; if the bit was already set, it's a duplicate. This trades flexibility for true O(1) space."}
+    ]
+  },
+  {
+    id:10015,
+    category:"strings",
+    diff:"Easy",
+    title:"Print characters at even and odd indexes separately",
+    logic:"Walk through the string by index. Indexes are 0-based, so index 0, 2, 4... are conventionally 'even' and 1, 3, 5... are 'odd'. Append each character to one of two separate builders depending on whether its index is even or odd (index % 2 == 0).",
+    java:"public class EvenOddIndexChars {\n    public static void main(String[] args) {\n        splitByIndexParity(\"interview\");\n    }\n\n    static void splitByIndexParity(String str) {\n        StringBuilder even = new StringBuilder();\n        StringBuilder odd = new StringBuilder();\n        for (int i = 0; i < str.length(); i++) {\n            if (i % 2 == 0) even.append(str.charAt(i));\n            else odd.append(str.charAt(i));\n        }\n        System.out.println(\"Even-index characters: \" + even);\n        System.out.println(\"Odd-index characters: \" + odd);\n    }\n}",
+    js:"function splitByIndexParity(str) {\n    let even = \"\", odd = \"\";\n    for (let i = 0; i < str.length; i++) {\n        if (i % 2 === 0) even += str[i];\n        else odd += str[i];\n    }\n    console.log(\"Even-index characters:\", even);\n    console.log(\"Odd-index characters:\", odd);\n}\n\nsplitByIndexParity(\"interview\");",
+    python:"def split_by_index_parity(s):\n    even = s[0::2]  # every char starting at index 0, step 2\n    odd = s[1::2]   # every char starting at index 1, step 2\n    print(\"Even-index characters:\", even)\n    print(\"Odd-index characters:\", odd)\n\n\nsplit_by_index_parity(\"interview\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) total across both result strings.",
+    tip:"In Python, mention slicing with a step (s[0::2]) as the idiomatic one-liner — it's worth knowing both the explicit loop (which translates to Java/JS) and the Pythonic shortcut, and explaining when each is appropriate.",
+    edgeCases:["Empty string → both results are empty","Single character → it lands in the even-index result, odd is empty","Odd-length vs even-length strings — doesn't affect correctness, just changes which result string ends up longer"],
+    followups:[
+      {q:"How would you interleave two strings back together, alternating characters?",a:"Loop up to the length of the longer string; at each index, append the character from the first string if it exists, then the character from the second string if it exists. This is the inverse operation of splitting by index parity."},
+      {q:"How would you do this for 1-based indexing instead of 0-based?",a:"Flip the parity check: use (i + 1) % 2 == 0 for what would conventionally be called 'even position' in 1-based counting, since index 0 in 0-based terms is position 1 in 1-based terms."}
+    ]
+  },
+  {
+    id:10016,
+    category:"strings",
+    diff:"Medium",
+    title:"Count the frequency of each character in a string",
+    logic:"Scan the string once, building a map from character to count. Then iterate the map and print each distinct character together with its total count — this naturally prints every character exactly once, even if it appeared many times in the original string, because you're iterating the map's keys, not the original string.",
+    java:"import java.util.LinkedHashMap;\nimport java.util.Map;\n\npublic class CharFrequency {\n    public static void main(String[] args) {\n        printFrequency(\"mississippi\");\n    }\n\n    static void printFrequency(String str) {\n        Map<Character, Integer> freq = new LinkedHashMap<>();\n        for (char c : str.toCharArray()) {\n            freq.put(c, freq.getOrDefault(c, 0) + 1);\n        }\n        for (Map.Entry<Character, Integer> entry : freq.entrySet()) {\n            System.out.println(entry.getKey() + \": \" + entry.getValue());\n        }\n    }\n}",
+    js:"function printFrequency(str) {\n    const freq = new Map();\n    for (const ch of str) {\n        freq.set(ch, (freq.get(ch) || 0) + 1);\n    }\n    for (const [ch, count] of freq) {\n        console.log(`${ch}: ${count}`);\n    }\n}\n\nprintFrequency(\"mississippi\");",
+    python:"from collections import Counter\n\ndef print_frequency(s):\n    freq = Counter(s)\n    for ch, count in freq.items():\n        print(f\"{ch}: {count}\")\n\n\nprint_frequency(\"mississippi\")",
+    timeComplexity:"O(n) to build the map, O(k) to print it, where k is the number of distinct characters.",
+    spaceComplexity:"O(k).",
+    tip:"This is the same frequency-map pattern that underlies duplicate detection, anagram checks, and 'first unique character' problems — call that out explicitly. Interviewers love seeing you recognize one technique that solves a whole family of questions instead of memorizing each one separately.",
+    edgeCases:["Empty string → nothing printed","All characters identical → single entry with a count equal to the string length","Case sensitivity matters — 'M' and 'm' are separate keys unless explicitly normalized"],
+    followups:[
+      {q:"How would you print the results sorted by frequency, highest first?",a:"Convert the map's entries to a list, then sort by value descending (Collections.sort with a custom comparator in Java, or array.sort in JS/Python) before printing."},
+      {q:"How would you find the most frequent character in one pass instead of two?",a:"Track a running 'max character' and 'max count' variable while building the map — every time you update a count, compare it against the current max and update the tracker if it's now higher. Avoids a second full pass over the map."}
+    ]
+  },
+  {
+    id:10017,
+    category:"strings",
+    diff:"Easy",
+    title:"Remove special characters from a string using replace()",
+    logic:"Use a regular expression that matches anything that is NOT a letter, digit, or whitespace, and replace every match with an empty string. The character class [^a-zA-Z0-9\\s] (negated) captures exactly the 'special characters' you want stripped out, in a single pass.",
+    java:"public class RemoveSpecialChars {\n    public static void main(String[] args) {\n        String str = \"Hello@World#2024!\";\n        String cleaned = str.replaceAll(\"[^a-zA-Z0-9\\\\s]\", \"\");\n        System.out.println(\"Cleaned: \" + cleaned);\n    }\n}",
+    js:"function removeSpecialChars(str) {\n    return str.replace(/[^a-zA-Z0-9\\s]/g, \"\");\n}\n\nconsole.log(\"Cleaned:\", removeSpecialChars(\"Hello@World#2024!\"));",
+    python:"import re\n\ndef remove_special_chars(s):\n    return re.sub(r\"[^a-zA-Z0-9\\s]\", \"\", s)\n\n\nprint(\"Cleaned:\", remove_special_chars(\"Hello@World#2024!\"))",
+    timeComplexity:"O(n) — a regex engine still has to inspect each character once.",
+    spaceComplexity:"O(n) for the resulting string.",
+    tip:"Be precise about what counts as 'special' — clarify with the interviewer whether spaces should be kept (most common) or also stripped, and whether Unicode letters (accented characters) should be preserved. Adjusting the character class to \\p{L} (Java) handles Unicode letters if asked.",
+    edgeCases:["String with no special characters → output equals input unchanged","String that is entirely special characters → result is an empty string","Unicode/accented letters (é, ü) — a plain a-zA-Z class strips them too; use a Unicode-aware class if that's not desired"],
+    followups:[
+      {q:"How would you keep only letters and remove digits as well as special characters?",a:"Tighten the regex to [^a-zA-Z\\s] — dropping the 0-9 range from the allowed set means digits get matched and removed along with punctuation."},
+      {q:"How would you do this without regular expressions?",a:"Loop through each character and check Character.isLetterOrDigit(c) || c == ' ' (Java) — append it to a result builder only if that condition is true, skipping everything else."}
+    ]
+  },
+  {
+    id:10018,
+    category:"strings",
+    diff:"Medium",
+    title:"Print all characters that appear exactly once in a string",
+    logic:"Build a frequency map exactly as in the duplicate-finding problem, but this time filter for the opposite condition: characters whose count equals exactly 1. Iterate the map in insertion order and print only those single-occurrence characters.",
+    java:"import java.util.LinkedHashMap;\nimport java.util.Map;\n\npublic class UniqueCharacters {\n    public static void main(String[] args) {\n        printUniqueChars(\"swiss\");\n    }\n\n    static void printUniqueChars(String str) {\n        Map<Character, Integer> freq = new LinkedHashMap<>();\n        for (char c : str.toCharArray()) {\n            freq.put(c, freq.getOrDefault(c, 0) + 1);\n        }\n        for (Map.Entry<Character, Integer> entry : freq.entrySet()) {\n            if (entry.getValue() == 1) {\n                System.out.println(entry.getKey());\n            }\n        }\n    }\n}",
+    js:"function printUniqueChars(str) {\n    const freq = new Map();\n    for (const ch of str) {\n        freq.set(ch, (freq.get(ch) || 0) + 1);\n    }\n    for (const [ch, count] of freq) {\n        if (count === 1) console.log(ch);\n    }\n}\n\nprintUniqueChars(\"swiss\");",
+    python:"from collections import Counter\n\ndef print_unique_chars(s):\n    freq = Counter(s)\n    for ch in s:\n        pass  # iterate freq directly instead to preserve first-seen order without duplicates\n    seen = set()\n    for ch in s:\n        if ch not in seen and freq[ch] == 1:\n            print(ch)\n        seen.add(ch)\n\n\nprint_unique_chars(\"swiss\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(k) for the frequency map, where k is the number of distinct characters.",
+    tip:"This is the classic 'first non-repeating character' family of interview questions — note that this version prints ALL single-occurrence characters, while a common follow-up asks for only the FIRST one. Knowing the distinction up front avoids solving the wrong problem.",
+    edgeCases:["String where every character is unique → all characters are printed","String where every character repeats → nothing is printed","Single-character string → that one character is printed (count is trivially 1)"],
+    followups:[
+      {q:"How would you find only the FIRST non-repeating character instead of all of them?",a:"Build the frequency map first (one pass), then scan the original string a second time in order and return the first character whose map count equals 1 — the second pass preserves the original left-to-right order, which a map iteration alone doesn't guarantee in every language."},
+      {q:"How would you solve the 'first non-repeating character' in true O(n) with a single pass?",a:"Not generally possible with O(1) lookahead, since you can't know a character won't repeat until you've seen the whole string — but you can still do it in two linear passes (O(n) overall), which is the accepted optimal complexity for this problem."}
+    ]
+  },
+  {
+    id:10019,
+    category:"strings",
+    diff:"Medium",
+    title:"Reverse every word in a string while preserving word order",
+    logic:"Split the string into words on whitespace. Reverse the characters WITHIN each word individually (e.g. 'Hello' becomes 'olleH'), but keep the words themselves in their original left-to-right order. Join the reversed words back together with a single space.",
+    java:"public class ReverseEachWord {\n    public static void main(String[] args) {\n        reverseEachWord(\"Hello World QA\");\n    }\n\n    static void reverseEachWord(String str) {\n        String[] words = str.split(\" \");\n        StringBuilder result = new StringBuilder();\n        for (int i = 0; i < words.length; i++) {\n            result.append(new StringBuilder(words[i]).reverse());\n            if (i < words.length - 1) result.append(\" \");\n        }\n        System.out.println(result);\n    }\n}",
+    js:"function reverseEachWord(str) {\n    const result = str\n        .split(\" \")\n        .map(word => word.split(\"\").reverse().join(\"\"))\n        .join(\" \");\n    console.log(result);\n}\n\nreverseEachWord(\"Hello World QA\");",
+    python:"def reverse_each_word(s):\n    result = \" \".join(word[::-1] for word in s.split(\" \"))\n    print(result)\n\n\nreverse_each_word(\"Hello World QA\")",
+    timeComplexity:"O(n) — every character is visited once across all words.",
+    spaceComplexity:"O(n) for the result.",
+    tip:"Name the contrast with the 'reverse word order' problem explicitly when you present this — interviewers frequently ask both back to back specifically to see if you confuse 'reverse each word's letters' with 'reverse the sequence of words.'",
+    edgeCases:["Single word input → that one word is reversed, no other change","Multiple consecutive spaces → split(\" \") produces empty-string 'words' that reverse to themselves (still empty) — use \\s+ if that's undesired","Empty string → result is an empty string"],
+    followups:[
+      {q:"How would you reverse each word in place using a character array, without split/join?",a:"Scan the array tracking the start index of the current word. Whenever you hit a space (or the end of the string), reverse the characters between the tracked start and the position just before the space using a two-pointer swap, then move the start past the space."},
+      {q:"How would you handle multiple consecutive spaces so they collapse to one in the output?",a:"Split on the regex \\s+ instead of a literal single space — that treats any run of whitespace as one delimiter, so empty-string artifacts never appear in the resulting word list."}
+    ]
+  },
+  {
+    id:10020,
+    category:"strings",
+    diff:"Medium",
+    title:"Reverse the order of words in a string",
+    logic:"Split the string into an array of words. Reverse the ORDER of that array (the words themselves stay spelled normally), then join them back with a single space. 'Hello World QA' becomes 'QA World Hello'.",
+    java:"import java.util.Collections;\nimport java.util.Arrays;\nimport java.util.List;\n\npublic class ReverseWordOrder {\n    public static void main(String[] args) {\n        reverseWordOrder(\"Hello World QA\");\n    }\n\n    static void reverseWordOrder(String str) {\n        List<String> words = Arrays.asList(str.split(\" \"));\n        Collections.reverse(words);\n        System.out.println(String.join(\" \", words));\n    }\n}",
+    js:"function reverseWordOrder(str) {\n    const result = str.split(\" \").reverse().join(\" \");\n    console.log(result);\n}\n\nreverseWordOrder(\"Hello World QA\");",
+    python:"def reverse_word_order(s):\n    result = \" \".join(s.split(\" \")[::-1])\n    print(result)\n\n\nreverse_word_order(\"Hello World QA\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the word array and the result.",
+    tip:"If the interviewer adds 'without using split/reverse/join built-ins,' fall back to scanning the string from the END backwards, collecting characters into a word buffer until you hit a space, then appending that completed word to the result — effectively building the reversed-order output in one manual pass.",
+    edgeCases:["Single word → output is unchanged","Multiple consecutive spaces → naive split/join can produce extra blank entries; trim and use \\s+ splitting to avoid that","Leading/trailing spaces → trim the string first so you don't get an empty leading/trailing word"],
+    followups:[
+      {q:"How would you do this without using any built-in split, reverse, or join methods?",a:"Scan the string from right to left, building up each word's characters in reverse-encounter order (which means right-to-left builds the word backwards, so reverse each collected word back to normal before appending) — append a space between words in the result as you go."},
+      {q:"How would you reverse the words in place using O(1) extra space (assuming a mutable char array)?",a:"First reverse the entire character array as one block. That flips both the word order AND the letters within each word. Then do a second pass reversing the letters within each individual word back to normal — leaving only the word order reversed."}
+    ]
+  },
+  {
+    id:10021,
+    category:"strings",
+    diff:"Easy",
+    title:"Check whether a string is a palindrome (case-insensitive)",
+    logic:"Normalize the string to a single case (lowercase) so 'Madam' and 'madam' are treated the same. Use two pointers, one starting at the beginning and one at the end, moving toward the middle and comparing characters at each step. If every pair matches, it's a palindrome; a single mismatch proves it isn't.",
+    java:"public class PalindromeCheck {\n    public static void main(String[] args) {\n        System.out.println(isPalindrome(\"Madam\"));\n        System.out.println(isPalindrome(\"Hello\"));\n    }\n\n    static boolean isPalindrome(String str) {\n        String s = str.toLowerCase();\n        int left = 0, right = s.length() - 1;\n        while (left < right) {\n            if (s.charAt(left) != s.charAt(right)) return false;\n            left++;\n            right--;\n        }\n        return true;\n    }\n}",
+    js:"function isPalindrome(str) {\n    const s = str.toLowerCase();\n    let left = 0, right = s.length - 1;\n    while (left < right) {\n        if (s[left] !== s[right]) return false;\n        left++;\n        right--;\n    }\n    return true;\n}\n\nconsole.log(isPalindrome(\"Madam\"));\nconsole.log(isPalindrome(\"Hello\"));",
+    python:"def is_palindrome(s):\n    s = s.lower()\n    left, right = 0, len(s) - 1\n    while left < right:\n        if s[left] != s[right]:\n            return False\n        left += 1\n        right -= 1\n    return True\n\n\nprint(is_palindrome(\"Madam\"))\nprint(is_palindrome(\"Hello\"))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1) extra with two pointers (O(n) if you lowercase into a new string first, which Java/JS/Python all do since strings are immutable).",
+    tip:"Mention the 'reverse and compare' alternative (s.equals(new StringBuilder(s).reverse().toString())) as a one-liner, but lead with two pointers since it's O(1) extra space and lets you short-circuit on the first mismatch instead of always building a full reversed copy.",
+    edgeCases:["Empty string → considered a palindrome (vacuously true)","Single character → always a palindrome","Mixed case ('RaceCar') → must lowercase both sides before comparing or every check fails"],
+    followups:[
+      {q:"How would you extend this to ignore spaces and punctuation (e.g. 'A man, a plan, a canal: Panama')?",a:"Before the two-pointer comparison, either pre-filter the string to keep only alphanumeric characters, or skip non-alphanumeric characters inside the loop by advancing left/right past them before each comparison."},
+      {q:"How would you check if a string can be rearranged into a palindrome, rather than already being one?",a:"Count the frequency of each character. A string can form a palindrome if at most one character has an odd count (that character would sit in the middle); more than one odd count makes it impossible."}
+    ]
+  },
+  {
+    id:10022,
+    category:"strings",
+    diff:"Easy",
+    title:"Replace all occurrences of a character with $",
+    logic:"Use a direct character-replace call — it scans the string once and swaps every instance of the target character for the replacement character. This is a single built-in call in every language; the only nuance is being explicit about case sensitivity.",
+    java:"public class ReplaceCharWithDollar {\n    public static void main(String[] args) {\n        String str = \"banana\";\n        String result = str.replace('a', '$');\n        System.out.println(result);\n    }\n}",
+    js:"function replaceCharWithDollar(str, target) {\n    return str.split(target).join(\"$\");\n    // equivalently: str.replaceAll(target, \"$\") in modern JS\n}\n\nconsole.log(replaceCharWithDollar(\"banana\", \"a\"));",
+    python:"def replace_char_with_dollar(s, target):\n    return s.replace(target, \"$\")\n\n\nprint(replace_char_with_dollar(\"banana\", \"a\"))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the new string (strings are immutable in all three languages).",
+    tip:"In JS, mention that replaceAll(target, '$') needs the $ escaped specially in REGEX replacement contexts (since $ has meaning in replacement patterns) but is completely literal when target is a plain string, not a regex — a subtle gotcha worth flagging.",
+    edgeCases:["Target character not present → string is returned unchanged","Target character is every character in the string → entire result is $ repeated","Empty string input → result is an empty string"],
+    followups:[
+      {q:"How would you replace a character only at specific positions (e.g. only even indexes)?",a:"Loop with an index, and conditionally append either the original character or '$' to a result builder based on the index condition, rather than using a blanket replace call."},
+      {q:"How would you replace multiple different characters with different replacements in one pass?",a:"Use a translation map (character → replacement) and a single loop: for each character, look it up in the map and append the mapped value if present, otherwise append the original character unchanged."}
+    ]
+  },
+  {
+    id:10023,
+    category:"strings",
+    diff:"Hard",
+    title:"Replace occurrences of a character incrementally: 1st→$, 2nd→$$, 3rd→$$$",
+    logic:"Track a running counter of how many times the target character has been seen so far. Each time it's encountered, increment the counter FIRST, then append that many '$' characters (not the original character) to the result. Every other character is copied through unchanged. The key insight is that the number of dollar signs grows with each occurrence — it isn't a fixed replacement.",
+    java:"public class IncrementalReplace {\n    public static void main(String[] args) {\n        incrementalReplace(\"banana\", 'a');\n    }\n\n    static void incrementalReplace(String str, char target) {\n        StringBuilder result = new StringBuilder();\n        int occurrence = 0;\n        for (char c : str.toCharArray()) {\n            if (c == target) {\n                occurrence++;\n                for (int i = 0; i < occurrence; i++) result.append('$');\n            } else {\n                result.append(c);\n            }\n        }\n        System.out.println(result);\n    }\n}",
+    js:"function incrementalReplace(str, target) {\n    let result = \"\";\n    let occurrence = 0;\n    for (const ch of str) {\n        if (ch === target) {\n            occurrence++;\n            result += \"$\".repeat(occurrence);\n        } else {\n            result += ch;\n        }\n    }\n    console.log(result);\n}\n\nincrementalReplace(\"banana\", \"a\");",
+    python:"def incremental_replace(s, target):\n    result = []\n    occurrence = 0\n    for ch in s:\n        if ch == target:\n            occurrence += 1\n            result.append(\"$\" * occurrence)\n        else:\n            result.append(ch)\n    print(\"\".join(result))\n\n\nincremental_replace(\"banana\", \"a\")",
+    timeComplexity:"O(n + k²) in the worst case, where k is the number of occurrences of the target — the i-th occurrence costs O(i) to append i dollar signs, and summing 1+2+...+k is O(k²).",
+    spaceComplexity:"O(n + k²) for the result.",
+    tip:"Call out the quadratic blow-up explicitly when the target character is very frequent — for a string of all-target characters, the output size itself is O(n²), which is inherent to the problem (not a flaw in your solution) since the required output genuinely grows that fast.",
+    edgeCases:["Target character never appears → string is returned unchanged","Target character appears many times → output length grows quadratically, worth flagging as expected behavior","Counter must increment BEFORE appending, not after — an off-by-one here is the most common bug in this problem"],
+    followups:[
+      {q:"How would you reset the counter for each separate word, instead of counting across the whole string?",a:"Split the string into words first, run the same incremental-replace logic independently on each word (resetting the occurrence counter to 0 for each), then rejoin the words with spaces."},
+      {q:"What's the actual output length in the worst case, and why does that matter?",a:"If the entire string of length n is the target character, the output is 1 + 2 + ... + n dollar signs, which is n(n+1)/2 — O(n²) characters. That matters because no algorithm can produce this output faster than the size of the output itself, so O(n²) is optimal here, not a performance bug."}
+    ]
+  },
+  {
+    id:10024,
+    category:"strings",
+    diff:"Easy",
+    title:"Count uppercase and lowercase characters in a string",
+    logic:"Scan every character once. Use the language's built-in case-check (Character.isUpperCase/isLowerCase in Java, a regex or toUpperCase comparison in JS, .isupper()/.islower() in Python) to classify each letter, incrementing the appropriate counter. Non-letter characters are simply skipped.",
+    java:"public class CaseCount {\n    public static void main(String[] args) {\n        countCase(\"Hello World QA 2024\");\n    }\n\n    static void countCase(String str) {\n        int upper = 0, lower = 0;\n        for (char c : str.toCharArray()) {\n            if (Character.isUpperCase(c)) upper++;\n            else if (Character.isLowerCase(c)) lower++;\n        }\n        System.out.println(\"Uppercase: \" + upper);\n        System.out.println(\"Lowercase: \" + lower);\n    }\n}",
+    js:"function countCase(str) {\n    let upper = 0, lower = 0;\n    for (const ch of str) {\n        if (/[A-Z]/.test(ch)) upper++;\n        else if (/[a-z]/.test(ch)) lower++;\n    }\n    console.log(\"Uppercase:\", upper);\n    console.log(\"Lowercase:\", lower);\n}\n\ncountCase(\"Hello World QA 2024\");",
+    python:"def count_case(s):\n    upper = sum(1 for ch in s if ch.isupper())\n    lower = sum(1 for ch in s if ch.islower())\n    print(\"Uppercase:\", upper)\n    print(\"Lowercase:\", lower)\n\n\ncount_case(\"Hello World QA 2024\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention that isUpperCase/isLowerCase already return false for digits, spaces, and punctuation, so there's no need for a separate isLetter guard — using the built-in case checks alone correctly skips non-letters.",
+    edgeCases:["String with no letters at all (only digits/punctuation) → both counts are 0","All-uppercase or all-lowercase string → one counter stays at 0","Unicode letters (accented characters) — behavior depends on the language's locale-aware case functions; flag this if the input isn't guaranteed ASCII"],
+    followups:[
+      {q:"How would you convert the entire string to alternate case (uppercase becomes lowercase and vice versa)?",a:"For each character, check its current case and flip it: if isUpperCase, append Character.toLowerCase(c); if isLowerCase, append Character.toUpperCase(c); otherwise append it unchanged."},
+      {q:"How would you count uppercase/lowercase letters only within words longer than 3 characters?",a:"Split the string into words first, filter to words with length > 3, then run the same counting loop only over the characters of the filtered words."}
+    ]
+  },
+  {
+    id:10025,
+    category:"strings",
+    diff:"Easy",
+    title:"Split a string and print total word count plus all words in reverse",
+    logic:"Split the string into an array of words on whitespace. The array's length is the total word count. To print the words in reverse order, either reverse the array itself, or iterate it from the last index down to 0.",
+    java:"import java.util.Arrays;\nimport java.util.Collections;\nimport java.util.List;\n\npublic class WordCountAndReverse {\n    public static void main(String[] args) {\n        splitAndReverse(\"The quick brown fox jumps\");\n    }\n\n    static void splitAndReverse(String str) {\n        String[] words = str.trim().split(\"\\\\s+\");\n        System.out.println(\"Total words: \" + words.length);\n\n        List<String> wordList = Arrays.asList(words);\n        Collections.reverse(wordList);\n        System.out.println(\"Reversed: \" + String.join(\" \", wordList));\n    }\n}",
+    js:"function splitAndReverse(str) {\n    const words = str.trim().split(/\\s+/);\n    console.log(\"Total words:\", words.length);\n    console.log(\"Reversed:\", words.slice().reverse().join(\" \"));\n}\n\nsplitAndReverse(\"The quick brown fox jumps\");",
+    python:"def split_and_reverse(s):\n    words = s.split()\n    print(\"Total words:\", len(words))\n    print(\"Reversed:\", \" \".join(reversed(words)))\n\n\nsplit_and_reverse(\"The quick brown fox jumps\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the word array.",
+    tip:"In JS, call out why slice() is used before reverse() — Array.prototype.reverse() mutates the array in place, so without a copy you'd silently reverse the original 'words' array too if it's reused afterward.",
+    edgeCases:["Single-word string → word count is 1, reversed output equals the input","String with extra whitespace → trim + \\s+ split avoids phantom empty 'words'","Empty string → word count is 0 (handle this before indexing into an empty array)"],
+    followups:[
+      {q:"How would you print the words in reverse without using a built-in reverse() method?",a:"Iterate the word array from index (length - 1) down to 0, appending each word to a result string with a space separator, instead of calling reverse() on the array."},
+      {q:"How would you find the longest word in the split result?",a:"Track a 'longest so far' variable while iterating the word array once, comparing each word's length against the current longest and updating when a longer one is found — O(n) single pass, no sorting needed."}
+    ]
+  },
+  {
+    id:10026,
+    category:"strings",
+    diff:"Medium",
+    title:"Count uppercase letters in a string using ASCII values (65-90)",
+    logic:"Instead of calling a built-in isUpperCase function, convert each character to its ASCII/Unicode code point and check whether that numeric value falls within the inclusive range 65 to 90 — the ASCII codes for 'A' through 'Z'. This demonstrates understanding of how characters are represented as numbers under the hood.",
+    java:"public class UppercaseAsciiCount {\n    public static void main(String[] args) {\n        countUppercaseAscii(\"Hello World QA\");\n    }\n\n    static void countUppercaseAscii(String str) {\n        int count = 0;\n        for (char c : str.toCharArray()) {\n            int code = (int) c;\n            if (code >= 65 && code <= 90) count++;\n        }\n        System.out.println(\"Uppercase letters: \" + count);\n    }\n}",
+    js:"function countUppercaseAscii(str) {\n    let count = 0;\n    for (const ch of str) {\n        const code = ch.charCodeAt(0);\n        if (code >= 65 && code <= 90) count++;\n    }\n    console.log(\"Uppercase letters:\", count);\n}\n\ncountUppercaseAscii(\"Hello World QA\");",
+    python:"def count_uppercase_ascii(s):\n    count = 0\n    for ch in s:\n        code = ord(ch)\n        if 65 <= code <= 90:\n            count += 1\n    print(\"Uppercase letters:\", count)\n\n\ncount_uppercase_ascii(\"Hello World QA\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Explicitly name the ASCII range (65-90 for A-Z, 97-122 for a-z) from memory — interviewers ask this exact question specifically to test whether you understand character encoding, not just whether you can call a library function.",
+    edgeCases:["Non-ASCII/Unicode letters (é, ñ) → fall completely outside the 65-90 range and are silently not counted, which is a real limitation worth mentioning","Digits and punctuation → their ASCII codes fall outside 65-90, so they're correctly excluded","Empty string → count is 0"],
+    followups:[
+      {q:"Why might this ASCII-range approach fail for non-English text?",a:"ASCII only covers the basic Latin alphabet — accented letters, Cyrillic, Chinese characters, etc. have code points far outside 65-90, so they'd never be counted as uppercase even if they conceptually are, in scripts that have a case distinction. A Unicode-aware function like Character.isUpperCase() handles this correctly."},
+      {q:"How would you count uppercase letters using only bitwise operations, no comparisons?",a:"This is mostly a thought exercise rather than a practical optimization: you could mask and compare bit patterns corresponding to the ASCII range, but in practice the range comparison (>=, <=) already compiles to efficient machine instructions, so there's no real performance benefit to bit tricks here."}
+    ]
+  },
+  {
+    id:10027,
+    category:"strings",
+    diff:"Medium",
+    title:"Count lowercase letters in a string using ASCII values (97-122)",
+    logic:"Same technique as the uppercase ASCII-counting problem, but checking the lowercase range instead: convert each character to its ASCII code point and test whether it falls within 97 to 122 inclusive — the ASCII codes for 'a' through 'z'.",
+    java:"public class LowercaseAsciiCount {\n    public static void main(String[] args) {\n        countLowercaseAscii(\"Hello World QA\");\n    }\n\n    static void countLowercaseAscii(String str) {\n        int count = 0;\n        for (char c : str.toCharArray()) {\n            int code = (int) c;\n            if (code >= 97 && code <= 122) count++;\n        }\n        System.out.println(\"Lowercase letters: \" + count);\n    }\n}",
+    js:"function countLowercaseAscii(str) {\n    let count = 0;\n    for (const ch of str) {\n        const code = ch.charCodeAt(0);\n        if (code >= 97 && code <= 122) count++;\n    }\n    console.log(\"Lowercase letters:\", count);\n}\n\ncountLowercaseAscii(\"Hello World QA\");",
+    python:"def count_lowercase_ascii(s):\n    count = 0\n    for ch in s:\n        code = ord(ch)\n        if 97 <= code <= 122:\n            count += 1\n    print(\"Lowercase letters:\", count)\n\n\ncount_lowercase_ascii(\"Hello World QA\")",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention that uppercase and lowercase ASCII ranges differ by exactly 32 (97 - 65 = 32) — that's the same constant used by the classic 'toggle case by XOR-ing with 32' trick, which is worth bringing up as a related fact even if not directly asked.",
+    edgeCases:["Non-ASCII/Unicode letters → outside 97-122, silently not counted (same limitation as the uppercase version)","Digits and punctuation → correctly excluded since their codes fall outside 97-122","Empty string → count is 0"],
+    followups:[
+      {q:"How would you combine this with the uppercase ASCII check to count both in a single pass?",a:"Run both range checks (65-90 and 97-122) in the same loop with two separate counters — there's no need for two separate passes over the string since each character is independently checked against both ranges in O(1)."},
+      {q:"How would you convert a lowercase letter to uppercase using only ASCII arithmetic, without library functions?",a:"Subtract 32 from the lowercase character's code point: (char)(c - 32) in Java, String.fromCharCode(code - 32) in JS, chr(ord(ch) - 32) in Python — this works because uppercase and lowercase letters are exactly 32 code points apart in ASCII."}
+    ]
+  },
+  {
+    id:10028,
+    category:"numbers",
+    diff:"Easy",
+    title:"Reverse an integer entered by the user",
+    logic:"Repeatedly extract the last digit using modulo 10, build up the reversed number by multiplying the running result by 10 and adding that digit, then strip the last digit off the original number with integer division by 10. Repeat until the original number reaches 0. Handle a negative sign separately so the digit-extraction loop only ever deals with positive values.",
+    java:"import java.util.Scanner;\n\npublic class ReverseInteger {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        System.out.print(\"Enter a number: \");\n        int num = sc.nextInt();\n        System.out.println(\"Reversed: \" + reverseNumber(num));\n    }\n\n    static int reverseNumber(int num) {\n        boolean negative = num < 0;\n        num = Math.abs(num);\n        int reversed = 0;\n        while (num != 0) {\n            int digit = num % 10;\n            reversed = reversed * 10 + digit;\n            num /= 10;\n        }\n        return negative ? -reversed : reversed;\n    }\n}",
+    js:"function reverseNumber(num) {\n    const negative = num < 0;\n    num = Math.abs(num);\n    let reversed = 0;\n    while (num !== 0) {\n        const digit = num % 10;\n        reversed = reversed * 10 + digit;\n        num = Math.floor(num / 10);\n    }\n    return negative ? -reversed : reversed;\n}\n\nconsole.log(reverseNumber(12345));\nconsole.log(reverseNumber(-9870));",
+    python:"def reverse_number(num):\n    negative = num < 0\n    num = abs(num)\n    reversed_num = 0\n    while num != 0:\n        digit = num % 10\n        reversed_num = reversed_num * 10 + digit\n        num //= 10\n    return -reversed_num if negative else reversed_num\n\n\nprint(reverse_number(12345))\nprint(reverse_number(-9870))",
+    timeComplexity:"O(d) where d is the number of digits (i.e. O(log₁₀ n)).",
+    spaceComplexity:"O(1).",
+    tip:"Mention the integer-overflow edge case explicitly in Java: reversing a number near Integer.MAX_VALUE can overflow a 32-bit int. A production-quality answer checks for overflow before the multiply-and-add step, or uses a long accumulator and casts back with a range check.",
+    edgeCases:["num = 0 → reversed is 0","Negative numbers → sign is stripped before reversing and reapplied at the end","Trailing zeros (e.g. 1200) → reverse is 0021, which as an integer is just 21 — the leading zero naturally disappears"],
+    followups:[
+      {q:"How would you detect integer overflow while reversing in Java?",a:"Before each reversed = reversed * 10 + digit step, check whether reversed already exceeds (Integer.MAX_VALUE - digit) / 10 — if so, the next multiply would overflow, so return an agreed sentinel value (e.g. 0) or throw, depending on the contract."},
+      {q:"How would you reverse the number without arithmetic, by converting to a string?",a:"Convert with String.valueOf(num), strip a leading '-' if present, reverse the character sequence (StringBuilder.reverse() in Java), parse it back to an int, and reapply the negative sign if needed. Simpler to write, but does more allocation than the pure-arithmetic approach."}
+    ]
+  },
+  {
+    id:10029,
+    category:"numbers",
+    diff:"Easy",
+    title:"Check whether a number is a palindrome",
+    logic:"Reuse the digit-reversal technique: reverse the number's digits and compare the reversed value to the original. If they're equal, the number reads the same forwards and backwards, making it a palindrome. By convention, negative numbers are treated as NOT palindromes, since the minus sign breaks the symmetry.",
+    java:"public class PalindromeNumber {\n    public static void main(String[] args) {\n        System.out.println(isPalindrome(12321));\n        System.out.println(isPalindrome(12345));\n    }\n\n    static boolean isPalindrome(int num) {\n        if (num < 0) return false;\n        int original = num;\n        int reversed = 0;\n        while (num != 0) {\n            reversed = reversed * 10 + num % 10;\n            num /= 10;\n        }\n        return original == reversed;\n    }\n}",
+    js:"function isPalindrome(num) {\n    if (num < 0) return false;\n    const original = num;\n    let reversed = 0;\n    let n = num;\n    while (n !== 0) {\n        reversed = reversed * 10 + (n % 10);\n        n = Math.floor(n / 10);\n    }\n    return original === reversed;\n}\n\nconsole.log(isPalindrome(12321));\nconsole.log(isPalindrome(12345));",
+    python:"def is_palindrome(num):\n    if num < 0:\n        return False\n    original = num\n    reversed_num = 0\n    n = num\n    while n != 0:\n        reversed_num = reversed_num * 10 + n % 10\n        n //= 10\n    return original == reversed_num\n\n\nprint(is_palindrome(12321))\nprint(is_palindrome(12345))",
+    timeComplexity:"O(d) where d is the number of digits.",
+    spaceComplexity:"O(1).",
+    tip:"Mention the string-comparison shortcut (str(num) == str(num)[::-1] in Python) as a one-liner, but lead with the arithmetic version — it's the one that demonstrates you understand digit manipulation, which is usually the actual point of the question.",
+    edgeCases:["Single-digit numbers (0-9) → always palindromes trivially","Negative numbers → treated as not palindromes by convention (clarify this assumption with the interviewer)","Numbers ending in 0 (e.g. 120) → can never be palindromes, since a palindrome can't start with 0 once reversed"],
+    followups:[
+      {q:"Is 0 a palindrome? What about negative palindromic digit sequences like -121?",a:"0 is a palindrome (trivially, a single digit). For -121, the digits '121' are themselves palindromic, but the conventional definition treats the number AS WRITTEN including the sign, so -121 ≠ 121 read backwards including the sign — most interview rubrics say negative numbers are not palindromes; always confirm the convention being used."},
+      {q:"How would you check for palindrome without reversing the whole number?",a:"Reverse only half the digits, stopping when the reversed-so-far value meets or exceeds what remains of the original number, then compare appropriately (handling the middle digit for odd-length numbers). This avoids any overflow risk from reversing a number close to the integer limit."}
+    ]
+  },
+  {
+    id:10030,
+    category:"numbers",
+    diff:"Easy",
+    title:"Find the sum of digits of a number",
+    logic:"Repeatedly extract the last digit with modulo 10 and add it to a running sum, then remove that digit by integer-dividing the number by 10. Continue until the number reaches 0. Take the absolute value first so negative numbers don't break the modulo/division logic.",
+    java:"public class SumOfDigits {\n    public static void main(String[] args) {\n        System.out.println(sumOfDigits(12345));\n    }\n\n    static int sumOfDigits(int num) {\n        num = Math.abs(num);\n        int sum = 0;\n        while (num != 0) {\n            sum += num % 10;\n            num /= 10;\n        }\n        return sum;\n    }\n}",
+    js:"function sumOfDigits(num) {\n    num = Math.abs(num);\n    let sum = 0;\n    while (num !== 0) {\n        sum += num % 10;\n        num = Math.floor(num / 10);\n    }\n    return sum;\n}\n\nconsole.log(sumOfDigits(12345));",
+    python:"def sum_of_digits(num):\n    num = abs(num)\n    total = 0\n    while num != 0:\n        total += num % 10\n        num //= 10\n    return total\n\n\nprint(sum_of_digits(12345))",
+    timeComplexity:"O(d) where d is the number of digits.",
+    spaceComplexity:"O(1).",
+    tip:"Mention the 'digital root' follow-up unprompted — repeatedly summing digits until a single digit remains is a common extension, and showing you can recognize that pattern (sum-of-digits applied recursively) signals deeper number-theory comfort.",
+    edgeCases:["num = 0 → sum is 0","Negative numbers → take the absolute value first so the sign doesn't interfere with digit extraction","Single-digit number → sum equals the number itself"],
+    followups:[
+      {q:"How would you find the digital root (repeatedly sum digits until one digit remains)?",a:"Wrap the sum-of-digits logic in an outer loop: keep calling sumOfDigits on the result until the result is less than 10. There's also a constant-time math shortcut: for num > 0, the digital root equals 1 + (num - 1) % 9."},
+      {q:"How would you compute the sum of digits using recursion instead of a loop?",a:"sumOfDigits(num) = num == 0 ? 0 : (num % 10) + sumOfDigits(num / 10) — the base case is num reaching 0, and each recursive call peels off one digit, mirroring the loop's logic exactly."}
+    ]
+  },
+  {
+    id:10031,
+    category:"numbers",
+    diff:"Medium",
+    title:"Check whether a number is an Armstrong number",
+    logic:"An Armstrong number equals the sum of its own digits, each raised to the power of the total digit count (e.g. 153 = 1³ + 5³ + 3³, since it has 3 digits). First count how many digits the number has, then loop through each digit, raising it to that power and accumulating the sum, and finally compare the sum to the original number.",
+    java:"public class ArmstrongNumber {\n    public static void main(String[] args) {\n        System.out.println(isArmstrong(153));\n        System.out.println(isArmstrong(123));\n    }\n\n    static boolean isArmstrong(int num) {\n        int digitCount = String.valueOf(num).length();\n        int sum = 0;\n        int temp = num;\n        while (temp != 0) {\n            int digit = temp % 10;\n            sum += Math.pow(digit, digitCount);\n            temp /= 10;\n        }\n        return sum == num;\n    }\n}",
+    js:"function isArmstrong(num) {\n    const digitCount = String(num).length;\n    let sum = 0;\n    let temp = num;\n    while (temp !== 0) {\n        const digit = temp % 10;\n        sum += Math.pow(digit, digitCount);\n        temp = Math.floor(temp / 10);\n    }\n    return sum === num;\n}\n\nconsole.log(isArmstrong(153));\nconsole.log(isArmstrong(123));",
+    python:"def is_armstrong(num):\n    digit_count = len(str(num))\n    total = 0\n    temp = num\n    while temp != 0:\n        digit = temp % 10\n        total += digit ** digit_count\n        temp //= 10\n    return total == num\n\n\nprint(is_armstrong(153))\nprint(is_armstrong(123))",
+    timeComplexity:"O(d) where d is the number of digits (each digit is visited once, and pow(digit, d) is effectively constant time for small d).",
+    spaceComplexity:"O(1).",
+    tip:"Mention well-known Armstrong numbers from memory (1, 9, 153, 370, 371, 407) — being able to sanity-check your code against a known example on the spot is a small but noticeable credibility signal in an interview.",
+    edgeCases:["Single-digit numbers (0-9) → always Armstrong numbers, since any digit raised to the power 1 equals itself","num = 0 → typically treated as an Armstrong number (0^1 = 0)","Large numbers — digit count grows, and Math.pow with larger exponents needs double-checking for precision/overflow in some languages"],
+    followups:[
+      {q:"How would you find all Armstrong numbers in a given range, e.g. 1 to 10,000?",a:"Loop through every number in the range and run the isArmstrong check on each — O(n × d) overall where n is the range size and d is the average digit count. There's no significantly faster general approach since Armstrong-ness depends on each number's specific digits."},
+      {q:"What's the difference between an Armstrong number and a 'perfect digital invariant' for other powers?",a:"Armstrong numbers specifically use the digit count as the exponent. A perfect digital invariant generalizes this to any fixed exponent k (sum of each digit raised to k), of which Armstrong numbers (exponent = digit count) are one specific, self-referential case."}
+    ]
+  },
+  {
+    id:10032,
+    category:"numbers",
+    diff:"Easy",
+    title:"Find the factorial of a number using a loop",
+    logic:"Factorial of n (written n!) is the product of every integer from 1 to n. Start an accumulator at 1, then multiply it by each integer from 1 up to n in a simple loop. By definition, 0! is 1 (an empty product), so that case needs no special-casing if the loop simply doesn't execute when n is 0.",
+    java:"public class Factorial {\n    public static void main(String[] args) {\n        System.out.println(factorial(5));\n    }\n\n    static long factorial(int n) {\n        long result = 1;\n        for (int i = 2; i <= n; i++) {\n            result *= i;\n        }\n        return result;\n    }\n}",
+    js:"function factorial(n) {\n    let result = 1;\n    for (let i = 2; i <= n; i++) {\n        result *= i;\n    }\n    return result;\n}\n\nconsole.log(factorial(5));",
+    python:"def factorial(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result\n\n\nprint(factorial(5))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Use long instead of int in Java (factorial grows extremely fast — 13! already overflows a 32-bit int) and mention Python's arbitrary-precision integers as a contrast where overflow simply isn't a concern at all.",
+    edgeCases:["n = 0 or n = 1 → result is 1 by definition","Negative n → factorial is undefined for negatives; validate and reject/throw rather than looping (the loop as written simply returns 1 without erroring, which should be called out as a gap)","Large n → grows so fast that even long overflows quickly (20! already exceeds Long.MAX_VALUE in Java)"],
+    followups:[
+      {q:"How would you compute factorial recursively instead of iteratively?",a:"factorial(n) = n <= 1 ? 1 : n * factorial(n - 1). It's elegant but adds O(n) call-stack space compared to the loop's O(1) space, and risks a stack overflow for very large n."},
+      {q:"How would you compute factorial for numbers too large for long/int, like 50!?",a:"Use BigInteger in Java, Python's native arbitrary-precision ints (no special type needed), or implement manual big-number multiplication using an array of digits in languages without built-in big integers."}
+    ]
+  },
+  {
+    id:10033,
+    category:"numbers",
+    diff:"Easy",
+    title:"Swap two numbers, with and without a third variable",
+    logic:"With a third variable: store one value in a temporary holder, overwrite it with the other, then assign the temporary back — straightforward and always safe. Without a third variable: use arithmetic (add then subtract) or, for integers specifically, XOR — both rely on reconstructing one original value from the combined state of the two variables, without ever needing separate storage.",
+    java:"public class SwapNumbers {\n    public static void main(String[] args) {\n        int a = 5, b = 10;\n\n        // With a third variable\n        int temp = a;\n        a = b;\n        b = temp;\n        System.out.println(\"With temp -> a: \" + a + \", b: \" + b);\n\n        // Without a third variable (arithmetic)\n        a = 5; b = 10;\n        a = a + b;\n        b = a - b;\n        a = a - b;\n        System.out.println(\"Without temp -> a: \" + a + \", b: \" + b);\n    }\n}",
+    js:"function swapWithTemp(a, b) {\n    const temp = a;\n    a = b;\n    b = temp;\n    return [a, b];\n}\n\nfunction swapWithoutTemp(a, b) {\n    a = a + b;\n    b = a - b;\n    a = a - b;\n    return [a, b];\n}\n\nconsole.log(swapWithTemp(5, 10));\nconsole.log(swapWithoutTemp(5, 10));\n\n// Modern JS idiom — destructuring assignment (no manual temp needed):\nlet x = 5, y = 10;\n[x, y] = [y, x];\nconsole.log(x, y);",
+    python:"def swap_with_temp(a, b):\n    temp = a\n    a = b\n    b = temp\n    return a, b\n\n\ndef swap_without_temp(a, b):\n    a = a + b\n    b = a - b\n    a = a - b\n    return a, b\n\n\nprint(swap_with_temp(5, 10))\nprint(swap_without_temp(5, 10))\n\n# Pythonic idiom — tuple unpacking (no manual temp needed):\nx, y = 5, 10\nx, y = y, x\nprint(x, y)",
+    timeComplexity:"O(1) for either approach.",
+    spaceComplexity:"O(1) extra (the 'without temp' version saves exactly one variable's worth of memory).",
+    tip:"Lead with the language's idiomatic swap (tuple unpacking in Python, array destructuring in JS) since that's what you'd actually write in real code, then show the temp-variable and arithmetic versions to prove you understand what's happening underneath — most interviewers are testing the underlying mechanics, not asking for production style.",
+    edgeCases:["Swapping a variable with itself (a and b are the same variable) → arithmetic version can break since a+b then a-b against the same reference may zero out unexpectedly; the temp-variable version handles this safely","Very large numbers → the arithmetic 'add then subtract' approach can overflow if a + b exceeds the type's max value, even though the final swapped values are in range — XOR-based swapping avoids this for integers","Floating-point numbers → XOR doesn't apply to floats at all; only the temp-variable or arithmetic approach works"],
+    followups:[
+      {q:"How would you swap two integers using XOR instead of arithmetic?",a:"a = a ^ b; b = a ^ b; a = a ^ b; — this works because XOR-ing a value with itself cancels it out (x ^ x = 0), so after the three steps the values end up swapped. It only works for integer types, not floats, and still has the same self-swap caveat as the arithmetic version."},
+      {q:"Why might the arithmetic swap (a = a+b; b = a-b; a = a-b) be risky in production code?",a:"a + b can overflow the variable's type even when both original values and the final swapped values are perfectly in range — the intermediate sum is what overflows. The temp-variable approach has no such risk since it never combines the two values arithmetically."}
+    ]
+  },
+  {
+    id:10034,
+    category:"numbers",
+    diff:"Easy",
+    title:"Check whether a number is prime",
+    logic:"A number is prime if it's greater than 1 and has no divisors other than 1 and itself. Rather than checking every number from 2 up to n-1, it's enough to check divisors up to the square root of n — if n has a factor larger than its square root, it must also have a corresponding factor smaller than the square root, so any factor would already have been found.",
+    java:"public class PrimeCheck {\n    public static void main(String[] args) {\n        System.out.println(isPrime(29));\n        System.out.println(isPrime(15));\n    }\n\n    static boolean isPrime(int n) {\n        if (n <= 1) return false;\n        for (int i = 2; i * i <= n; i++) {\n            if (n % i == 0) return false;\n        }\n        return true;\n    }\n}",
+    js:"function isPrime(n) {\n    if (n <= 1) return false;\n    for (let i = 2; i * i <= n; i++) {\n        if (n % i === 0) return false;\n    }\n    return true;\n}\n\nconsole.log(isPrime(29));\nconsole.log(isPrime(15));",
+    python:"def is_prime(n):\n    if n <= 1:\n        return False\n    i = 2\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 1\n    return True\n\n\nprint(is_prime(29))\nprint(is_prime(15))",
+    timeComplexity:"O(√n).",
+    spaceComplexity:"O(1).",
+    tip:"Explain WHY the square-root bound is correct, not just that it's a known trick — if n = a × b and a ≤ b, then a must be ≤ √n (otherwise a × b would exceed n). That reasoning is what separates 'memorized the optimization' from 'understands the optimization.'",
+    edgeCases:["n = 0 or 1 → not prime by definition","n = 2 → the smallest and only even prime","Negative numbers → not prime by definition; the n <= 1 guard already correctly excludes them"],
+    followups:[
+      {q:"How would you check primality for very large numbers (e.g. cryptographic key sizes)?",a:"Trial division becomes impractical at that scale. Production systems use probabilistic primality tests like Miller-Rabin, which give a very high-confidence answer in O(k log³n) time for k rounds, rather than guaranteed deterministic trial division."},
+      {q:"Why can you stop checking divisors at √n instead of n/2 or n-1?",a:"Any factor pair (a, b) of n with a ≤ b must have a ≤ √n — if a were larger than √n, then b would have to be smaller than √n to keep the product equal to n, contradicting a ≤ b. So checking up to √n is guaranteed to find a factor if one exists."}
+    ]
+  },
+  {
+    id:10035,
+    category:"numbers",
+    diff:"Medium",
+    title:"Print all prime numbers up to N",
+    logic:"Use the Sieve of Eratosthenes: create a boolean array marking every number from 2 to N as 'potentially prime.' Starting from 2, for every number still marked prime, mark all of its multiples as NOT prime (since they have that number as a factor). After processing up to √N, every remaining unmarked number is prime. This is far faster than checking each number individually with trial division.",
+    java:"import java.util.Arrays;\n\npublic class SieveOfEratosthenes {\n    public static void main(String[] args) {\n        printPrimesUpTo(50);\n    }\n\n    static void printPrimesUpTo(int n) {\n        boolean[] isComposite = new boolean[n + 1];\n        for (int i = 2; (long) i * i <= n; i++) {\n            if (!isComposite[i]) {\n                for (int multiple = i * i; multiple <= n; multiple += i) {\n                    isComposite[multiple] = true;\n                }\n            }\n        }\n        for (int i = 2; i <= n; i++) {\n            if (!isComposite[i]) System.out.print(i + \" \");\n        }\n        System.out.println();\n    }\n}",
+    js:"function printPrimesUpTo(n) {\n    const isComposite = new Array(n + 1).fill(false);\n    for (let i = 2; i * i <= n; i++) {\n        if (!isComposite[i]) {\n            for (let multiple = i * i; multiple <= n; multiple += i) {\n                isComposite[multiple] = true;\n            }\n        }\n    }\n    const primes = [];\n    for (let i = 2; i <= n; i++) {\n        if (!isComposite[i]) primes.push(i);\n    }\n    console.log(primes.join(\" \"));\n}\n\nprintPrimesUpTo(50);",
+    python:"def print_primes_up_to(n):\n    is_composite = [False] * (n + 1)\n    i = 2\n    while i * i <= n:\n        if not is_composite[i]:\n            for multiple in range(i * i, n + 1, i):\n                is_composite[multiple] = True\n        i += 1\n    primes = [i for i in range(2, n + 1) if not is_composite[i]]\n    print(\" \".join(map(str, primes)))\n\n\nprint_primes_up_to(50)",
+    timeComplexity:"O(n log log n) for the sieve — significantly faster than O(n√n) from running isPrime on every number individually.",
+    spaceComplexity:"O(n) for the boolean array.",
+    tip:"Explicitly contrast this with the naive approach of calling isPrime() on every number from 2 to N — that's O(n√n) overall, while the sieve amortizes the work across all numbers at once for O(n log log n). Naming both complexities side by side shows you understand the trade-off, not just the final algorithm.",
+    edgeCases:["n < 2 → no primes exist, result is empty","n = 2 → result is just [2]","Starting the inner marking loop at i*i instead of 2*i → smaller multiples of i were already marked by smaller primes, so starting at i*i avoids redundant work"],
+    followups:[
+      {q:"Why does the sieve only need to iterate the outer loop up to √n?",a:"Any composite number ≤ n must have at least one prime factor ≤ √n. So once i exceeds √n, every multiple of i that's still ≤ n would already have been marked composite by a smaller prime factor, making further outer-loop iterations unnecessary."},
+      {q:"How would you reduce the sieve's memory usage for very large n?",a:"Use a bit array instead of a boolean array (each boolean technically takes a full byte in many languages, so packing 8 flags per byte cuts memory 8x), or use a segmented sieve that processes the range in fixed-size chunks rather than allocating one giant array."}
+    ]
+  },
+  {
+    id:10036,
+    category:"numbers",
+    diff:"Easy",
+    title:"Generate the Fibonacci series",
+    logic:"The Fibonacci series starts with 0 and 1, and every subsequent number is the sum of the two before it. Keep two running variables for the previous two values, print/store the current one, then advance both variables forward by one step each iteration — no recursion or extra storage needed for the iterative version.",
+    java:"public class FibonacciSeries {\n    public static void main(String[] args) {\n        printFibonacci(10);\n    }\n\n    static void printFibonacci(int count) {\n        int a = 0, b = 1;\n        for (int i = 0; i < count; i++) {\n            System.out.print(a + \" \");\n            int next = a + b;\n            a = b;\n            b = next;\n        }\n        System.out.println();\n    }\n}",
+    js:"function printFibonacci(count) {\n    let a = 0, b = 1;\n    const series = [];\n    for (let i = 0; i < count; i++) {\n        series.push(a);\n        const next = a + b;\n        a = b;\n        b = next;\n    }\n    console.log(series.join(\" \"));\n}\n\nprintFibonacci(10);",
+    python:"def print_fibonacci(count):\n    a, b = 0, 1\n    series = []\n    for _ in range(count):\n        series.append(a)\n        a, b = b, a + b\n    print(\" \".join(map(str, series)))\n\n\nprint_fibonacci(10)",
+    timeComplexity:"O(n) for n terms.",
+    spaceComplexity:"O(1) extra for the iterative version (O(n) if you store the whole series in a list).",
+    tip:"Mention the naive recursive version explicitly and explain why it's bad — fib(n) = fib(n-1) + fib(n-2) without memoization is O(2ⁿ) because it recomputes the same subproblems exponentially many times. Naming that contrast is usually exactly what the interviewer wants to hear.",
+    edgeCases:["count = 0 → empty series","count = 1 → series is just [0]","Large n → Fibonacci numbers grow exponentially (golden-ratio rate), so int/long can overflow well before n=100 in Java; Python handles this natively with arbitrary precision"],
+    followups:[
+      {q:"Why is the naive recursive Fibonacci so slow, and how do you fix it?",a:"Without memoization, fib(n) recomputes fib(n-1) and fib(n-2) from scratch, and those calls recompute their own subcalls — leading to O(2ⁿ) total calls. Fixing it with memoization (caching each fib(k) the first time it's computed) brings it down to O(n) time with O(n) space, or you can just use the iterative two-variable approach for O(n) time and O(1) space."},
+      {q:"How would you compute the Nth Fibonacci number without generating the whole series?",a:"Use the same two-variable iterative technique but only track the running values up to N, discarding earlier terms — O(n) time, O(1) space, no need to store the full series. For very large N, matrix exponentiation can compute it in O(log n) time."}
+    ]
+  },
+  {
+    id:10037,
+    category:"numbers",
+    diff:"Medium",
+    title:"Find duplicate consecutive numbers in an array and count occurrences",
+    logic:"Scan the array once, comparing each element to the previous one. As long as consecutive elements are equal, extend a 'run' and increment a run-length counter. The moment the value changes (or the array ends), if the run length was greater than 1, report that value and how many times it repeated consecutively, then start tracking a new run from the current element.",
+    java:"public class ConsecutiveDuplicates {\n    public static void main(String[] args) {\n        findConsecutiveDuplicates(new int[]{1, 1, 2, 3, 3, 3, 4, 5, 5});\n    }\n\n    static void findConsecutiveDuplicates(int[] arr) {\n        int i = 0;\n        while (i < arr.length) {\n            int j = i;\n            while (j < arr.length && arr[j] == arr[i]) j++;\n            int runLength = j - i;\n            if (runLength > 1) {\n                System.out.println(arr[i] + \" repeats \" + runLength + \" times consecutively\");\n            }\n            i = j;\n        }\n    }\n}",
+    js:"function findConsecutiveDuplicates(arr) {\n    let i = 0;\n    while (i < arr.length) {\n        let j = i;\n        while (j < arr.length && arr[j] === arr[i]) j++;\n        const runLength = j - i;\n        if (runLength > 1) {\n            console.log(`${arr[i]} repeats ${runLength} times consecutively`);\n        }\n        i = j;\n    }\n}\n\nfindConsecutiveDuplicates([1, 1, 2, 3, 3, 3, 4, 5, 5]);",
+    python:"def find_consecutive_duplicates(arr):\n    i = 0\n    n = len(arr)\n    while i < n:\n        j = i\n        while j < n and arr[j] == arr[i]:\n            j += 1\n        run_length = j - i\n        if run_length > 1:\n            print(f\"{arr[i]} repeats {run_length} times consecutively\")\n        i = j\n\n\nfind_consecutive_duplicates([1, 1, 2, 3, 3, 3, 4, 5, 5])",
+    timeComplexity:"O(n) — each element is visited exactly once across the inner and outer loop combined.",
+    spaceComplexity:"O(1) extra.",
+    tip:"Be explicit that this finds CONSECUTIVE duplicates only (e.g. [1,2,1] has no consecutive duplicate even though 1 appears twice) — interviewers sometimes follow up immediately by asking for non-consecutive duplicates instead, so naming the distinction up front shows you're not just pattern-matching to a similar-looking problem.",
+    edgeCases:["Empty array → no output","Array with no consecutive duplicates at all → nothing printed","Entire array is one repeated value → a single run covering the whole array is reported"],
+    followups:[
+      {q:"How would you find duplicates that aren't necessarily consecutive (anywhere in the array)?",a:"Use a frequency map (HashMap/Counter) instead of comparing adjacent elements — count every value's total occurrences across the whole array, then report any value with a count greater than 1, regardless of position."},
+      {q:"How would you compress the array using this same run-length information (run-length encoding)?",a:"Instead of just printing the run length, build a list of (value, count) pairs for every run (including runs of length 1), which is exactly run-length encoding — a simple, classic compression technique for data with many consecutive repeats."}
+    ]
+  },
+  {
+    id:10038,
+    category:"arrays",
+    diff:"Easy",
+    title:"Create an integer array and print its elements (indexed loop and for-each)",
+    logic:"Once an array is populated, there are two equally common ways to print it: an indexed loop that walks from 0 to length-1 and accesses each element by position, or a for-each loop that hands you each value directly without manual index bookkeeping. Both visit every element exactly once — the difference is purely about whether you need the index itself for anything else.",
+    java:"public class PrintArray {\n    public static void main(String[] args) {\n        int[] numbers = {10, 20, 30, 40, 50};\n\n        // Indexed for loop\n        for (int i = 0; i < numbers.length; i++) {\n            System.out.print(numbers[i] + \" \");\n        }\n        System.out.println();\n\n        // For-each loop\n        for (int num : numbers) {\n            System.out.print(num + \" \");\n        }\n        System.out.println();\n    }\n}",
+    js:"const numbers = [10, 20, 30, 40, 50];\n\n// Indexed for loop\nlet indexed = \"\";\nfor (let i = 0; i < numbers.length; i++) {\n    indexed += numbers[i] + \" \";\n}\nconsole.log(indexed);\n\n// for-of loop (JS's for-each equivalent)\nlet forEach = \"\";\nfor (const num of numbers) {\n    forEach += num + \" \";\n}\nconsole.log(forEach);",
+    python:"numbers = [10, 20, 30, 40, 50]\n\n# Indexed loop (using range + len, the Java/JS-style equivalent)\nfor i in range(len(numbers)):\n    print(numbers[i], end=\" \")\nprint()\n\n# Pythonic for-each — direct iteration\nfor num in numbers:\n    print(num, end=\" \")\nprint()",
+    timeComplexity:"O(n) for either style.",
+    spaceComplexity:"O(1) extra.",
+    tip:"In Python specifically, mention that the indexed range(len(...)) style is considered un-idiomatic — direct iteration (for num in numbers) is preferred unless you genuinely need the index, in which case enumerate(numbers) is the Pythonic choice over manual range(len()).",
+    edgeCases:["Empty array → loop body never executes, nothing is printed","Single-element array → printed once, trailing separator handling is the only thing to double check","Both loop styles produce identical output for read-only printing — they only diverge once you need to mutate elements by index"],
+    followups:[
+      {q:"When would a for-each loop NOT be suitable, even for simple printing?",a:"When you need the index itself — e.g. printing 'Element 0: 10, Element 1: 20' — a for-each loop doesn't expose the index directly (though Python's enumerate() and some languages' for-each variants do provide it alongside the value)."},
+      {q:"How would you print the array with its indexes using enumerate() in Python or a similar construct elsewhere?",a:"Python: for i, num in enumerate(numbers): print(i, num). Java has no direct equivalent in a for-each loop, so you'd fall back to the indexed for loop, or use IntStream.range(0, arr.length).forEach(...) for a stream-based alternative."}
+    ]
+  },
+  {
+    id:10039,
+    category:"arrays",
+    diff:"Easy",
+    title:"Print only the odd numbers from an array",
+    logic:"Loop through every element and test it against the odd condition (number % 2 != 0). Only print or collect the elements that satisfy that condition — everything else is simply skipped.",
+    java:"public class PrintOddNumbers {\n    public static void main(String[] args) {\n        int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};\n        for (int num : numbers) {\n            if (num % 2 != 0) {\n                System.out.print(num + \" \");\n            }\n        }\n        System.out.println();\n    }\n}",
+    js:"function printOddNumbers(numbers) {\n    const odds = numbers.filter(num => num % 2 !== 0);\n    console.log(odds.join(\" \"));\n}\n\nprintOddNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9]);",
+    python:"def print_odd_numbers(numbers):\n    odds = [num for num in numbers if num % 2 != 0]\n    print(\" \".join(map(str, odds)))\n\n\nprint_odd_numbers([1, 2, 3, 4, 5, 6, 7, 8, 9])",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1) extra if printing directly, O(k) if collecting the odd numbers into a new list/array (k = count of odd numbers).",
+    tip:"Mention that this is the textbook use case for filter() (JS) or a list comprehension (Python) — naming the functional-programming idiom alongside the manual loop shows fluency with both styles, and lets you pick whichever the interviewer's language of choice rewards.",
+    edgeCases:["Array with no odd numbers → empty output","Negative numbers → the modulo check still works correctly in Python and Java/JS for odd/even purposes (e.g. -3 % 2 is -1 in Java/JS and 1 in Python, but both are non-zero, so the != 0 check still correctly identifies it as odd)","Empty array → nothing printed"],
+    followups:[
+      {q:"How would you print only even numbers instead?",a:"Flip the condition to num % 2 == 0 — everything else about the loop stays the same."},
+      {q:"How would you print odd and even numbers into two separate lists in a single pass?",a:"Use one loop with an if/else: append to an 'odds' list when the condition is true, and to an 'evens' list in the else branch — no need for two separate passes over the array."}
+    ]
+  },
+  {
+    id:10040,
+    category:"arrays",
+    diff:"Easy",
+    title:"Stop printing array elements when one divisible by 5 is encountered",
+    logic:"Loop through the array as usual, but as soon as you find an element divisible by 5, immediately exit the loop with a break statement — every element after that point is never even examined, let alone printed.",
+    java:"public class StopAtDivisibleByFive {\n    public static void main(String[] args) {\n        int[] numbers = {1, 3, 7, 12, 15, 20, 22};\n        for (int num : numbers) {\n            if (num % 5 == 0) {\n                break;\n            }\n            System.out.print(num + \" \");\n        }\n        System.out.println();\n    }\n}",
+    js:"function printUntilDivisibleByFive(numbers) {\n    let output = \"\";\n    for (const num of numbers) {\n        if (num % 5 === 0) break;\n        output += num + \" \";\n    }\n    console.log(output);\n}\n\nprintUntilDivisibleByFive([1, 3, 7, 12, 15, 20, 22]);",
+    python:"def print_until_divisible_by_five(numbers):\n    output = []\n    for num in numbers:\n        if num % 5 == 0:\n            break\n        output.append(str(num))\n    print(\" \".join(output))\n\n\nprint_until_divisible_by_five([1, 3, 7, 12, 15, 20, 22])",
+    timeComplexity:"O(k) where k is the index of the first element divisible by 5 (best case O(1), worst case O(n) if no such element exists).",
+    spaceComplexity:"O(1) extra.",
+    tip:"Point out explicitly that break exits the loop entirely (versus continue, which only skips the current iteration) — interviewers sometimes ask this exact distinction as a quick follow-up, especially of candidates newer to the language.",
+    edgeCases:["First element is already divisible by 5 → nothing is printed at all","No element is divisible by 5 → the entire array is printed, loop ends naturally rather than via break","0 in the array → 0 % 5 == 0, so 0 counts as 'divisible by 5' and triggers the stop"],
+    followups:[
+      {q:"How would you skip elements divisible by 5 instead of stopping entirely?",a:"Replace break with continue — that skips only the current element and moves on to check the next one, rather than terminating the loop."},
+      {q:"How would you print elements until the SECOND element divisible by 5 is found, instead of the first?",a:"Keep a counter that increments each time you encounter an element divisible by 5; only break once that counter reaches 2, printing every element (including any first divisible-by-5 element) along the way."}
+    ]
+  },
+  {
+    id:10041,
+    category:"arrays",
+    diff:"Hard",
+    title:"Accept array size and elements from the user; print original, reversed, and ascending-sorted versions",
+    logic:"This combines three sub-tasks into one multi-step program: (1) read how many elements to expect, then read that many values into an array; (2) print the array exactly as entered; (3) print it in reverse order (without altering the original, so iterate backwards rather than mutating); (4) produce and print a separately sorted ascending copy, again without disturbing the original array's order.",
+    java:"import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class ArrayInputProcessor {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        System.out.print(\"Enter array size: \");\n        int n = sc.nextInt();\n        int[] arr = new int[n];\n        System.out.println(\"Enter \" + n + \" elements:\");\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextInt();\n        }\n\n        System.out.println(\"Original: \" + Arrays.toString(arr));\n\n        int[] reversed = new int[n];\n        for (int i = 0; i < n; i++) {\n            reversed[i] = arr[n - 1 - i];\n        }\n        System.out.println(\"Reversed: \" + Arrays.toString(reversed));\n\n        int[] sorted = Arrays.copyOf(arr, n);\n        Arrays.sort(sorted);\n        System.out.println(\"Ascending: \" + Arrays.toString(sorted));\n    }\n}",
+    js:"// Browser JS has no stdin; this demonstrates the same logic with a provided array,\n// as if it had already been read via prompt()/readline in a real input flow.\nfunction processArray(arr) {\n    console.log(\"Original:\", arr);\n\n    const reversed = [...arr].reverse();\n    console.log(\"Reversed:\", reversed);\n\n    const ascending = [...arr].sort((a, b) => a - b);\n    console.log(\"Ascending:\", ascending);\n}\n\nprocessArray([5, 3, 8, 1, 9]);",
+    python:"def process_array(n, elements):\n    print(\"Original:\", elements)\n\n    reversed_arr = elements[::-1]\n    print(\"Reversed:\", reversed_arr)\n\n    ascending = sorted(elements)\n    print(\"Ascending:\", ascending)\n\n\n# In a real CLI program you'd read these with input():\n# n = int(input(\"Enter array size: \"))\n# elements = [int(input()) for _ in range(n)]\nprocess_array(5, [5, 3, 8, 1, 9])",
+    timeComplexity:"O(n) to read and reverse, O(n log n) to produce the sorted copy (dominates overall).",
+    spaceComplexity:"O(n) for each of the two derived copies (reversed and sorted), keeping the original untouched.",
+    tip:"Emphasize that the original array is never mutated — both the reversed and sorted versions are built into separate arrays/lists. Interviewers often specifically check whether you accidentally sort or reverse 'in place' and then print a now-corrupted 'original' by mistake.",
+    edgeCases:["n = 0 → all three outputs are empty","n = 1 → all three outputs are identical to each other (a single element reversed or sorted is unchanged)","Duplicate values in the input → sorting and reversing both handle duplicates with no special casing needed"],
+    followups:[
+      {q:"How would you validate that the user actually enters exactly n integers, not fewer or malformed input?",a:"Wrap each Scanner.nextInt() call in a try/catch for InputMismatchException, and track how many values were successfully read versus expected — prompting again or erroring out clearly if the count doesn't match."},
+      {q:"How would you reverse the array in place instead of building a new array, if you didn't need to preserve the original?",a:"Use a two-pointer swap: one pointer starting at index 0, another at length-1, swapping the elements they point to and moving both pointers toward the center until they meet — O(n) time, O(1) extra space, but this approach would destroy the 'original' ordering, so it only applies if preserving the original isn't required."}
+    ]
+  },
+  {
+    id:10042,
+    category:"arrays",
+    diff:"Medium",
+    title:"Sort an array in ascending order without using Arrays.sort()",
+    logic:"Implement a sort manually — bubble sort is the simplest to reason about: repeatedly walk through the array comparing each pair of adjacent elements, swapping them if they're in the wrong order (left bigger than right), and repeat that full pass until no swaps are needed. Each full pass guarantees at least one more element 'bubbles' into its correct final position at the end.",
+    java:"import java.util.Arrays;\n\npublic class BubbleSortAscending {\n    public static void main(String[] args) {\n        int[] arr = {5, 2, 8, 1, 9, 3};\n        bubbleSort(arr);\n        System.out.println(Arrays.toString(arr));\n    }\n\n    static void bubbleSort(int[] arr) {\n        int n = arr.length;\n        for (int i = 0; i < n - 1; i++) {\n            boolean swapped = false;\n            for (int j = 0; j < n - 1 - i; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                    swapped = true;\n                }\n            }\n            if (!swapped) break; // already sorted, no need to continue\n        }\n    }\n}",
+    js:"function bubbleSort(arr) {\n    const n = arr.length;\n    for (let i = 0; i < n - 1; i++) {\n        let swapped = false;\n        for (let j = 0; j < n - 1 - i; j++) {\n            if (arr[j] > arr[j + 1]) {\n                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n    return arr;\n}\n\nconsole.log(bubbleSort([5, 2, 8, 1, 9, 3]));",
+    python:"def bubble_sort(arr):\n    n = len(arr)\n    for i in range(n - 1):\n        swapped = False\n        for j in range(n - 1 - i):\n            if arr[j] > arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n                swapped = True\n        if not swapped:\n            break\n    return arr\n\n\nprint(bubble_sort([5, 2, 8, 1, 9, 3]))",
+    timeComplexity:"O(n²) worst/average case, O(n) best case (already sorted, thanks to the early-exit swapped flag).",
+    spaceComplexity:"O(1) extra — sorts in place.",
+    tip:"Always include the 'swapped' early-exit flag and explain why: without it, bubble sort always runs the full O(n²) passes even on an already-sorted array. With it, a sorted (or nearly sorted) input finishes in a single O(n) pass — a small addition that meaningfully improves the best case.",
+    edgeCases:["Already-sorted array → the swapped flag lets the algorithm exit after just one pass","Array with all identical elements → no swaps occur, exits after the first pass","Empty or single-element array → trivially already sorted, loop body barely executes"],
+    followups:[
+      {q:"What's the difference between bubble sort, selection sort, and insertion sort, and when might you prefer each?",a:"All three are O(n²) comparison-based sorts. Selection sort always does the minimum number of swaps (one per pass) but doesn't benefit from partially-sorted input. Insertion sort is best for nearly-sorted or small inputs, performing well in practice (close to O(n) for nearly-sorted data). Bubble sort is mainly taught for its simplicity, not chosen in production code."},
+      {q:"How would you implement this with O(n log n) instead of O(n²), without using a built-in sort?",a:"Implement merge sort or quicksort manually — both achieve O(n log n) average time by recursively dividing the array and either merging sorted halves (merge sort) or partitioning around a pivot (quicksort), rather than doing pairwise adjacent comparisons across the whole array repeatedly."}
+    ]
+  },
+  {
+    id:10043,
+    category:"arrays",
+    diff:"Medium",
+    title:"Sort an array in descending order without using Arrays.sort()",
+    logic:"Identical to the ascending bubble sort, but flip the comparison direction: swap two adjacent elements when the left one is SMALLER than the right one, instead of larger. Everything else about the algorithm (passes, early-exit flag) stays the same.",
+    java:"import java.util.Arrays;\n\npublic class BubbleSortDescending {\n    public static void main(String[] args) {\n        int[] arr = {5, 2, 8, 1, 9, 3};\n        bubbleSortDescending(arr);\n        System.out.println(Arrays.toString(arr));\n    }\n\n    static void bubbleSortDescending(int[] arr) {\n        int n = arr.length;\n        for (int i = 0; i < n - 1; i++) {\n            boolean swapped = false;\n            for (int j = 0; j < n - 1 - i; j++) {\n                if (arr[j] < arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                    swapped = true;\n                }\n            }\n            if (!swapped) break;\n        }\n    }\n}",
+    js:"function bubbleSortDescending(arr) {\n    const n = arr.length;\n    for (let i = 0; i < n - 1; i++) {\n        let swapped = false;\n        for (let j = 0; j < n - 1 - i; j++) {\n            if (arr[j] < arr[j + 1]) {\n                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n    return arr;\n}\n\nconsole.log(bubbleSortDescending([5, 2, 8, 1, 9, 3]));",
+    python:"def bubble_sort_descending(arr):\n    n = len(arr)\n    for i in range(n - 1):\n        swapped = False\n        for j in range(n - 1 - i):\n            if arr[j] < arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n                swapped = True\n        if not swapped:\n            break\n    return arr\n\n\nprint(bubble_sort_descending([5, 2, 8, 1, 9, 3]))",
+    timeComplexity:"O(n²) worst/average, O(n) best case.",
+    spaceComplexity:"O(1) extra.",
+    tip:"Mention that you could instead sort ascending and then reverse the result in O(n) — for a one-off sort that's simpler, but if asked to write the comparison logic directly (the point of this exercise), flipping the operator is the expected answer.",
+    edgeCases:["Already descending → exits after one pass thanks to the swapped flag","All identical elements → no swaps needed","Empty/single-element array → trivially already 'sorted'"],
+    followups:[
+      {q:"Which is more efficient: writing a descending bubble sort directly, or sorting ascending then reversing?",a:"Both are O(n²) for the sort step; reversing afterward only adds O(n). In practice, if you already have a working ascending sort, reversing is simpler and just as efficient overall — but if the exercise specifically asks you to implement descending sort logic, flipping the comparison is the more direct demonstration of understanding."},
+      {q:"How would you sort an array of objects by a specific field in descending order?",a:"Apply the same swap condition, but compare the relevant field of each object instead of the raw values directly — e.g. arr[j].getScore() < arr[j+1].getScore() — the sorting mechanics don't change, only what's being compared."}
+    ]
+  },
+  {
+    id:10044,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find the sum and average of all array elements",
+    logic:"Add every element to a running total in a single pass (a for-each loop is the simplest way to do this). Once the loop finishes, divide that total by the number of elements to get the average — using floating-point division so the result isn't truncated to an integer.",
+    java:"public class SumAndAverage {\n    public static void main(String[] args) {\n        int[] numbers = {10, 20, 30, 40, 50};\n        int sum = 0;\n        for (int num : numbers) {\n            sum += num;\n        }\n        double average = (double) sum / numbers.length;\n        System.out.println(\"Sum: \" + sum);\n        System.out.println(\"Average: \" + average);\n    }\n}",
+    js:"function sumAndAverage(numbers) {\n    const sum = numbers.reduce((acc, num) => acc + num, 0);\n    const average = sum / numbers.length;\n    console.log(\"Sum:\", sum);\n    console.log(\"Average:\", average);\n}\n\nsumAndAverage([10, 20, 30, 40, 50]);",
+    python:"def sum_and_average(numbers):\n    total = sum(numbers)\n    average = total / len(numbers)\n    print(\"Sum:\", total)\n    print(\"Average:\", average)\n\n\nsum_and_average([10, 20, 30, 40, 50])",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"In Java, explicitly cast to double before dividing — int / int performs integer division and silently truncates the decimal part, which is a very common source of an off-by-a-fraction bug that interviewers specifically watch for.",
+    edgeCases:["Empty array → average is undefined (division by zero) — guard against this explicitly before dividing","Array with negative numbers → sum and average can be negative, which is still mathematically valid","Single-element array → average equals that one element"],
+    followups:[
+      {q:"What happens if you compute the average without casting to double in Java, and why?",a:"int sum / int length performs integer division, discarding any remainder — e.g. 7 / 2 evaluates to 3, not 3.5. Casting either operand to double before the division forces floating-point division, preserving the decimal portion."},
+      {q:"How would you compute the sum and average in a single pass without iterating twice?",a:"This solution already does that — the sum is accumulated in one loop, and the average is a single O(1) division afterward, not a second pass over the array."}
+    ]
+  },
+  {
+    id:10045,
+    category:"arrays",
+    diff:"Easy",
+    title:"Check whether a number is present in an array",
+    logic:"Scan the array from the start, comparing each element to the target value. If a match is found, you can stop immediately and report 'present' — there's no need to keep scanning. If the loop finishes without finding a match, the value isn't present.",
+    java:"public class SearchInArray {\n    public static void main(String[] args) {\n        int[] arr = {4, 8, 15, 16, 23, 42};\n        System.out.println(contains(arr, 16));\n        System.out.println(contains(arr, 99));\n    }\n\n    static boolean contains(int[] arr, int target) {\n        for (int num : arr) {\n            if (num == target) return true;\n        }\n        return false;\n    }\n}",
+    js:"function contains(arr, target) {\n    return arr.includes(target);\n    // equivalent manual version:\n    // for (const num of arr) { if (num === target) return true; }\n    // return false;\n}\n\nconsole.log(contains([4, 8, 15, 16, 23, 42], 16));\nconsole.log(contains([4, 8, 15, 16, 23, 42], 99));",
+    python:"def contains(arr, target):\n    return target in arr\n    # equivalent manual version:\n    # for num in arr:\n    #     if num == target:\n    #         return True\n    # return False\n\n\nprint(contains([4, 8, 15, 16, 23, 42], 16))\nprint(contains([4, 8, 15, 16, 23, 42], 99))",
+    timeComplexity:"O(n) worst case for an unsorted array (best case O(1) if the target is the first element).",
+    spaceComplexity:"O(1).",
+    tip:"If the interviewer mentions the array is already sorted, immediately pivot to binary search — O(log n) instead of O(n) — and explain that the speedup is only possible because of the sorted precondition; linear search is the correct default for unsorted data.",
+    edgeCases:["Target not present → returns false after scanning the entire array","Empty array → returns false immediately","Multiple occurrences of the target → still just returns true on the first match, since presence (not count) is what's being asked"],
+    followups:[
+      {q:"How would you search faster if the array is sorted?",a:"Use binary search: repeatedly check the middle element, and narrow the search to the left or right half depending on whether the target is smaller or larger — O(log n) instead of O(n)."},
+      {q:"How would you check for presence in an array that's searched very frequently?",a:"If you can preprocess the array once, convert it to a HashSet — that gives O(1) average lookup time for every subsequent search, at the cost of O(n) extra space and O(n) upfront conversion time."}
+    ]
+  },
+  {
+    id:10046,
+    category:"arrays",
+    diff:"Medium",
+    title:"Check whether a number appears more than once in an array",
+    logic:"Count how many times the target value appears while scanning the array, and compare that count to 1 at the end — anything greater than 1 means it repeats. For efficiency, you can also short-circuit by tracking whether you've already seen it once, and returning true the moment a second occurrence appears.",
+    java:"public class AppearsMoreThanOnce {\n    public static void main(String[] args) {\n        int[] arr = {4, 8, 15, 16, 4, 23};\n        System.out.println(appearsMoreThanOnce(arr, 4));\n        System.out.println(appearsMoreThanOnce(arr, 8));\n    }\n\n    static boolean appearsMoreThanOnce(int[] arr, int target) {\n        int count = 0;\n        for (int num : arr) {\n            if (num == target) {\n                count++;\n                if (count > 1) return true; // short-circuit as soon as we know\n            }\n        }\n        return false;\n    }\n}",
+    js:"function appearsMoreThanOnce(arr, target) {\n    let count = 0;\n    for (const num of arr) {\n        if (num === target) {\n            count++;\n            if (count > 1) return true;\n        }\n    }\n    return false;\n}\n\nconsole.log(appearsMoreThanOnce([4, 8, 15, 16, 4, 23], 4));\nconsole.log(appearsMoreThanOnce([4, 8, 15, 16, 4, 23], 8));",
+    python:"def appears_more_than_once(arr, target):\n    count = 0\n    for num in arr:\n        if num == target:\n            count += 1\n            if count > 1:\n                return True\n    return False\n\n\nprint(appears_more_than_once([4, 8, 15, 16, 4, 23], 4))\nprint(appears_more_than_once([4, 8, 15, 16, 4, 23], 8))",
+    timeComplexity:"O(n) worst case, but short-circuits as soon as a second occurrence is found.",
+    spaceComplexity:"O(1).",
+    tip:"Mention the short-circuit explicitly — without it, you'd scan the whole array even after already knowing the answer at the second match. It's a small detail, but it shows you're thinking about wasted work, not just correctness.",
+    edgeCases:["Target appears exactly once → returns false","Target doesn't appear at all → returns false","Target appears many times → still returns true at the second occurrence, not waiting for the rest"],
+    followups:[
+      {q:"How would you check this for every element in the array at once, not just one target value?",a:"Build a frequency map of all elements in one pass, then any entry with a count greater than 1 identifies an element that repeats — this answers the question for the whole array simultaneously instead of one target at a time."},
+      {q:"How would you solve this with O(1) extra space if the array only contains values from 0 to n-1?",a:"Use the array itself as a hash: for each value v encountered, negate the element at index v (or some similar in-place marker). If you encounter an index that's already negative when you try to mark it, that value has appeared before — this works only under the specific constraint that values are valid indexes into the array."}
+    ]
+  },
+  {
+    id:10047,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find all duplicate elements in an array",
+    logic:"Build a frequency map of every element in one pass over the array. Then iterate the map and collect every key whose count is greater than 1 — those are exactly the duplicate values, regardless of how many times each one repeats.",
+    java:"import java.util.ArrayList;\nimport java.util.LinkedHashMap;\nimport java.util.List;\nimport java.util.Map;\n\npublic class FindDuplicates {\n    public static void main(String[] args) {\n        int[] arr = {1, 2, 3, 2, 4, 5, 1, 6};\n        System.out.println(findDuplicates(arr));\n    }\n\n    static List<Integer> findDuplicates(int[] arr) {\n        Map<Integer, Integer> freq = new LinkedHashMap<>();\n        for (int num : arr) {\n            freq.put(num, freq.getOrDefault(num, 0) + 1);\n        }\n        List<Integer> duplicates = new ArrayList<>();\n        for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {\n            if (entry.getValue() > 1) duplicates.add(entry.getKey());\n        }\n        return duplicates;\n    }\n}",
+    js:"function findDuplicates(arr) {\n    const freq = new Map();\n    for (const num of arr) {\n        freq.set(num, (freq.get(num) || 0) + 1);\n    }\n    const duplicates = [];\n    for (const [num, count] of freq) {\n        if (count > 1) duplicates.push(num);\n    }\n    return duplicates;\n}\n\nconsole.log(findDuplicates([1, 2, 3, 2, 4, 5, 1, 6]));",
+    python:"from collections import Counter\n\ndef find_duplicates(arr):\n    freq = Counter(arr)\n    return [num for num, count in freq.items() if count > 1]\n\n\nprint(find_duplicates([1, 2, 3, 2, 4, 5, 1, 6]))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(k) for the frequency map, where k is the number of distinct elements.",
+    tip:"Note that this is the exact same frequency-map pattern used for duplicate CHARACTERS in a string — call out that recognition explicitly. The underlying technique (count, then filter by count) is identical regardless of whether the elements are characters, numbers, or any hashable type.",
+    edgeCases:["No duplicates at all → empty result list","Every element is the same value → a single duplicate entry with a high count","Negative numbers or zero → work identically to positive numbers as map keys, no special handling needed"],
+    followups:[
+      {q:"How would you find duplicates using O(1) extra space if the array values are constrained to 0..n-1?",a:"Use the in-place negation/marking trick: for each value v, treat index v as a marker. If the value at that index is already negative when you visit it, v is a duplicate. This avoids a separate hash map but only works under that specific value-range constraint."},
+      {q:"How would you find elements that appear MORE than twice (not just more than once)?",a:"Change the filter condition from count > 1 to count > 2 — the frequency-map construction stays exactly the same; only the final filtering threshold changes."}
+    ]
+  },
+  {
+    id:10048,
+    category:"arrays",
+    diff:"Easy",
+    title:"Count odd and even numbers in an array",
+    logic:"Loop through every element once, checking num % 2 against 0. Increment an 'even' counter when the remainder is 0, and an 'odd' counter otherwise.",
+    java:"public class CountOddEven {\n    public static void main(String[] args) {\n        int[] arr = {1, 2, 3, 4, 5, 6, 7, 8};\n        int odd = 0, even = 0;\n        for (int num : arr) {\n            if (num % 2 == 0) even++;\n            else odd++;\n        }\n        System.out.println(\"Odd: \" + odd);\n        System.out.println(\"Even: \" + even);\n    }\n}",
+    js:"function countOddEven(arr) {\n    let odd = 0, even = 0;\n    for (const num of arr) {\n        if (num % 2 === 0) even++;\n        else odd++;\n    }\n    console.log(\"Odd:\", odd);\n    console.log(\"Even:\", even);\n}\n\ncountOddEven([1, 2, 3, 4, 5, 6, 7, 8]);",
+    python:"def count_odd_even(arr):\n    even = sum(1 for num in arr if num % 2 == 0)\n    odd = len(arr) - even\n    print(\"Odd:\", odd)\n    print(\"Even:\", even)\n\n\ncount_odd_even([1, 2, 3, 4, 5, 6, 7, 8])",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention that for negative numbers, num % 2 can return -1 instead of 1 in Java/JS (though Python normalizes it to 1) — but since the check is only against 0 (== 0 vs != 0), this implementation is unaffected either way, which is worth noting as a 'why this particular check is safe' detail.",
+    edgeCases:["Empty array → both counts are 0","All-even or all-odd array → one counter stays at 0","Zero in the array → 0 % 2 == 0, so zero is correctly classified as even"],
+    followups:[
+      {q:"How would you separate the odd and even numbers into two new arrays instead of just counting them?",a:"Use the same loop, but instead of incrementing counters, append the current number to an 'evens' list or 'odds' list depending on the same condition."},
+      {q:"How would you count odd/even numbers using streams in Java?",a:"Arrays.stream(arr).filter(n -> n % 2 == 0).count() for even, and a complementary filter (n % 2 != 0) for odd — two separate stream pipelines, or partition in one pass with Collectors if working with a boxed Integer stream."}
+    ]
+  },
+  {
+    id:10049,
+    category:"arrays",
+    diff:"Easy",
+    title:"Count positive and negative numbers in an array",
+    logic:"Loop through the array once, checking the sign of each number. Increment a 'positive' counter for values greater than 0, and a 'negative' counter for values less than 0 — deciding explicitly (and stating out loud) whether 0 counts as neither, since it's neither positive nor negative by the standard mathematical definition.",
+    java:"public class CountPositiveNegative {\n    public static void main(String[] args) {\n        int[] arr = {4, -8, 15, -16, 23, 0, -42};\n        int positive = 0, negative = 0;\n        for (int num : arr) {\n            if (num > 0) positive++;\n            else if (num < 0) negative++;\n        }\n        System.out.println(\"Positive: \" + positive);\n        System.out.println(\"Negative: \" + negative);\n    }\n}",
+    js:"function countPositiveNegative(arr) {\n    let positive = 0, negative = 0;\n    for (const num of arr) {\n        if (num > 0) positive++;\n        else if (num < 0) negative++;\n    }\n    console.log(\"Positive:\", positive);\n    console.log(\"Negative:\", negative);\n}\n\ncountPositiveNegative([4, -8, 15, -16, 23, 0, -42]);",
+    python:"def count_positive_negative(arr):\n    positive = sum(1 for num in arr if num > 0)\n    negative = sum(1 for num in arr if num < 0)\n    print(\"Positive:\", positive)\n    print(\"Negative:\", negative)\n\n\ncount_positive_negative([4, -8, 15, -16, 23, 0, -42])",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"State the 0-handling convention out loud before coding — '0 is neither positive nor negative, so it's excluded from both counters' — instead of letting the interviewer guess your assumption from the code alone.",
+    edgeCases:["Array contains 0 → correctly excluded from both counters with the > 0 / < 0 split (not >= 0 / < 0)","All-positive or all-negative array → one counter stays at 0","Empty array → both counts are 0"],
+    followups:[
+      {q:"How would you also count how many zeros are in the array, alongside positive and negative?",a:"Add a third counter and an explicit else branch (or else if num == 0) — the same single pass now tracks three categories instead of two."},
+      {q:"How would you find the sum of positive numbers and sum of negative numbers separately?",a:"Replace the counters with running sums: add num to a 'positiveSum' accumulator when num > 0, and to a 'negativeSum' accumulator when num < 0 — same loop structure, different accumulation."}
+    ]
+  },
+  {
+    id:10050,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find the largest element in an array",
+    logic:"Start by assuming the first element is the largest seen so far. Then scan the rest of the array, and whenever you find an element bigger than the current 'largest so far,' update the tracker. After one full pass, the tracker holds the true maximum.",
+    java:"public class FindLargest {\n    public static void main(String[] args) {\n        int[] arr = {4, 8, 15, 16, 23, 42, 7};\n        System.out.println(findLargest(arr));\n    }\n\n    static int findLargest(int[] arr) {\n        int largest = arr[0];\n        for (int i = 1; i < arr.length; i++) {\n            if (arr[i] > largest) largest = arr[i];\n        }\n        return largest;\n    }\n}",
+    js:"function findLargest(arr) {\n    let largest = arr[0];\n    for (let i = 1; i < arr.length; i++) {\n        if (arr[i] > largest) largest = arr[i];\n    }\n    return largest;\n}\n\nconsole.log(findLargest([4, 8, 15, 16, 23, 42, 7]));",
+    python:"def find_largest(arr):\n    largest = arr[0]\n    for num in arr[1:]:\n        if num > largest:\n            largest = num\n    return largest\n\n\nprint(find_largest([4, 8, 15, 16, 23, 42, 7]))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention the built-in shortcuts (Math.max(...arr) in JS, max(arr) in Python, Collections.max() for a List in Java) but lead with the manual scan — it's what's actually being tested, and it generalizes to variations like 'largest even number' that built-ins can't handle directly.",
+    edgeCases:["Empty array → arr[0] would throw/crash; guard against this explicitly before accessing the first element","Array with all identical elements → the largest equals that repeated value","Single-element array → that element is trivially the largest"],
+    followups:[
+      {q:"How would you find the largest element without initializing largest to arr[0]?",a:"Initialize largest to the smallest possible value for the type (Integer.MIN_VALUE in Java, -Infinity in JS, float('-inf') in Python) — that guarantees the first real comparison will always update it, removing the need to special-case the first element."},
+      {q:"How would you find the largest element in a 2D array (matrix)?",a:"Use the same tracking-variable approach, but nest it inside two loops (row and column) instead of one — compare every cell in the matrix against the running largest, regardless of which row or column it's in."}
+    ]
+  },
+  {
+    id:10051,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find the second largest element in an array",
+    logic:"Track two running values in a single pass: the largest seen so far, and the second-largest seen so far. For each element, if it beats the current largest, the old largest demotes to second-largest before the new value takes over. Otherwise, if it beats only the second-largest (but not the largest), update just the second-largest. This finds the answer in one pass without sorting.",
+    java:"public class SecondLargest {\n    public static void main(String[] args) {\n        int[] arr = {4, 8, 15, 16, 23, 42, 7};\n        System.out.println(secondLargest(arr));\n    }\n\n    static int secondLargest(int[] arr) {\n        int largest = Integer.MIN_VALUE, secondLargest = Integer.MIN_VALUE;\n        for (int num : arr) {\n            if (num > largest) {\n                secondLargest = largest;\n                largest = num;\n            } else if (num > secondLargest && num != largest) {\n                secondLargest = num;\n            }\n        }\n        return secondLargest;\n    }\n}",
+    js:"function secondLargest(arr) {\n    let largest = -Infinity, secondLargest = -Infinity;\n    for (const num of arr) {\n        if (num > largest) {\n            secondLargest = largest;\n            largest = num;\n        } else if (num > secondLargest && num !== largest) {\n            secondLargest = num;\n        }\n    }\n    return secondLargest;\n}\n\nconsole.log(secondLargest([4, 8, 15, 16, 23, 42, 7]));",
+    python:"def second_largest(arr):\n    largest = second = float(\"-inf\")\n    for num in arr:\n        if num > largest:\n            second = largest\n            largest = num\n        elif num > second and num != largest:\n            second = num\n    return second\n\n\nprint(second_largest([4, 8, 15, 16, 23, 42, 7]))",
+    timeComplexity:"O(n) — a single pass, no sorting required.",
+    spaceComplexity:"O(1).",
+    tip:"Contrast this explicitly with the lazy approach of sorting the whole array and taking the second-to-last element — that's O(n log n) for information you can extract in O(n) with two tracking variables. Naming that complexity gap is exactly the kind of thing that distinguishes a strong answer.",
+    edgeCases:["All elements identical (e.g. [5,5,5]) → there is no distinct second-largest value; decide and state the convention (often returning the same value, or a sentinel indicating 'no second distinct value exists')","Array with only one or two elements → second-largest may be undefined or trivially the smaller of the two","The num != largest check matters specifically when duplicates of the maximum exist, to avoid the max value 'counting twice' as its own second-largest"],
+    followups:[
+      {q:"How would this break if you removed the num != largest check, and why does it matter?",a:"Without it, a duplicate of the maximum value (e.g. [9, 9, 5]) would incorrectly let secondLargest become 9 as well, when the true second-DISTINCT-largest value is 5. The check ensures a value equal to the current largest never gets miscounted as a separate second-largest."},
+      {q:"How would you find the Kth largest element in general, not just the 2nd?",a:"For small k, repeat the same tracking-variable idea k times (more bookkeeping each step). For arbitrary k, a more scalable approach is a min-heap of size k — push each element in, popping the smallest whenever the heap exceeds size k; the heap's minimum at the end is the Kth largest, in O(n log k) time."}
+    ]
+  },
+  {
+    id:10052,
+    category:"arrays",
+    diff:"Medium",
+    title:"Move all zeros to the beginning while maintaining the order of non-zero elements",
+    logic:"Walk the array from right to left, keeping an 'insert position' pointer starting at the last index. Whenever you encounter a non-zero value, place it at the insert position and move the pointer one step left. Because you're scanning right to left, the relative order of non-zero elements is preserved when they're written back from the end. After the scan, every remaining position from the front up to the insert pointer gets filled with zeros.",
+    java:"import java.util.Arrays;\n\npublic class MoveZerosToFront {\n    public static void main(String[] args) {\n        int[] arr = {1, 0, 2, 0, 3, 0, 4};\n        moveZerosToFront(arr);\n        System.out.println(Arrays.toString(arr));\n    }\n\n    static void moveZerosToFront(int[] arr) {\n        int insertPos = arr.length - 1;\n        for (int i = arr.length - 1; i >= 0; i--) {\n            if (arr[i] != 0) {\n                arr[insertPos] = arr[i];\n                insertPos--;\n            }\n        }\n        while (insertPos >= 0) {\n            arr[insertPos] = 0;\n            insertPos--;\n        }\n    }\n}",
+    js:"function moveZerosToFront(arr) {\n    let insertPos = arr.length - 1;\n    for (let i = arr.length - 1; i >= 0; i--) {\n        if (arr[i] !== 0) {\n            arr[insertPos] = arr[i];\n            insertPos--;\n        }\n    }\n    while (insertPos >= 0) {\n        arr[insertPos] = 0;\n        insertPos--;\n    }\n    return arr;\n}\n\nconsole.log(moveZerosToFront([1, 0, 2, 0, 3, 0, 4]));",
+    python:"def move_zeros_to_front(arr):\n    insert_pos = len(arr) - 1\n    for i in range(len(arr) - 1, -1, -1):\n        if arr[i] != 0:\n            arr[insert_pos] = arr[i]\n            insert_pos -= 1\n    while insert_pos >= 0:\n        arr[insert_pos] = 0\n        insert_pos -= 1\n    return arr\n\n\nprint(move_zeros_to_front([1, 0, 2, 0, 3, 0, 4]))",
+    timeComplexity:"O(n) — a single backward scan plus a final fill of the remaining zero positions.",
+    spaceComplexity:"O(1) extra — sorts in place.",
+    tip:"Walk through why scanning from the right preserves order: every non-zero element you write was found in right-to-left order, but because the insert pointer also moves right-to-left, the LAST one written ends up leftmost among the moved elements — which reconstructs the original left-to-right relative order. Explaining this clearly is the hard part of this question.",
+    edgeCases:["Array with no zeros at all → every element gets rewritten to its own position, ending up unchanged","Array that's entirely zeros → the final fill loop writes 0 to every position, also unchanged","Single-element array → trivially already 'sorted' either way"],
+    followups:[
+      {q:"How would you solve this with an auxiliary array instead of in place?",a:"Count the zeros first, then build a new array: write that many zeros, followed by every non-zero element from the original array in its original order. Simpler to reason about, but uses O(n) extra space instead of O(1)."},
+      {q:"How is this different from the classic 'move zeroes to the END' (LeetCode-style) problem?",a:"It's the mirror image — instead of pushing zeros to the back while keeping non-zero order, you push them to the front. The same two-pointer idea applies, just scanning and writing from the opposite end of the array."}
+    ]
+  },
+  {
+    id:10053,
+    category:"arrays",
+    diff:"Medium",
+    title:"Generate a cumulative (running) sum array from an array of numbers",
+    logic:"Build a new array where each position holds the sum of all elements up to and including that position in the original array. Keep a running total as you scan left to right: at each index, add the current element to the running total, then store that updated total as the output for this position. For example, [6, 4, 6, 5, 9] becomes [6, 10, 16, 21, 30].",
+    java:"import java.util.Arrays;\n\npublic class CumulativeSum {\n    public static void main(String[] args) {\n        int[] arr = {6, 4, 6, 5, 9};\n        System.out.println(Arrays.toString(cumulativeSum(arr)));\n    }\n\n    static int[] cumulativeSum(int[] arr) {\n        int[] result = new int[arr.length];\n        int runningTotal = 0;\n        for (int i = 0; i < arr.length; i++) {\n            runningTotal += arr[i];\n            result[i] = runningTotal;\n        }\n        return result;\n    }\n}",
+    js:"function cumulativeSum(arr) {\n    let runningTotal = 0;\n    return arr.map(num => {\n        runningTotal += num;\n        return runningTotal;\n    });\n}\n\nconsole.log(cumulativeSum([6, 4, 6, 5, 9]));",
+    python:"def cumulative_sum(arr):\n    result = []\n    running_total = 0\n    for num in arr:\n        running_total += num\n        result.append(running_total)\n    return result\n\n\nprint(cumulative_sum([6, 4, 6, 5, 9]))\n\n# itertools also provides this directly:\n# from itertools import accumulate\n# print(list(accumulate([6, 4, 6, 5, 9])))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the output array.",
+    tip:"Mention the technical name — this is a 'prefix sum' array — and that it's the foundational building block for answering range-sum queries (sum of elements between index i and j) in O(1) after an O(n) precomputation, instead of re-summing the range every time.",
+    edgeCases:["Empty array → result is an empty array","Array with negative numbers → running total can decrease as well as increase, which is still correct behavior","Single-element array → result is just that one element"],
+    followups:[
+      {q:"How would you use a prefix sum array to answer 'what's the sum between index i and j' quickly?",a:"sum(i, j) = prefixSum[j] - prefixSum[i - 1] (with prefixSum[-1] treated as 0) — that's an O(1) lookup per query after the O(n) prefix array is built once, instead of re-summing the subrange every time."},
+      {q:"How would you compute the cumulative PRODUCT instead of cumulative sum?",a:"Same loop structure, but multiply the running total by each element instead of adding — runningTotal *= arr[i] — watching out for the running product hitting zero (everything after a zero stays zero) or overflowing for large arrays."}
+    ]
+  },
+  {
+    id:10054,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find the sum of remaining elements after skipping elements that meet a condition",
+    logic:"Decide on a skip condition (a common version: skip every element divisible by 3). Scan the array once, and for each element, either skip it (if it matches the condition) or add it to a running total. The final total is the sum of only the elements that did NOT match the skip condition.",
+    java:"public class SumWithCondition {\n    public static void main(String[] args) {\n        int[] arr = {2, 3, 6, 7, 9, 10, 12};\n        System.out.println(sumExcluding(arr, 3));\n    }\n\n    // Sums every element that is NOT divisible by `divisor`\n    static int sumExcluding(int[] arr, int divisor) {\n        int sum = 0;\n        for (int num : arr) {\n            if (num % divisor == 0) continue; // skip elements meeting the condition\n            sum += num;\n        }\n        return sum;\n    }\n}",
+    js:"function sumExcluding(arr, divisor) {\n    return arr\n        .filter(num => num % divisor !== 0)\n        .reduce((acc, num) => acc + num, 0);\n}\n\nconsole.log(sumExcluding([2, 3, 6, 7, 9, 10, 12], 3));",
+    python:"def sum_excluding(arr, divisor):\n    return sum(num for num in arr if num % divisor != 0)\n\n\nprint(sum_excluding([2, 3, 6, 7, 9, 10, 12], 3))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1) extra (manual loop) or O(k) if filter() materializes an intermediate array first.",
+    tip:"This pattern — 'sum only elements that satisfy/don't satisfy a predicate' — comes up constantly with different conditions (only odds, only positives, only values above a threshold). Frame your solution generically with a parameterized condition rather than hardcoding one specific rule, to show you understand the reusable shape of the problem.",
+    edgeCases:["Every element matches the skip condition → sum is 0","No element matches the skip condition → sum equals the sum of the entire array","Empty array → sum is 0"],
+    followups:[
+      {q:"How would you make the skip condition fully generic (any predicate, not just divisibility)?",a:"Pass a predicate function/lambda as a parameter instead of a hardcoded divisor — e.g. sumExcluding(arr, predicate) where predicate is a function taking a number and returning true/false, called inside the loop instead of a fixed num % divisor == 0 check."},
+      {q:"How would you sum elements that meet the condition, alongside summing the ones that don't, in a single pass?",a:"Use two accumulators and an if/else (not just continue/skip) — add to 'matchingSum' when the condition is true, and to 'remainingSum' otherwise — both totals come out of the same single loop."}
+    ]
+  },
+  {
+    id:10055,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find the intersection of two arrays",
+    logic:"Convert the first array into a Set for O(1) membership checks. Scan the second array, and for each element, check whether it exists in that set — if so, it's part of the intersection. Use a second Set (or check-before-add) for the result itself, so common elements aren't duplicated if they repeat in the second array.",
+    java:"import java.util.LinkedHashSet;\nimport java.util.Set;\n\npublic class ArrayIntersection {\n    public static void main(String[] args) {\n        int[] arr1 = {1, 2, 3, 4, 5};\n        int[] arr2 = {3, 4, 5, 6, 7};\n        System.out.println(intersection(arr1, arr2));\n    }\n\n    static Set<Integer> intersection(int[] arr1, int[] arr2) {\n        Set<Integer> set1 = new LinkedHashSet<>();\n        for (int num : arr1) set1.add(num);\n\n        Set<Integer> result = new LinkedHashSet<>();\n        for (int num : arr2) {\n            if (set1.contains(num)) result.add(num);\n        }\n        return result;\n    }\n}",
+    js:"function intersection(arr1, arr2) {\n    const set1 = new Set(arr1);\n    const result = new Set();\n    for (const num of arr2) {\n        if (set1.has(num)) result.add(num);\n    }\n    return [...result];\n}\n\nconsole.log(intersection([1, 2, 3, 4, 5], [3, 4, 5, 6, 7]));",
+    python:"def intersection(arr1, arr2):\n    set1 = set(arr1)\n    result = []\n    seen = set()\n    for num in arr2:\n        if num in set1 and num not in seen:\n            result.append(num)\n            seen.add(num)\n    return result\n\n\nprint(intersection([1, 2, 3, 4, 5], [3, 4, 5, 6, 7]))\n# Or simply: list(set(arr1) & set(arr2)) if order doesn't matter",
+    timeComplexity:"O(n + m) where n and m are the lengths of the two arrays.",
+    spaceComplexity:"O(n + m) for the sets.",
+    tip:"Mention the one-liner set intersection operator (set(arr1) & set(arr2) in Python) as the idiomatic shortcut, but note that it doesn't preserve any particular order — if order matters, the manual scan-and-check approach (as shown) gives you that control.",
+    edgeCases:["No common elements → empty result","One array is empty → intersection is empty","Duplicate values within an array → using sets naturally de-duplicates, so each common value appears only once in the result regardless of how many times it repeats in either input"],
+    followups:[
+      {q:"How would you find the intersection while preserving duplicates (e.g. [1,1,2] ∩ [1,2,2] = [1,2] or [1,1,2] depending on definition)?",a:"That requires frequency-based intersection: build a frequency map for each array, then for each common key, include it min(countInA, countInB) times in the result — this is sometimes called the 'multiset intersection.'"},
+      {q:"How would you find the intersection of two already-sorted arrays without using sets?",a:"Use a two-pointer merge-style scan: advance whichever pointer points to the smaller current value; when both pointers point to equal values, that's a common element — add it and advance both pointers. This runs in O(n + m) time with O(1) extra space (beyond the result)."}
+    ]
+  },
+  {
+    id:10056,
+    category:"arrays",
+    diff:"Medium",
+    title:"Remove duplicates from an array",
+    logic:"Scan the array once, keeping a Set of values already seen. For each element, only keep it (append to the result) if it hasn't been seen before; otherwise skip it. Using an order-preserving set (LinkedHashSet in Java, a plain JS Set, or a seen-set alongside a list in Python) ensures the first occurrence of each value survives in its original position.",
+    java:"import java.util.ArrayList;\nimport java.util.LinkedHashSet;\nimport java.util.List;\n\npublic class RemoveDuplicates {\n    public static void main(String[] args) {\n        int[] arr = {1, 2, 2, 3, 4, 4, 5, 1};\n        System.out.println(removeDuplicates(arr));\n    }\n\n    static List<Integer> removeDuplicates(int[] arr) {\n        LinkedHashSet<Integer> seen = new LinkedHashSet<>();\n        for (int num : arr) seen.add(num);\n        return new ArrayList<>(seen);\n    }\n}",
+    js:"function removeDuplicates(arr) {\n    return [...new Set(arr)];\n}\n\nconsole.log(removeDuplicates([1, 2, 2, 3, 4, 4, 5, 1]));",
+    python:"def remove_duplicates(arr):\n    seen = set()\n    result = []\n    for num in arr:\n        if num not in seen:\n            seen.add(num)\n            result.append(num)\n    return result\n\n\nprint(remove_duplicates([1, 2, 2, 3, 4, 4, 5, 1]))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the set/result.",
+    tip:"Highlight that JS's [...new Set(arr)] and a LinkedHashSet in Java both preserve first-seen insertion order — that's an important detail if the interviewer cares about order, since a plain HashSet in Java does NOT guarantee any particular iteration order.",
+    edgeCases:["No duplicates at all → result equals the original array (same elements, same order)","All elements identical → result has just that single value","Empty array → result is empty"],
+    followups:[
+      {q:"How would you remove duplicates in place, without allocating a new array, given a sorted input?",a:"Use a two-pointer technique: a 'write' pointer that only advances when the current element differs from the last written one. Since the array is sorted, duplicates are always adjacent, so a single forward scan comparing each element to the previous one suffices — O(n) time, O(1) extra space."},
+      {q:"How would you remove duplicates from an unsorted array in place with O(1) extra space?",a:"In general this isn't possible in O(n) time without extra space for an unsorted array, because you need some way to remember what you've already seen. The practical trade-off is either O(n) extra space (a set) or sorting first (O(n log n) time, but then O(1) extra space for the two-pointer pass) — sacrificing original order either way."}
+    ]
+  },
+  {
+    id:10057,
+    category:"arrays",
+    diff:"Easy",
+    title:"Check whether an array contains any duplicate values",
+    logic:"Scan the array while adding each element to a Set. If you ever try to add a value that's already in the set, you've just found a duplicate — return true immediately. If the scan finishes without that happening, every element was unique, so return false.",
+    java:"import java.util.HashSet;\nimport java.util.Set;\n\npublic class HasDuplicates {\n    public static void main(String[] args) {\n        System.out.println(hasDuplicates(new int[]{1, 2, 3, 4, 5}));\n        System.out.println(hasDuplicates(new int[]{1, 2, 3, 2, 5}));\n    }\n\n    static boolean hasDuplicates(int[] arr) {\n        Set<Integer> seen = new HashSet<>();\n        for (int num : arr) {\n            if (!seen.add(num)) return true; // add() returns false if the value was already present\n        }\n        return false;\n    }\n}",
+    js:"function hasDuplicates(arr) {\n    return new Set(arr).size !== arr.length;\n    // equivalent early-exit version:\n    // const seen = new Set();\n    // for (const num of arr) { if (seen.has(num)) return true; seen.add(num); }\n    // return false;\n}\n\nconsole.log(hasDuplicates([1, 2, 3, 4, 5]));\nconsole.log(hasDuplicates([1, 2, 3, 2, 5]));",
+    python:"def has_duplicates(arr):\n    return len(set(arr)) != len(arr)\n    # equivalent early-exit version:\n    # seen = set()\n    # for num in arr:\n    #     if num in seen:\n    #         return True\n    #     seen.add(num)\n    # return False\n\n\nprint(has_duplicates([1, 2, 3, 4, 5]))\nprint(has_duplicates([1, 2, 3, 2, 5]))",
+    timeComplexity:"O(n) for either version — the size-comparison version still builds the full set first, while the early-exit loop can stop as soon as it finds a duplicate.",
+    spaceComplexity:"O(n).",
+    tip:"Point out the trade-off between the two styles explicitly: comparing set size to array length is a clean one-liner but always processes the whole array, while the manual loop with early exit can short-circuit the moment a duplicate is found — better in the average case if duplicates tend to appear early.",
+    edgeCases:["Empty array → no duplicates possible, returns false","Single-element array → trivially no duplicates","All elements identical → returns true almost immediately with the early-exit version"],
+    followups:[
+      {q:"How would you check for duplicates with O(1) extra space, if the array is allowed to be sorted first?",a:"Sort the array (O(n log n) time, O(1) extra space if sorting in place), then scan adjacent pairs — if any two consecutive elements are equal, there's a duplicate. This trades the O(n) space of a set for O(n log n) time."},
+      {q:"How would you find the actual duplicate value, not just whether one exists?",a:"Use the early-exit loop version, but instead of returning true, return (or print) the value itself the moment seen.contains(num) is true — that's the first duplicate encountered during the left-to-right scan."}
+    ]
+  },
+  {
+    id:10058,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find the first repeating element in an array",
+    logic:"This asks for the element whose FIRST OCCURRENCE happens earliest among all values that repeat anywhere in the array — not simply the first duplicate you stumble across scanning left to right. The reliable way to get this right: scan from RIGHT to LEFT while tracking seen values in a set. Each time you find a value already in the set, record its index as a candidate for the answer. Because you're moving right to left, the LAST candidate recorded ends up being the leftmost (smallest-index) qualifying element once the scan finishes.",
+    java:"public class FirstRepeatingElement {\n    public static void main(String[] args) {\n        int[] arr = {10, 5, 3, 4, 3, 5, 6};\n        System.out.println(firstRepeating(arr));\n    }\n\n    static int firstRepeating(int[] arr) {\n        java.util.Set<Integer> seen = new java.util.HashSet<>();\n        int candidateIndex = -1;\n        for (int i = arr.length - 1; i >= 0; i--) {\n            if (seen.contains(arr[i])) {\n                candidateIndex = i; // moving right-to-left, the last update is the leftmost match\n            } else {\n                seen.add(arr[i]);\n            }\n        }\n        return candidateIndex == -1 ? -1 : arr[candidateIndex];\n    }\n}",
+    js:"function firstRepeating(arr) {\n    const seen = new Set();\n    let candidateIndex = -1;\n    for (let i = arr.length - 1; i >= 0; i--) {\n        if (seen.has(arr[i])) {\n            candidateIndex = i;\n        } else {\n            seen.add(arr[i]);\n        }\n    }\n    return candidateIndex === -1 ? -1 : arr[candidateIndex];\n}\n\nconsole.log(firstRepeating([10, 5, 3, 4, 3, 5, 6])); // 5 (its first occurrence at index 1 is earlier than 3's at index 2)",
+    python:"def first_repeating(arr):\n    seen = set()\n    candidate_index = -1\n    for i in range(len(arr) - 1, -1, -1):\n        if arr[i] in seen:\n            candidate_index = i\n        else:\n            seen.add(arr[i])\n    return arr[candidate_index] if candidate_index != -1 else -1\n\n\nprint(first_repeating([10, 5, 3, 4, 3, 5, 6]))  # 5",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the set.",
+    tip:"This problem trips people up because the obvious left-to-right 'first duplicate encountered' approach actually answers a DIFFERENT question. Walk through the example [10, 5, 3, 4, 3, 5, 6] explicitly: scanning left-to-right, you'd hit the SECOND 3 before the second 5, suggesting 3 — but 5's first occurrence (index 1) is earlier than 3's first occurrence (index 2), so the correct answer is 5. Showing you know this distinction is the entire point of the question.",
+    edgeCases:["No repeating elements at all → return a sentinel like -1 (clarify the contract with the interviewer)","All elements identical → the first element is trivially the answer, since its first occurrence is at index 0","Multiple different values repeat → only the one with the EARLIEST first occurrence wins, not the one with the most repeats"],
+    followups:[
+      {q:"Why doesn't a simple left-to-right scan (returning the first value seen twice) solve this correctly?",a:"A left-to-right scan finds the first index where a SECOND occurrence happens, which isn't necessarily the value whose FIRST occurrence is earliest. In [10, 5, 3, 4, 3, 5, 6], left-to-right hits 3's second occurrence (index 4) before 5's second occurrence (index 5), incorrectly suggesting 3 instead of the correct answer, 5."},
+      {q:"How would you find the first NON-repeating element instead?",a:"Build a frequency map in one pass, then scan the array a second time left to right, returning the first element whose count in the map is exactly 1 — this is the same two-pass technique used for the 'first non-repeating character' string problem."}
+    ]
+  },
+  {
+    id:10059,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find all pairs in an array whose sum equals a given target",
+    logic:"Scan the array once while maintaining a set of values seen so far. For each element, compute its complement (target minus the current value) and check if that complement was already seen — if so, you've found a valid pair. Add the current element to the seen set afterward (not before checking, to avoid pairing an element with itself unless duplicates legitimately allow it) and continue.",
+    java:"import java.util.ArrayList;\nimport java.util.HashSet;\nimport java.util.List;\nimport java.util.Set;\n\npublic class PairsWithSum {\n    public static void main(String[] args) {\n        int[] arr = {2, 4, 3, 5, 7, 8, 1};\n        System.out.println(findPairs(arr, 9));\n    }\n\n    static List<int[]> findPairs(int[] arr, int target) {\n        Set<Integer> seen = new HashSet<>();\n        List<int[]> pairs = new ArrayList<>();\n        for (int num : arr) {\n            int complement = target - num;\n            if (seen.contains(complement)) {\n                pairs.add(new int[]{complement, num});\n            }\n            seen.add(num);\n        }\n        return pairs;\n    }\n}",
+    js:"function findPairs(arr, target) {\n    const seen = new Set();\n    const pairs = [];\n    for (const num of arr) {\n        const complement = target - num;\n        if (seen.has(complement)) {\n            pairs.push([complement, num]);\n        }\n        seen.add(num);\n    }\n    return pairs;\n}\n\nconsole.log(findPairs([2, 4, 3, 5, 7, 8, 1], 9));",
+    python:"def find_pairs(arr, target):\n    seen = set()\n    pairs = []\n    for num in arr:\n        complement = target - num\n        if complement in seen:\n            pairs.append((complement, num))\n        seen.add(num)\n    return pairs\n\n\nprint(find_pairs([2, 4, 3, 5, 7, 8, 1], 9))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n) for the seen set.",
+    tip:"This is the array-pairs generalization of the classic Two Sum problem — name that connection explicitly. The only difference is that Two Sum usually wants just one pair (or their indexes), while this version wants ALL valid pairs, so the set-based scan continues instead of returning on the first match.",
+    edgeCases:["No pairs sum to the target → empty result","Duplicate values that legitimately form a pair (e.g. target = 8, array contains two 4s) → works correctly since each 4 is added to the seen set only after being checked, so the second 4 correctly pairs with the first","An element paired with itself (target = 2 × num, but only one occurrence of num exists) → won't incorrectly form a self-pair, since the current element is added to seen only AFTER checking, never before"],
+    followups:[
+      {q:"How would you avoid printing the same pair twice if duplicate values create multiple equivalent matches?",a:"Track pairs by a normalized key (e.g. a sorted tuple of the two values) in a separate 'pairsSeen' set, and only add a pair to the result if that key hasn't been recorded yet — this dedupes pairs that are value-identical even if found at different positions."},
+      {q:"How would you solve this if the array were sorted, using two pointers instead of a set?",a:"Place one pointer at the start and one at the end. If the pointers' sum equals the target, record the pair and move both pointers inward. If the sum is too small, advance the left pointer; if too large, move the right pointer back. This is O(n) time and O(1) extra space, trading the hash set for the sorted-order precondition."}
+    ]
+  },
+  {
+    id:10060,
+    category:"arrays",
+    diff:"Easy",
+    title:"Add elements to a list and print them",
+    logic:"Create an empty, growable list, then add elements to it one at a time (unlike a fixed-size array, a list can grow dynamically as elements are added). Once populated, print it directly or iterate over it like any other collection.",
+    java:"import java.util.ArrayList;\nimport java.util.List;\n\npublic class AddToList {\n    public static void main(String[] args) {\n        List<Integer> numbers = new ArrayList<>();\n        numbers.add(10);\n        numbers.add(20);\n        numbers.add(30);\n        System.out.println(numbers);\n    }\n}",
+    js:"const numbers = [];\nnumbers.push(10);\nnumbers.push(20);\nnumbers.push(30);\nconsole.log(numbers);",
+    python:"numbers = []\nnumbers.append(10)\nnumbers.append(20)\nnumbers.append(30)\nprint(numbers)",
+    timeComplexity:"O(1) amortized per add operation (occasional resizing makes a single add O(n) in the rare case, but averages out to O(1)).",
+    spaceComplexity:"O(n) for n elements.",
+    tip:"Mention WHY ArrayList/list 'amortized O(1) add' works — when the backing array fills up, it's resized (typically doubled) and old elements copied over, an O(n) operation, but this happens so rarely (geometrically less often as the list grows) that the average cost per add stays O(1).",
+    edgeCases:["Adding to an empty list → first add still works fine, no special-casing needed","Adding a very large number of elements → occasional internal resizing happens transparently","Adding duplicate or null values → both Java's ArrayList and Python/JS lists allow duplicates and (for Java/Python) null/None freely"],
+    followups:[
+      {q:"What's the difference between ArrayList and a plain array in Java?",a:"A plain array has a fixed size set at creation and can't grow. ArrayList wraps a resizable backing array internally, automatically growing (and copying elements) when it runs out of capacity, which is why you can keep calling add() without specifying a size up front."},
+      {q:"How would you add an element at a specific position instead of the end?",a:"Use list.add(index, value) in Java, list.splice(index, 0, value) in JS, or list.insert(index, value) in Python — all shift every element from that position onward one slot to the right, an O(n) operation in the worst case."}
+    ]
+  },
+  {
+    id:10061,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find the sum of all elements in a list",
+    logic:"Iterate the list once, adding each element to a running total. This is identical in spirit to summing a plain array — the only difference is the underlying data structure being iterated.",
+    java:"import java.util.Arrays;\nimport java.util.List;\n\npublic class SumOfList {\n    public static void main(String[] args) {\n        List<Integer> numbers = Arrays.asList(10, 20, 30, 40);\n        int sum = 0;\n        for (int num : numbers) {\n            sum += num;\n        }\n        System.out.println(\"Sum: \" + sum);\n    }\n}",
+    js:"const numbers = [10, 20, 30, 40];\nconst sum = numbers.reduce((acc, num) => acc + num, 0);\nconsole.log(\"Sum:\", sum);",
+    python:"numbers = [10, 20, 30, 40]\ntotal = sum(numbers)\nprint(\"Sum:\", total)",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Mention the built-in shortcuts — numbers.stream().mapToInt(Integer::intValue).sum() in Java, reduce() in JS, sum() in Python — but be ready to write the manual loop too, since 'sum a collection' is often a stepping stone toward a more complex follow-up rather than the actual end goal.",
+    edgeCases:["Empty list → sum is 0","List with negative numbers → sum can be negative, which is mathematically valid","Single-element list → sum equals that element"],
+    followups:[
+      {q:"How would you find the sum of only the elements at even indexes in the list?",a:"Loop with an explicit index (or use a stream with IntStream.range in Java) and only add elements where index % 2 == 0, instead of summing every element unconditionally."},
+      {q:"How would you compute the sum using Java Streams in one line?",a:"numbers.stream().mapToInt(Integer::intValue).sum() — this avoids manual loop bookkeeping and reads as a direct description of the intent: convert to an int stream, then sum it."}
+    ]
+  },
+  {
+    id:10062,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find the maximum element in a list",
+    logic:"Same tracking-variable approach as finding the max in an array: assume the first element is the largest seen so far, then scan the rest, updating the tracker whenever a bigger value appears.",
+    java:"import java.util.Arrays;\nimport java.util.Collections;\nimport java.util.List;\n\npublic class MaxInList {\n    public static void main(String[] args) {\n        List<Integer> numbers = Arrays.asList(4, 8, 15, 16, 23, 42, 7);\n        System.out.println(Collections.max(numbers));\n    }\n}",
+    js:"const numbers = [4, 8, 15, 16, 23, 42, 7];\nconst maxValue = Math.max(...numbers);\nconsole.log(maxValue);",
+    python:"numbers = [4, 8, 15, 16, 23, 42, 7]\nmax_value = max(numbers)\nprint(max_value)",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(1).",
+    tip:"Be ready to write the manual scanning loop if the interviewer says 'without using a built-in max function' — Collections.max() in Java, Math.max(...arr) in JS, and max() in Python are all convenient, but the underlying single-pass tracking-variable logic is what's usually actually being tested.",
+    edgeCases:["Empty list → Collections.max()/Math.max()/max() all throw or return -Infinity/NaN depending on the language; guard against this explicitly","List with all identical elements → max equals that repeated value","Single-element list → that element is trivially the max"],
+    followups:[
+      {q:"How would you find the max element manually, without Collections.max() or Math.max()?",a:"Initialize maxValue to the first element (or the smallest possible value for the type), then loop through the rest comparing each element and updating maxValue whenever a larger one is found — identical to the manual array-max approach."},
+      {q:"How would you find the max element along with its index in the list?",a:"Track both a 'max value' and 'max index' together during the scan — whenever you update the max value, also record the current index alongside it."}
+    ]
+  },
+  {
+    id:10063,
+    category:"arrays",
+    diff:"Medium",
+    title:"Remove duplicates from a list",
+    logic:"Same idea as removing duplicates from an array: use an order-preserving set to track which values have already been kept, and only add an element to the result if it hasn't been seen before. The choice of LinkedHashSet (Java) or an explicit seen-set (Python) over a plain HashSet ensures the original relative order survives.",
+    java:"import java.util.ArrayList;\nimport java.util.Arrays;\nimport java.util.LinkedHashSet;\nimport java.util.List;\n\npublic class RemoveDuplicatesFromList {\n    public static void main(String[] args) {\n        List<Integer> numbers = Arrays.asList(1, 2, 2, 3, 4, 4, 5, 1);\n        System.out.println(removeDuplicates(numbers));\n    }\n\n    static List<Integer> removeDuplicates(List<Integer> list) {\n        return new ArrayList<>(new LinkedHashSet<>(list));\n    }\n}",
+    js:"function removeDuplicates(list) {\n    return [...new Set(list)];\n}\n\nconsole.log(removeDuplicates([1, 2, 2, 3, 4, 4, 5, 1]));",
+    python:"def remove_duplicates(lst):\n    seen = set()\n    result = []\n    for item in lst:\n        if item not in seen:\n            seen.add(item)\n            result.append(item)\n    return result\n\n\nprint(remove_duplicates([1, 2, 2, 3, 4, 4, 5, 1]))",
+    timeComplexity:"O(n).",
+    spaceComplexity:"O(n).",
+    tip:"Mention Java Streams as an alternative: list.stream().distinct().collect(Collectors.toList()) — distinct() relies on equals()/hashCode() and also preserves encounter order, making it a clean one-liner equivalent to the LinkedHashSet approach.",
+    edgeCases:["No duplicates → result matches the input exactly","List of all identical elements → result has just one element","Empty list → result is empty"],
+    followups:[
+      {q:"How does list.stream().distinct() know what counts as a 'duplicate' for custom objects?",a:"It relies on the object's equals() and hashCode() methods — for custom classes, you must override both consistently, or distinct() will treat every instance as unique even if their fields are identical."},
+      {q:"How would you remove duplicates while keeping the LAST occurrence of each value instead of the first?",a:"Iterate the list in reverse, applying the same seen-set technique, then reverse the result at the end — that way the first occurrence encountered (which is actually the last in original order) is the one that's kept."}
+    ]
+  },
+  {
+    id:10064,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find the second largest number in a list",
+    logic:"Identical two-variable tracking technique as the array version: maintain 'largest' and 'secondLargest' while scanning once. When a new value beats the current largest, the old largest demotes to secondLargest. When a value beats only secondLargest (and isn't equal to the current largest), update secondLargest alone.",
+    java:"import java.util.Arrays;\nimport java.util.List;\n\npublic class SecondLargestInList {\n    public static void main(String[] args) {\n        List<Integer> numbers = Arrays.asList(4, 8, 15, 16, 23, 42, 7);\n        System.out.println(secondLargest(numbers));\n    }\n\n    static int secondLargest(List<Integer> list) {\n        int largest = Integer.MIN_VALUE, second = Integer.MIN_VALUE;\n        for (int num : list) {\n            if (num > largest) {\n                second = largest;\n                largest = num;\n            } else if (num > second && num != largest) {\n                second = num;\n            }\n        }\n        return second;\n    }\n}",
+    js:"function secondLargest(list) {\n    let largest = -Infinity, second = -Infinity;\n    for (const num of list) {\n        if (num > largest) {\n            second = largest;\n            largest = num;\n        } else if (num > second && num !== largest) {\n            second = num;\n        }\n    }\n    return second;\n}\n\nconsole.log(secondLargest([4, 8, 15, 16, 23, 42, 7]));",
+    python:"def second_largest(lst):\n    largest = second = float(\"-inf\")\n    for num in lst:\n        if num > largest:\n            second = largest\n            largest = num\n        elif num > second and num != largest:\n            second = num\n    return second\n\n\nprint(second_largest([4, 8, 15, 16, 23, 42, 7]))",
+    timeComplexity:"O(n) — a single pass, no sorting needed.",
+    spaceComplexity:"O(1).",
+    tip:"As with the array version, contrast this against sorting the list and taking the second-to-last element (O(n log n)) — the single-pass tracking approach is strictly better and is almost always the answer the interviewer is fishing for when they ask for the 'second largest' specifically rather than just 'sort it.'",
+    edgeCases:["All elements identical → no distinct second-largest value exists; clarify and state the convention being used","List with fewer than 2 elements → second-largest is undefined; guard against this explicitly before relying on the result","Negative numbers throughout → MIN_VALUE/-Infinity initialization still works correctly since any real number compares greater than it"],
+    followups:[
+      {q:"How would you adapt this to find the second SMALLEST number instead?",a:"Mirror the logic with flipped comparisons and initial values: initialize both trackers to the maximum possible value (Integer.MAX_VALUE/Infinity), and update 'smallest'/'second' using < instead of > throughout."},
+      {q:"How would you generalize this to find the Kth largest in a list, similar to the array version?",a:"For arbitrary k, a min-heap of size k is the standard scalable approach: push every element, popping the smallest whenever the heap exceeds size k. After processing the whole list, the heap's minimum is the Kth largest, in O(n log k) time."}
+    ]
   }
 ];
 
@@ -4983,6 +6086,99 @@ function filterCodingDiff(d, el) {
   for (var i = 0; i < pills.length; i++) pills[i].classList.remove("active");
   el.classList.add("active");
   renderCoding();
+}
+
+// ── CODE EDITING ────────────────────────────────────────────────────────────────
+var LANG_META = {
+  java:   {cls:"java", prism:"language-java",       label:"Java"},
+  js:     {cls:"js",   prism:"language-javascript",  label:"JavaScript"},
+  python: {cls:"py",   prism:"language-python",      label:"Python"}
+};
+function getCodeEdits(){
+  try{return JSON.parse(localStorage.getItem("qa_code_edits")||"{}");}catch(e){return {};}
+}
+function getCodeEdit(qid,lang){
+  return getCodeEdits()[qid+"_"+lang];
+}
+function setCodeEdit(qid,lang,code){
+  var edits=getCodeEdits();
+  edits[qid+"_"+lang]=code;
+  try{localStorage.setItem("qa_code_edits",JSON.stringify(edits));}catch(e){}
+  if(window._saveToFirestore)window._saveToFirestore();
+}
+function clearCodeEdit(qid,lang){
+  var edits=getCodeEdits();
+  delete edits[qid+"_"+lang];
+  try{localStorage.setItem("qa_code_edits",JSON.stringify(edits));}catch(e){}
+  if(window._saveToFirestore)window._saveToFirestore();
+}
+function resolveCode(qid, lang, canonical){
+  var edited = getCodeEdit(qid, lang);
+  return edited !== undefined ? edited : canonical;
+}
+function codeColHtml(q, langKey){
+  var meta = LANG_META[langKey];
+  var canonical = q[langKey];
+  var text = resolveCode(q.id, langKey, canonical);
+  var isEdited = text !== canonical;
+  var wrapId = "codewrap-" + q.id + "-" + langKey;
+  var lblId = "codelbl-" + q.id + "-" + langKey;
+  var html = "<div class='code-col lang-" + meta.cls + "'>";
+  html += "<span class='code-lang-lbl' id='" + lblId + "'>" + meta.label;
+  html += "<button class='code-edit-btn' onclick='enterCodeEditMode(\"" + wrapId + "\"," + q.id + ",\"" + langKey + "\")' title='Edit this solution'>&#9998;</button>";
+  html += "<button class='code-reset-btn' style='" + (isEdited ? "" : "display:none") + "' onclick='resetCodeBlock(\"" + wrapId + "\"," + q.id + ",\"" + langKey + "\")' title='Reset to original solution'>&#8634;</button>";
+  if (isEdited) html += "<span class='code-edited-dot' title='Edited'></span>";
+  html += "</span>";
+  html += "<div class='code-block-wrap' id='" + wrapId + "'><pre><code class='" + meta.prism + "'>" + esc(text) + "</code></pre></div>";
+  html += "</div>";
+  return html;
+}
+function enterCodeEditMode(wrapId, qid, lang){
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  var existingTa = wrap.querySelector("textarea");
+  if (existingTa) { existingTa.focus(); return; } // already editing — don't clobber in-progress text
+  var codeEl = wrap.querySelector("code");
+  var current = codeEl ? codeEl.textContent : "";
+  // Match the textarea's height to the code block it's replacing so editing doesn't shrink the card.
+  var preEl = wrap.querySelector("pre");
+  var measuredHeight = preEl ? preEl.offsetHeight : 0;
+  var height = Math.max(measuredHeight, 130);
+  wrap.innerHTML = "<textarea class='code-edit-area' spellcheck='false' wrap='off' style='height:" + height + "px'>" + esc(current) + "</textarea>";
+  var ta = wrap.querySelector("textarea");
+  ta.focus();
+  ta.addEventListener("blur", function(){ exitCodeEditMode(wrapId, qid, lang, ta.value); });
+}
+function exitCodeEditMode(wrapId, qid, lang, newCode){
+  var q = CODING.find(function(c){ return c.id === qid; });
+  if (!q) return;
+  if (newCode === q[lang]) clearCodeEdit(qid, lang);
+  else setCodeEdit(qid, lang, newCode);
+  rebuildCodeBlock(wrapId, qid, lang);
+}
+function resetCodeBlock(wrapId, qid, lang){
+  clearCodeEdit(qid, lang);
+  rebuildCodeBlock(wrapId, qid, lang);
+}
+function rebuildCodeBlock(wrapId, qid, lang){
+  var q = CODING.find(function(c){ return c.id === qid; });
+  if (!q) return;
+  var meta = LANG_META[lang];
+  var text = resolveCode(qid, lang, q[lang]);
+  var isEdited = text !== q[lang];
+  var wrap = document.getElementById(wrapId);
+  if (wrap) {
+    wrap.innerHTML = "<pre><code class='" + meta.prism + "'>" + esc(text) + "</code></pre>";
+    if (window.Prism) Prism.highlightElement(wrap.querySelector("code"));
+  }
+  var lbl = document.getElementById("codelbl-" + qid + "-" + lang);
+  if (lbl) {
+    var resetBtn = lbl.querySelector(".code-reset-btn");
+    if (resetBtn) resetBtn.style.display = isEdited ? "" : "none";
+    var dot = lbl.querySelector(".code-edited-dot");
+    if (isEdited && !dot) lbl.insertAdjacentHTML("beforeend", "<span class='code-edited-dot' title='Edited'></span>");
+    else if (!isEdited && dot) dot.remove();
+  }
 }
 
 function renderCoding() {
@@ -5038,9 +6234,9 @@ function renderCoding() {
     html += "<div class='say-box'>" + fmt(q.logic) + "</div>";
     html += "<div class='sec-lbl'>Code solutions &mdash; Java &bull; JavaScript &bull; Python</div>";
     html += "<div class='code-grid'>";
-    html += "<div class='code-col lang-java'><span class='code-lang-lbl'>Java</span><pre><code class='language-java'>" + esc(q.java) + "</code></pre></div>";
-    html += "<div class='code-col lang-js'><span class='code-lang-lbl'>JavaScript</span><pre><code class='language-javascript'>" + esc(q.js) + "</code></pre></div>";
-    html += "<div class='code-col lang-py'><span class='code-lang-lbl'>Python</span><pre><code class='language-python'>" + esc(q.python) + "</code></pre></div>";
+    html += codeColHtml(q, "java");
+    html += codeColHtml(q, "js");
+    html += codeColHtml(q, "python");
     html += "</div>";
     html += "<div class='cmx-row'>";
     html += "<div class='cmx-badge'><span class='cmx-label'>Time&nbsp;</span><span class='cmx-t'>" + esc(q.timeComplexity) + "</span></div>";
@@ -5540,9 +6736,9 @@ function revealMock(){
     document.getElementById("mock-theory-block").style.display="none";
     document.getElementById("mock-coding-block").style.display="";
     document.getElementById("mock-logic").innerHTML=fmt(q.logic);
-    var grid="<div class='code-col lang-java'><span class='code-lang-lbl'>Java</span><pre><code class='language-java'>"+esc(q.java)+"</code></pre></div>"+
-      "<div class='code-col lang-js'><span class='code-lang-lbl'>JavaScript</span><pre><code class='language-javascript'>"+esc(q.js)+"</code></pre></div>"+
-      "<div class='code-col lang-py'><span class='code-lang-lbl'>Python</span><pre><code class='language-python'>"+esc(q.python)+"</code></pre></div>";
+    var grid="<div class='code-col lang-java'><span class='code-lang-lbl'>Java</span><pre><code class='language-java'>"+esc(resolveCode(q.id,"java",q.java))+"</code></pre></div>"+
+      "<div class='code-col lang-js'><span class='code-lang-lbl'>JavaScript</span><pre><code class='language-javascript'>"+esc(resolveCode(q.id,"js",q.js))+"</code></pre></div>"+
+      "<div class='code-col lang-py'><span class='code-lang-lbl'>Python</span><pre><code class='language-python'>"+esc(resolveCode(q.id,"python",q.python))+"</code></pre></div>";
     document.getElementById("mock-code-grid").innerHTML=grid;
     var edge="";
     for(var e=0;e<q.edgeCases.length;e++)edge+="<li>"+esc(q.edgeCases[e])+"</li>";
@@ -5703,7 +6899,7 @@ function revealSim(){
   var q=simQueue[simIdx];
   if(simSessionType==="coding"){
     document.getElementById("sim-say").innerHTML=fmt(q.logic);
-    document.getElementById("sim-code").textContent=q.java;
+    document.getElementById("sim-code").textContent=resolveCode(q.id,"java",q.java);
   } else {
     document.getElementById("sim-say").innerHTML=fmt(q.say);
     document.getElementById("sim-code").textContent=q.code;
@@ -5775,7 +6971,7 @@ function endSim(){
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
-window.onFirebaseReady = function(){ updateStats(); updateCodingStats(); renderStudy(); };
+window.onFirebaseReady = function(){ updateStats(); updateCodingStats(); renderStudy(); renderCoding(); };
 updateStats();
 updateCodingCounts();
 updateCodingStats();
@@ -5859,8 +7055,9 @@ window._saveToFirestore = function() {
   saveTimer = setTimeout(async function() {
     try {
       await setDoc(DATA_DOC, {
-        ratings: JSON.parse(localStorage.getItem("qa_ratings") || "{}"),
-        notes:   JSON.parse(localStorage.getItem("qa_notes")   || "{}")
+        ratings:    JSON.parse(localStorage.getItem("qa_ratings")    || "{}"),
+        notes:      JSON.parse(localStorage.getItem("qa_notes")      || "{}"),
+        codeEdits:  JSON.parse(localStorage.getItem("qa_code_edits") || "{}")
       });
       showSync("☁ Synced", "green");
     } catch(e) {
@@ -5875,17 +7072,21 @@ async function loadFromFirestore(user) {
   try {
     showSync("☁ Loading…", "muted");
     const snap = await getDoc(DATA_DOC);
-    const localRatings = JSON.parse(localStorage.getItem("qa_ratings") || "{}");
-    const localNotes   = JSON.parse(localStorage.getItem("qa_notes")   || "{}");
+    const localRatings   = JSON.parse(localStorage.getItem("qa_ratings")    || "{}");
+    const localNotes     = JSON.parse(localStorage.getItem("qa_notes")      || "{}");
+    const localCodeEdits = JSON.parse(localStorage.getItem("qa_code_edits") || "{}");
     if (snap.exists()) {
       const d = snap.data();
       // Firestore wins for conflicts; local-only keys are preserved
       const mergedR = Object.assign({}, localRatings, d.ratings || {});
       const mergedN = Object.assign({}, localNotes,   d.notes   || {});
-      localStorage.setItem("qa_ratings", JSON.stringify(mergedR));
-      localStorage.setItem("qa_notes",   JSON.stringify(mergedN));
+      const mergedC = Object.assign({}, localCodeEdits, d.codeEdits || {});
+      localStorage.setItem("qa_ratings",    JSON.stringify(mergedR));
+      localStorage.setItem("qa_notes",      JSON.stringify(mergedN));
+      localStorage.setItem("qa_code_edits", JSON.stringify(mergedC));
     } else {
       // First time this account signs in — bring forward the old pre-Sign-In shared data too.
+      // (codeEdits didn't exist yet when the legacy doc was written, so there's nothing to migrate for it.)
       let legacyR = {}, legacyN = {};
       try {
         const legacySnap = await getDoc(LEGACY_DOC);
@@ -5898,7 +7099,7 @@ async function loadFromFirestore(user) {
       const mergedN = Object.assign({}, legacyN, localNotes);
       localStorage.setItem("qa_ratings", JSON.stringify(mergedR));
       localStorage.setItem("qa_notes",   JSON.stringify(mergedN));
-      await setDoc(DATA_DOC, { ratings: mergedR, notes: mergedN });
+      await setDoc(DATA_DOC, { ratings: mergedR, notes: mergedN, codeEdits: localCodeEdits });
     }
     showSync("☁ Synced", "green");
   } catch(e) {

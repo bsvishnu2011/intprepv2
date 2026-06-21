@@ -15,7 +15,9 @@
       "Bash(node --check sw.js)",
       "Bash(awk '$1>1')",
       "Bash(node .tagcheck.js)",
-      "Bash(node .tagcheck2.js)"
+      "Bash(node .tagcheck2.js)",
+      "Bash(awk 'NR==4896,NR==4990{print NR\": \"$0}' interview_prep.html)",
+      "Bash(node .validate_coding.js)"
     ]
   },
   "remote": {
