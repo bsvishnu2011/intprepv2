@@ -1,0 +1,6 @@
+{
+  "qa_code_edits": "{\"10001_java\":\"// Built-in one-liner bbbbbz\\nString rev = new StringBuilder(s).reverse().toString();\\n\\n// Manual two-pointer (shows depth)\\npublic String reverseString(String s) {\\n    char[] arr = s.toCharArray();\\n    int l = 0, r = arr.length - 1;\\n    while (l < r) {\\n        char tmp = arr[l];\\n        arr[l++] = arr[r];\\n        arr[r--] = tmp;\\n    }\\n    return new String(arr);\\n}\",\"10002_java\":\"check\\npublic int[] twoSum(int[] nums, int target) {\\n    Map<Integer, Integer> map = new HashMap<>();\\n    for (int i = 0; i < nums.length; i++) {\\n        int complement = target - nums[i];\\n        if (map.containsKey(complement)) {\\n            return new int[]{map.get(complement), i};\\n        }\\n        map.put(nums[i], i);\\n    }\\n    return new int[]{}; // no solution\\n}\"}",
+  "qa_rating_count": "2",
+  "qa_notes": "{}",
+  "qa_ratings": "{\"1\":\"nailed\",\"2\":\"nailed\",\"10001\":\"nailed\"}"
+}

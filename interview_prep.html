@@ -213,10 +213,19 @@ pre{background:#0d0f18;border:1px solid var(--border);border-radius:8px;padding:
 .lang-js   .code-lang-lbl{background:rgba(79,142,247,.2);color:#6ba3f9}
 .lang-py   .code-lang-lbl{background:rgba(72,187,120,.2);color:#48bb78}
 .lang-java pre,.lang-js pre,.lang-py pre{margin:0;border-radius:0 0 8px 8px;border-top:2px solid rgba(255,255,255,.04)}
-.code-edit-btn,.code-reset-btn{background:none;border:none;color:inherit;opacity:.55;cursor:pointer;font-size:11px;padding:1px 4px;line-height:1.4;border-radius:4px;letter-spacing:0;text-transform:none;font-weight:400}
-.code-edit-btn:hover,.code-reset-btn:hover{opacity:1;background:rgba(255,255,255,.15)}
-.code-edited-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-left:-1px}
-.code-block-wrap pre{cursor:text}
+.code-tab-strip{display:flex;gap:3px;flex-wrap:wrap;align-items:center;padding:5px 6px;background:#0d0f18}
+.code-tab{display:flex;align-items:center;gap:4px;font-size:10px;padding:3px 7px;border-radius:5px;background:var(--surface3);color:var(--muted);cursor:pointer;border:1px solid transparent;white-space:nowrap}
+.code-tab:hover{color:var(--text)}
+.code-tab.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+.code-tab-star{font-size:10px;opacity:.45;cursor:pointer;line-height:1}
+.code-tab-star.starred{opacity:1;color:var(--amber)}
+.code-tab-star:hover{opacity:1}
+.code-tab-close{font-size:10px;opacity:.45;cursor:pointer;line-height:1;margin-left:1px}
+.code-tab-close:hover{opacity:1;color:var(--red)}
+.code-tab-add{font-size:13px;padding:2px 9px;border-radius:5px;background:none;border:1px dashed var(--border);color:var(--muted);cursor:pointer;line-height:1.3}
+.code-tab-add:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
+.code-tab-add:disabled{opacity:.3;cursor:not-allowed}
+.code-block-editable{cursor:text}
 .code-edit-area{display:block;width:100%;min-height:130px;background:#0d0f18;border:1px solid var(--accent);border-radius:0 0 8px 8px;border-top:2px solid rgba(255,255,255,.04);padding:13px;font-family:var(--mono);font-size:11.5px;line-height:1.65;color:#c8d0f0;resize:vertical;outline:none;white-space:pre;overflow:auto;box-sizing:border-box}
 .cmx-row{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
 .cmx-badge{font-size:11.5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:5px}
@@ -365,6 +374,9 @@ pre code{background:none!important;padding:0!important;border:none!important;fon
       <button class="sb-io-btn" onclick="exportProgress()">&#11015; Export</button>
       <button class="sb-io-btn" onclick="document.getElementById('import-file-input').click()">&#11014; Import</button>
       <input type="file" id="import-file-input" accept="application/json" style="display:none" onchange="importProgress(this.files[0])">
+    </div>
+    <div class="sb-io-row">
+      <button class="sb-io-btn" onclick="exportUpdatedHtml()" title="Pick your local interview_prep.html file to bake your starred code solutions into a fresh copy">&#128190; Export as HTML</button>
     </div>
     Add questions anytime &mdash; open in any browser<br>
     v2.0 &mdash; Study &bull; Mock &bull; Simulate &bull; Code
@@ -6088,58 +6100,137 @@ function filterCodingDiff(d, el) {
   renderCoding();
 }
 
-// ── CODE EDITING ────────────────────────────────────────────────────────────────
+// ── CODE EDITING (multi-solution tabs) ────────────────────────────────────────────
 var LANG_META = {
   java:   {cls:"java", prism:"language-java",       label:"Java"},
   js:     {cls:"js",   prism:"language-javascript",  label:"JavaScript"},
   python: {cls:"py",   prism:"language-python",      label:"Python"}
 };
+var MAX_CODE_TABS = 5;
+
 function getCodeEdits(){
   try{return JSON.parse(localStorage.getItem("qa_code_edits")||"{}");}catch(e){return {};}
 }
-function getCodeEdit(qid,lang){
-  return getCodeEdits()[qid+"_"+lang];
-}
-function setCodeEdit(qid,lang,code){
-  var edits=getCodeEdits();
-  edits[qid+"_"+lang]=code;
+function saveCodeEditsMap(edits){
   try{localStorage.setItem("qa_code_edits",JSON.stringify(edits));}catch(e){}
   if(window._saveToFirestore)window._saveToFirestore();
 }
-function clearCodeEdit(qid,lang){
-  var edits=getCodeEdits();
-  delete edits[qid+"_"+lang];
-  try{localStorage.setItem("qa_code_edits",JSON.stringify(edits));}catch(e){}
-  if(window._saveToFirestore)window._saveToFirestore();
+// Returns {tabs:[{code}], starred:idx|null}. Transparently migrates the older
+// "one edit string per language" format (pre-tabs) into a single starred tab.
+function getCodeEntry(qid, lang){
+  var entry = getCodeEdits()[qid+"_"+lang];
+  if (entry === undefined) return {tabs:[], starred:null};
+  if (typeof entry === "string") return {tabs:[{code:entry}], starred:0};
+  return entry;
+}
+function setCodeEntry(qid, lang, entry){
+  var edits = getCodeEdits();
+  edits[qid+"_"+lang] = entry;
+  saveCodeEditsMap(edits);
 }
 function resolveCode(qid, lang, canonical){
-  var edited = getCodeEdit(qid, lang);
-  return edited !== undefined ? edited : canonical;
+  var entry = getCodeEntry(qid, lang);
+  if (entry.starred !== null && entry.starred !== undefined && entry.tabs[entry.starred]) {
+    return entry.tabs[entry.starred].code;
+  }
+  return canonical;
 }
+
 function codeColHtml(q, langKey){
   var meta = LANG_META[langKey];
-  var canonical = q[langKey];
-  var text = resolveCode(q.id, langKey, canonical);
-  var isEdited = text !== canonical;
-  var wrapId = "codewrap-" + q.id + "-" + langKey;
-  var lblId = "codelbl-" + q.id + "-" + langKey;
-  var html = "<div class='code-col lang-" + meta.cls + "'>";
-  html += "<span class='code-lang-lbl' id='" + lblId + "'>" + meta.label;
-  html += "<button class='code-edit-btn' onclick='enterCodeEditMode(\"" + wrapId + "\"," + q.id + ",\"" + langKey + "\")' title='Edit this solution'>&#9998;</button>";
-  html += "<button class='code-reset-btn' style='" + (isEdited ? "" : "display:none") + "' onclick='resetCodeBlock(\"" + wrapId + "\"," + q.id + ",\"" + langKey + "\")' title='Reset to original solution'>&#8634;</button>";
-  if (isEdited) html += "<span class='code-edited-dot' title='Edited'></span>";
-  html += "</span>";
-  html += "<div class='code-block-wrap' id='" + wrapId + "'><pre><code class='" + meta.prism + "'>" + esc(text) + "</code></pre></div>";
+  var colId = "codecol-" + q.id + "-" + langKey;
+  var html = "<div class='code-col lang-" + meta.cls + "' id='" + colId + "'>";
+  html += codeColInnerHtml(q, langKey);
   html += "</div>";
   return html;
 }
-function enterCodeEditMode(wrapId, qid, lang){
+function codeColInnerHtml(q, langKey, activeIndexOverride){
+  var meta = LANG_META[langKey];
+  var canonical = q[langKey];
+  var entry = getCodeEntry(q.id, langKey);
+  var colId = "codecol-" + q.id + "-" + langKey;
+  var wrapId = "codewrap-" + q.id + "-" + langKey;
+  var defaultIndex = (entry.starred !== null && entry.starred !== undefined) ? entry.starred : -1;
+  var activeIndex = (activeIndexOverride !== undefined && activeIndexOverride !== null) ? activeIndexOverride : defaultIndex;
+  if (activeIndex >= 0 && !entry.tabs[activeIndex]) activeIndex = -1; // tab may have been removed
+  var displayCode = activeIndex === -1 ? canonical : entry.tabs[activeIndex].code;
+  var html = "<span class='code-lang-lbl'>" + meta.label + "</span>";
+  html += buildTabStripHtml(q.id, langKey, colId, entry, activeIndex);
+  html += "<div class='code-block-wrap' id='" + wrapId + "'>" + codeDisplayHtml(meta, displayCode, activeIndex, q.id, langKey, wrapId) + "</div>";
+  return html;
+}
+function buildTabStripHtml(qid, lang, colId, entry, activeIndex){
+  var origActive = activeIndex === -1;
+  var origStarred = (entry.starred === null || entry.starred === undefined);
+  var html = "<div class='code-tab-strip'>";
+  html += "<span class='code-tab" + (origActive ? " active" : "") + "' onclick='selectCodeTab(\"" + colId + "\"," + qid + ",\"" + lang + "\",-1)'>";
+  html += "<span class='code-tab-star" + (origStarred ? " starred" : "") + "' onclick='event.stopPropagation();toggleStarCodeTab(\"" + colId + "\"," + qid + ",\"" + lang + "\",-1)' title='Recommend this version for interviews'>&#9733;</span>";
+  html += "Original</span>";
+  for (var i = 0; i < entry.tabs.length; i++) {
+    var active = activeIndex === i;
+    var starred = entry.starred === i;
+    html += "<span class='code-tab" + (active ? " active" : "") + "' onclick='selectCodeTab(\"" + colId + "\"," + qid + ",\"" + lang + "\"," + i + ")'>";
+    html += "<span class='code-tab-star" + (starred ? " starred" : "") + "' onclick='event.stopPropagation();toggleStarCodeTab(\"" + colId + "\"," + qid + ",\"" + lang + "\"," + i + ")' title='Recommend this version for interviews'>&#9733;</span>";
+    html += "Tab " + (i + 1);
+    html += "<span class='code-tab-close' onclick='event.stopPropagation();removeCodeTab(\"" + colId + "\"," + qid + ",\"" + lang + "\"," + i + ")' title='Remove this solution'>&#10005;</span>";
+    html += "</span>";
+  }
+  var atCap = entry.tabs.length >= MAX_CODE_TABS;
+  html += "<button class='code-tab-add'" + (atCap ? " disabled" : "") + " onclick='addCodeTab(\"" + colId + "\"," + qid + ",\"" + lang + "\")' title='" + (atCap ? ("Maximum " + MAX_CODE_TABS + " solutions") : "Add another solution") + "'>+</button>";
+  html += "</div>";
+  return html;
+}
+function codeDisplayHtml(meta, code, tabIndex, qid, lang, wrapId){
+  if (tabIndex >= 0) {
+    return "<pre class='code-block-editable' title='Click to edit' onclick='enterCodeEditMode(\"" + wrapId + "\"," + qid + ",\"" + lang + "\"," + tabIndex + ")'><code class='" + meta.prism + "'>" + esc(code) + "</code></pre>";
+  }
+  return "<pre><code class='" + meta.prism + "'>" + esc(code) + "</code></pre>";
+}
+
+function rebuildCodeCol(colId, qid, lang, activeIndexOverride){
+  var q = CODING.find(function(c){ return c.id === qid; });
+  if (!q) return;
+  var col = document.getElementById(colId);
+  if (!col) return;
+  col.innerHTML = codeColInnerHtml(q, lang, activeIndexOverride);
+  var codeEl = col.querySelector("pre code");
+  if (codeEl && window.Prism) Prism.highlightElement(codeEl);
+}
+function selectCodeTab(colId, qid, lang, tabIndex){
+  rebuildCodeCol(colId, qid, lang, tabIndex);
+}
+function addCodeTab(colId, qid, lang){
+  var q = CODING.find(function(c){ return c.id === qid; });
+  if (!q) return;
+  var entry = getCodeEntry(qid, lang);
+  if (entry.tabs.length >= MAX_CODE_TABS) { alert("Maximum of " + MAX_CODE_TABS + " custom solutions per language."); return; }
+  entry.tabs.push({code:q[lang]}); // fork from the canonical solution as a starting point
+  var newIndex = entry.tabs.length - 1;
+  setCodeEntry(qid, lang, entry);
+  rebuildCodeCol(colId, qid, lang, newIndex);
+  enterCodeEditMode("codewrap-" + qid + "-" + lang, qid, lang, newIndex);
+}
+function removeCodeTab(colId, qid, lang, tabIndex){
+  var entry = getCodeEntry(qid, lang);
+  entry.tabs.splice(tabIndex, 1);
+  if (entry.starred === tabIndex) entry.starred = null;
+  else if (entry.starred !== null && entry.starred !== undefined && entry.starred > tabIndex) entry.starred--;
+  setCodeEntry(qid, lang, entry);
+  rebuildCodeCol(colId, qid, lang, -1);
+}
+function toggleStarCodeTab(colId, qid, lang, tabIndex){
+  var entry = getCodeEntry(qid, lang);
+  entry.starred = (tabIndex === -1) ? null : tabIndex;
+  setCodeEntry(qid, lang, entry);
+  rebuildCodeCol(colId, qid, lang, tabIndex);
+}
+function enterCodeEditMode(wrapId, qid, lang, tabIndex){
   var wrap = document.getElementById(wrapId);
   if (!wrap) return;
   var existingTa = wrap.querySelector("textarea");
   if (existingTa) { existingTa.focus(); return; } // already editing — don't clobber in-progress text
-  var codeEl = wrap.querySelector("code");
-  var current = codeEl ? codeEl.textContent : "";
+  var entry = getCodeEntry(qid, lang);
+  var current = (entry.tabs[tabIndex] && entry.tabs[tabIndex].code) || "";
   // Match the textarea's height to the code block it's replacing so editing doesn't shrink the card.
   var preEl = wrap.querySelector("pre");
   var measuredHeight = preEl ? preEl.offsetHeight : 0;
@@ -6147,37 +6238,92 @@ function enterCodeEditMode(wrapId, qid, lang){
   wrap.innerHTML = "<textarea class='code-edit-area' spellcheck='false' wrap='off' style='height:" + height + "px'>" + esc(current) + "</textarea>";
   var ta = wrap.querySelector("textarea");
   ta.focus();
-  ta.addEventListener("blur", function(){ exitCodeEditMode(wrapId, qid, lang, ta.value); });
+  ta.addEventListener("blur", function(){ exitCodeEditMode(wrapId, qid, lang, tabIndex, ta.value); });
 }
-function exitCodeEditMode(wrapId, qid, lang, newCode){
-  var q = CODING.find(function(c){ return c.id === qid; });
-  if (!q) return;
-  if (newCode === q[lang]) clearCodeEdit(qid, lang);
-  else setCodeEdit(qid, lang, newCode);
-  rebuildCodeBlock(wrapId, qid, lang);
-}
-function resetCodeBlock(wrapId, qid, lang){
-  clearCodeEdit(qid, lang);
-  rebuildCodeBlock(wrapId, qid, lang);
-}
-function rebuildCodeBlock(wrapId, qid, lang){
-  var q = CODING.find(function(c){ return c.id === qid; });
-  if (!q) return;
+function exitCodeEditMode(wrapId, qid, lang, tabIndex, newCode){
+  var entry = getCodeEntry(qid, lang);
+  if (!entry.tabs[tabIndex]) return; // tab was removed mid-edit — nothing to save
+  entry.tabs[tabIndex].code = newCode;
+  setCodeEntry(qid, lang, entry);
   var meta = LANG_META[lang];
-  var text = resolveCode(qid, lang, q[lang]);
-  var isEdited = text !== q[lang];
   var wrap = document.getElementById(wrapId);
   if (wrap) {
-    wrap.innerHTML = "<pre><code class='" + meta.prism + "'>" + esc(text) + "</code></pre>";
-    if (window.Prism) Prism.highlightElement(wrap.querySelector("code"));
+    wrap.innerHTML = codeDisplayHtml(meta, newCode, tabIndex, qid, lang, wrapId);
+    var codeEl = wrap.querySelector("code");
+    if (codeEl && window.Prism) Prism.highlightElement(codeEl);
   }
-  var lbl = document.getElementById("codelbl-" + qid + "-" + lang);
-  if (lbl) {
-    var resetBtn = lbl.querySelector(".code-reset-btn");
-    if (resetBtn) resetBtn.style.display = isEdited ? "" : "none";
-    var dot = lbl.querySelector(".code-edited-dot");
-    if (isEdited && !dot) lbl.insertAdjacentHTML("beforeend", "<span class='code-edited-dot' title='Edited'></span>");
-    else if (!isEdited && dot) dot.remove();
+}
+
+// ── EXPORT AS HTML (bakes starred solutions into a fresh copy of this file) ───────
+// Reads a local .html file picked by the user, without any network request —
+// avoids depending on fetching the deployed page (service worker / CDN / extensions
+// can all interfere with that). Uses the File System Access API where available,
+// falling back to a plain <input type=file> on browsers that don't support it.
+async function pickLocalHtmlFile(){
+  if (window.showOpenFilePicker) {
+    try {
+      var handles = await window.showOpenFilePicker({
+        types: [{description:"HTML file", accept:{"text/html":[".html"]}}],
+        excludeAcceptAllOption: false
+      });
+      var file = await handles[0].getFile();
+      return await file.text();
+    } catch(e) {
+      if (e.name === "AbortError") return null; // user cancelled the picker
+      throw e;
+    }
+  }
+  return new Promise(function(resolve, reject){
+    var input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".html,text/html";
+    input.onchange = function(){
+      var file = input.files[0];
+      if (!file) { resolve(null); return; }
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result); };
+      reader.onerror = function(){ reject(new Error("Could not read the selected file")); };
+      reader.readAsText(file);
+    };
+    input.click();
+  });
+}
+async function exportUpdatedHtml(){
+  try{
+    var sourceText = await pickLocalHtmlFile();
+    if (sourceText === null) return; // user cancelled — nothing to do
+    showToast("Generating updated HTML…");
+    var startMarker = "var CODING = [";
+    var startIdx = sourceText.indexOf(startMarker);
+    if (startIdx === -1) throw new Error("Could not locate the CODING array in the page source");
+    var endIdx = sourceText.indexOf("\n];", startIdx);
+    if (endIdx === -1) throw new Error("Could not locate the end of the CODING array");
+    endIdx += 3;
+
+    var updatedCoding = CODING.map(function(q){
+      var copy = Object.assign({}, q);
+      ["java","js","python"].forEach(function(lang){
+        copy[lang] = resolveCode(q.id, lang, q[lang]);
+      });
+      return copy;
+    });
+
+    var newBlock = "var CODING = " + JSON.stringify(updatedCoding, null, 2) + ";";
+    var updatedSource = sourceText.slice(0, startIdx) + newBlock + sourceText.slice(endIdx);
+
+    var blob = new Blob([updatedSource], {type:"text/html"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "interview_prep_updated.html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Downloaded interview_prep_updated.html — replace your file and push to git");
+  }catch(e){
+    alert("Could not generate the updated HTML file: " + e.message);
+    console.warn("exportUpdatedHtml failed:", e);
   }
 }
 
