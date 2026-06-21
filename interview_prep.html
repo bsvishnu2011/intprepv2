@@ -376,7 +376,7 @@ pre code{background:none!important;padding:0!important;border:none!important;fon
       <input type="file" id="import-file-input" accept="application/json" style="display:none" onchange="importProgress(this.files[0])">
     </div>
     <div class="sb-io-row">
-      <button class="sb-io-btn" onclick="exportUpdatedHtml()" title="Pick your local interview_prep.html file to bake your starred code solutions into a fresh copy">&#128190; Export as HTML</button>
+      <button class="sb-io-btn" onclick="exportUpdatedHtml()" title="Pick your local interview_prep.html file — it will be updated in place with your starred code solutions">&#128190; Export as HTML</button>
     </div>
     Add questions anytime &mdash; open in any browser<br>
     v2.0 &mdash; Study &bull; Mock &bull; Simulate &bull; Code
@@ -6255,73 +6255,83 @@ function exitCodeEditMode(wrapId, qid, lang, tabIndex, newCode){
 }
 
 // ── EXPORT AS HTML (bakes starred solutions into a fresh copy of this file) ───────
-// Reads a local .html file picked by the user, without any network request —
-// avoids depending on fetching the deployed page (service worker / CDN / extensions
-// can all interfere with that). Uses the File System Access API where available,
-// falling back to a plain <input type=file> on browsers that don't support it.
-async function pickLocalHtmlFile(){
+// Splices the starred solutions into the CODING array of a given raw HTML source string.
+function buildUpdatedHtmlSource(sourceText){
+  var startMarker = "var CODING = [";
+  var startIdx = sourceText.indexOf(startMarker);
+  if (startIdx === -1) throw new Error("Could not locate the CODING array in the page source");
+  var endIdx = sourceText.indexOf("\n];", startIdx);
+  if (endIdx === -1) throw new Error("Could not locate the end of the CODING array");
+  endIdx += 3;
+
+  var updatedCoding = CODING.map(function(q){
+    var copy = Object.assign({}, q);
+    ["java","js","python"].forEach(function(lang){
+      copy[lang] = resolveCode(q.id, lang, q[lang]);
+    });
+    return copy;
+  });
+
+  var newBlock = "var CODING = " + JSON.stringify(updatedCoding, null, 2) + ";";
+  return sourceText.slice(0, startIdx) + newBlock + sourceText.slice(endIdx);
+}
+function downloadAsNewFile(content, filename){
+  var blob = new Blob([content], {type:"text/html"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+async function exportUpdatedHtml(){
+  // Preferred path: File System Access API (Chrome/Edge) — pick the local file once,
+  // write the update straight back into it, no separate "save as" step or download folder involved.
   if (window.showOpenFilePicker) {
     try {
       var handles = await window.showOpenFilePicker({
         types: [{description:"HTML file", accept:{"text/html":[".html"]}}],
         excludeAcceptAllOption: false
       });
-      var file = await handles[0].getFile();
-      return await file.text();
+      var handle = handles[0];
+      var file = await handle.getFile();
+      var sourceText = await file.text();
+      var updatedSource = buildUpdatedHtmlSource(sourceText);
+      var writable = await handle.createWritable();
+      await writable.write(updatedSource);
+      await writable.close();
+      showToast("Updated " + file.name + " on disk — commit and push when ready");
     } catch(e) {
-      if (e.name === "AbortError") return null; // user cancelled the picker
-      throw e;
+      if (e.name === "AbortError") return; // user cancelled the picker — nothing to do
+      alert("Could not update the file: " + e.message);
+      console.warn("exportUpdatedHtml failed:", e);
     }
+    return;
   }
-  return new Promise(function(resolve, reject){
-    var input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".html,text/html";
-    input.onchange = function(){
-      var file = input.files[0];
-      if (!file) { resolve(null); return; }
-      var reader = new FileReader();
-      reader.onload = function(){ resolve(reader.result); };
-      reader.onerror = function(){ reject(new Error("Could not read the selected file")); };
-      reader.readAsText(file);
-    };
-    input.click();
-  });
-}
-async function exportUpdatedHtml(){
-  try{
-    var sourceText = await pickLocalHtmlFile();
-    if (sourceText === null) return; // user cancelled — nothing to do
-    showToast("Generating updated HTML…");
-    var startMarker = "var CODING = [";
-    var startIdx = sourceText.indexOf(startMarker);
-    if (startIdx === -1) throw new Error("Could not locate the CODING array in the page source");
-    var endIdx = sourceText.indexOf("\n];", startIdx);
-    if (endIdx === -1) throw new Error("Could not locate the end of the CODING array");
-    endIdx += 3;
-
-    var updatedCoding = CODING.map(function(q){
-      var copy = Object.assign({}, q);
-      ["java","js","python"].forEach(function(lang){
-        copy[lang] = resolveCode(q.id, lang, q[lang]);
-      });
-      return copy;
+  // Fallback for browsers without the File System Access API (Firefox, Safari): can only
+  // read a picked file, not write back to it, so download the result as a new file instead.
+  try {
+    var sourceText2 = await new Promise(function(resolve, reject){
+      var input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".html,text/html";
+      input.onchange = function(){
+        var f = input.files[0];
+        if (!f) { resolve(null); return; }
+        var reader = new FileReader();
+        reader.onload = function(){ resolve(reader.result); };
+        reader.onerror = function(){ reject(new Error("Could not read the selected file")); };
+        reader.readAsText(f);
+      };
+      input.click();
     });
-
-    var newBlock = "var CODING = " + JSON.stringify(updatedCoding, null, 2) + ";";
-    var updatedSource = sourceText.slice(0, startIdx) + newBlock + sourceText.slice(endIdx);
-
-    var blob = new Blob([updatedSource], {type:"text/html"});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = "interview_prep_updated.html";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (sourceText2 === null) return; // user cancelled — nothing to do
+    var updatedSource2 = buildUpdatedHtmlSource(sourceText2);
+    downloadAsNewFile(updatedSource2, "interview_prep_updated.html");
     showToast("Downloaded interview_prep_updated.html — replace your file and push to git");
-  }catch(e){
+  } catch(e) {
     alert("Could not generate the updated HTML file: " + e.message);
     console.warn("exportUpdatedHtml failed:", e);
   }
