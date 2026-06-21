@@ -6752,7 +6752,7 @@ function filterTopic(t,el){
     automation:"Automation Testing",manual:"Manual Testing",python:"Python",all:"All Topics"};
   var pt=document.getElementById("page-title");
   if(pt)pt.textContent=labels[t]||"All Topics";
-  renderStudy();
+  setMode("study"); // switch back to Study mode so the filtered topic is actually visible; setMode already calls renderStudy()
 }
 function filterDiff(d,el){
   currentDiff=d;
