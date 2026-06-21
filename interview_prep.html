@@ -226,7 +226,7 @@ pre{background:#0d0f18;border:1px solid var(--border);border-radius:8px;padding:
 .code-tab-add:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
 .code-tab-add:disabled{opacity:.3;cursor:not-allowed}
 .code-block-editable{cursor:text}
-.code-edit-area{display:block;width:100%;min-height:130px;background:#0d0f18;border:1px solid var(--accent);border-radius:0 0 8px 8px;border-top:2px solid rgba(255,255,255,.04);padding:13px;font-family:var(--mono);font-size:11.5px;line-height:1.65;color:#c8d0f0;resize:vertical;outline:none;white-space:pre;overflow:auto;box-sizing:border-box}
+.code-edit-area{display:block;width:100%;min-height:130px;min-width:220px;background:#0d0f18;border:1px solid var(--accent);border-radius:0 0 8px 8px;border-top:2px solid rgba(255,255,255,.04);padding:13px;font-family:var(--mono);font-size:11.5px;line-height:1.65;color:#c8d0f0;resize:both;outline:none;white-space:pre;overflow:auto;box-sizing:border-box}
 .cmx-row{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
 .cmx-badge{font-size:11.5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:5px}
 .cmx-t{color:var(--accent)}
@@ -6231,11 +6231,18 @@ function enterCodeEditMode(wrapId, qid, lang, tabIndex){
   if (existingTa) { existingTa.focus(); return; } // already editing — don't clobber in-progress text
   var entry = getCodeEntry(qid, lang);
   var current = (entry.tabs[tabIndex] && entry.tabs[tabIndex].code) || "";
-  // Match the textarea's height to the code block it's replacing so editing doesn't shrink the card.
+  // Match the textarea's size to the column it's replacing. Without an explicit width,
+  // a bare <textarea> has no sibling <pre> left to size the column against — the column
+  // shrinks-to-fit, width:100% becomes circular, and it collapses to the browser's tiny
+  // default textarea width. Floor it at a comfortable minimum too, since a short original
+  // snippet shouldn't force a cramped box for writing a longer custom solution.
   var preEl = wrap.querySelector("pre");
   var measuredHeight = preEl ? preEl.offsetHeight : 0;
+  var col = wrap.closest(".code-col");
+  var measuredWidth = col ? col.offsetWidth : 0;
   var height = Math.max(measuredHeight, 130);
-  wrap.innerHTML = "<textarea class='code-edit-area' spellcheck='false' wrap='off' style='height:" + height + "px'>" + esc(current) + "</textarea>";
+  var width = Math.max(measuredWidth, 420);
+  wrap.innerHTML = "<textarea class='code-edit-area' spellcheck='false' wrap='off' style='height:" + height + "px;width:" + width + "px'>" + esc(current) + "</textarea>";
   var ta = wrap.querySelector("textarea");
   ta.focus();
   ta.addEventListener("blur", function(){ exitCodeEditMode(wrapId, qid, lang, tabIndex, ta.value); });
