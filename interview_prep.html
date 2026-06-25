@@ -6529,6 +6529,1428 @@ var CODING = [
       {q:"How would you adapt this to find the second SMALLEST number instead?",a:"Mirror the logic with flipped comparisons and initial values: initialize both trackers to the maximum possible value (Integer.MAX_VALUE/Infinity), and update 'smallest'/'second' using < instead of > throughout."},
       {q:"How would you generalize this to find the Kth largest in a list, similar to the array version?",a:"For arbitrary k, a min-heap of size k is the standard scalable approach: push every element, popping the smallest whenever the heap exceeds size k. After processing the whole list, the heap's minimum is the Kth largest, in O(n log k) time."}
     ]
+  },
+  {
+    id:10065,
+    category:"strings",
+    diff:"Easy",
+    title:"Check if two strings are anagrams",
+    logic:"Sort both strings alphabetically and compare them. If the sorted versions are equal, the two strings contain the same characters with the same frequencies — that is the definition of an anagram. This is the simplest approach to understand and explain.",
+    java:"import java.util.Arrays;\n\npublic static boolean isAnagram(String s1, String s2) {\n    if (s1.length() != s2.length()) return false;\n    char[] a = s1.toCharArray();\n    char[] b = s2.toCharArray();\n    Arrays.sort(a);\n    Arrays.sort(b);\n    return Arrays.equals(a, b);\n}\n// isAnagram(\"listen\", \"silent\") -> true\n// isAnagram(\"hello\",  \"world\")  -> false",
+    js:"function isAnagram(s1, s2) {\n    if (s1.length !== s2.length) return false;\n    let sorted1 = s1.split('').sort().join('');\n    let sorted2 = s2.split('').sort().join('');\n    return sorted1 === sorted2;\n}\nconsole.log(isAnagram('listen', 'silent')); // true\nconsole.log(isAnagram('hello',  'world'));  // false",
+    python:"def is_anagram(s1, s2):\n    if len(s1) != len(s2):\n        return False\n    return sorted(s1) == sorted(s2)\n\nprint(is_anagram('listen', 'silent'))  # True\nprint(is_anagram('hello',  'world'))   # False",
+    timeComplexity:"O(n log n) — sorting both strings",
+    spaceComplexity:"O(n) — for the sorted character arrays",
+    tip:"The sort approach is the easiest to explain. Mention the HashMap alternative as an O(n) upgrade: count each character's frequency in s1, then decrement for s2 — if all counts reach zero they are anagrams.",
+    edgeCases:["Different lengths → return false immediately without sorting","Empty strings → two empty strings are anagrams of each other","Case sensitivity → 'Listen' and 'silent' — lowercase both first if case-insensitive","Spaces — decide whether spaces count as characters"],
+    followups:[
+      {q:"How can you solve it in O(n) without sorting?",a:"Use a frequency array of size 26. Loop through s1 adding +1 for each character, then loop through s2 subtracting -1. If any count is non-zero at the end, they are not anagrams. O(n) time, O(1) space since the array is fixed size."},
+      {q:"What if you need to group a list of strings into anagram groups?",a:"Sort each string's characters to create a key, then use a HashMap where the key is the sorted string and the value is a list of original strings. All strings with the same sorted key belong to the same anagram group."}
+    ]
+  },
+  {
+    id:10066,
+    category:"strings",
+    diff:"Easy",
+    title:"Find first non-repeating character in a string",
+    logic:"Two-pass approach: first pass counts the frequency of every character. Second pass walks the string again and returns the first character whose count is exactly 1. You cannot detect uniqueness in a single pass because you need to see the whole string before knowing if a character repeats.",
+    java:"public static char firstNonRepeating(String s) {\n    int[] count = new int[256]; // covers all ASCII chars\n    for (int i = 0; i < s.length(); i++) {\n        count[s.charAt(i)]++;\n    }\n    for (int i = 0; i < s.length(); i++) {\n        if (count[s.charAt(i)] == 1) {\n            return s.charAt(i);\n        }\n    }\n    return '\\0'; // no non-repeating character found\n}\n// firstNonRepeating(\"aabbcd\") -> 'c'",
+    js:"function firstNonRepeating(s) {\n    let count = {};\n    for (let ch of s) {\n        count[ch] = (count[ch] || 0) + 1;\n    }\n    for (let ch of s) {\n        if (count[ch] === 1) return ch;\n    }\n    return null;\n}\nconsole.log(firstNonRepeating('aabbcd')); // 'c'",
+    python:"def first_non_repeating(s):\n    count = {}\n    for ch in s:\n        count[ch] = count.get(ch, 0) + 1\n    for ch in s:\n        if count[ch] == 1:\n            return ch\n    return None\n\nprint(first_non_repeating('aabbcd'))  # 'c'",
+    timeComplexity:"O(n) — two passes through the string",
+    spaceComplexity:"O(1) — fixed-size frequency array (26 or 256 entries)",
+    tip:"Always emphasise that you need TWO passes: one to build counts, one to find the answer. A common mistake is trying to check uniqueness in one pass — you cannot know whether a character is unique until you have seen the whole string.",
+    edgeCases:["All characters repeat → return null or sentinel value","Single character → that character is automatically non-repeating","String with every character appearing twice → no answer exists","Case sensitivity — 'A' and 'a' are treated as different characters by default"],
+    followups:[
+      {q:"How would you find the LAST non-repeating character?",a:"Same two-pass approach, but in the second pass iterate from the END of the string backwards, returning the first character with count 1. O(n) time, same space."},
+      {q:"What if the string is a stream and you cannot make two passes?",a:"Use a LinkedHashMap (insertion-ordered map) storing character to count. After processing the whole stream, iterate the map in insertion order and return the first entry with count 1."}
+    ]
+  },
+  {
+    id:10067,
+    category:"strings",
+    diff:"Medium",
+    title:"Find longest substring without repeating characters",
+    logic:"Use a sliding window with two pointers (left and right) and a Set to track characters inside the window. Expand right to grow the window. When a duplicate is found, shrink from the left until the duplicate is removed. Track the maximum window size seen at any point.",
+    java:"import java.util.HashSet;\nimport java.util.Set;\n\npublic static int longestSubstring(String s) {\n    Set<Character> set = new HashSet<>();\n    int left = 0, maxLen = 0;\n    for (int right = 0; right < s.length(); right++) {\n        while (set.contains(s.charAt(right))) {\n            set.remove(s.charAt(left));\n            left++;\n        }\n        set.add(s.charAt(right));\n        maxLen = Math.max(maxLen, right - left + 1);\n    }\n    return maxLen;\n}\n// longestSubstring(\"abcabcbb\") -> 3",
+    js:"function longestSubstring(s) {\n    let set = new Set();\n    let left = 0, maxLen = 0;\n    for (let right = 0; right < s.length; right++) {\n        while (set.has(s[right])) {\n            set.delete(s[left]);\n            left++;\n        }\n        set.add(s[right]);\n        maxLen = Math.max(maxLen, right - left + 1);\n    }\n    return maxLen;\n}\nconsole.log(longestSubstring('abcabcbb')); // 3",
+    python:"def longest_substring(s):\n    seen = set()\n    left = 0\n    max_len = 0\n    for right in range(len(s)):\n        while s[right] in seen:\n            seen.remove(s[left])\n            left += 1\n        seen.add(s[right])\n        max_len = max(max_len, right - left + 1)\n    return max_len\n\nprint(longest_substring('abcabcbb'))  # 3",
+    timeComplexity:"O(n) — each character is added and removed from the set at most once",
+    spaceComplexity:"O(k) — where k is the number of unique characters in the string",
+    tip:"Think of the two pointers as a window. Right expands it, left shrinks it when a duplicate appears. The window always contains only unique characters. Draw this on paper with 'abcabcbb' to visualise how the window slides.",
+    edgeCases:["Empty string → return 0","All same characters like 'aaaa' → answer is 1","All unique characters → answer is the full length","Single character → return 1"],
+    followups:[
+      {q:"How would you return the actual substring instead of just the length?",a:"Track the start index of the best window. When you update maxLen, also save left as bestStart. At the end return s.substring(bestStart, bestStart + maxLen)."},
+      {q:"What if you want the longest substring where each character appears at most k times?",a:"Use a HashMap for counts instead of a Set. Shrink from the left when any character's count exceeds k. Same sliding window logic, just a different condition for when to shrink."}
+    ]
+  },
+  {
+    id:10068,
+    category:"strings",
+    diff:"Easy",
+    title:"Check if one string is a rotation of another",
+    logic:"Key insight: if s2 is a rotation of s1, then s2 will always appear as a substring inside s1+s1 (s1 concatenated with itself). For example, 'abcde' rotated gives 'cdeab', and 'cdeab' appears inside 'abcdeabcde'. This turns a rotation check into a simple substring search.",
+    java:"public static boolean isRotation(String s1, String s2) {\n    if (s1.length() != s2.length()) return false;\n    String doubled = s1 + s1;\n    return doubled.contains(s2);\n}\n// isRotation(\"abcde\", \"cdeab\") -> true\n// isRotation(\"abcde\", \"abced\") -> false",
+    js:"function isRotation(s1, s2) {\n    if (s1.length !== s2.length) return false;\n    return (s1 + s1).includes(s2);\n}\nconsole.log(isRotation('abcde', 'cdeab')); // true\nconsole.log(isRotation('abcde', 'abced')); // false",
+    python:"def is_rotation(s1, s2):\n    if len(s1) != len(s2):\n        return False\n    return s2 in (s1 + s1)\n\nprint(is_rotation('abcde', 'cdeab'))  # True\nprint(is_rotation('abcde', 'abced'))  # False",
+    timeComplexity:"O(n) — the substring search inside s1+s1",
+    spaceComplexity:"O(n) — for the doubled string",
+    tip:"Check equal lengths first — without it a shorter string could incorrectly appear as a substring. The doubling trick is elegant and easy to remember: any rotation of s1 must start at some index in s1+s1 and span exactly n characters.",
+    edgeCases:["Different lengths → immediately false","Empty strings → two empty strings are rotations of each other","Identical strings → a string is a rotation of itself (zero rotation)","String of one repeated character like 'aaa' — any rotation equals the original"],
+    followups:[
+      {q:"How would you check without concatenation?",a:"Try all rotation points. For each index i from 0 to n-1, check if s1.substring(i) + s1.substring(0, i) equals s2. O(n^2) time since you do n comparisons each costing O(n)."},
+      {q:"What if you need to find HOW MANY positions the string was rotated?",a:"If s2 is a rotation of s1, find the index where s2 starts inside s1+s1. That index is the rotation count. Use indexOf(s2) on the doubled string."}
+    ]
+  },
+  {
+    id:10069,
+    category:"strings",
+    diff:"Medium",
+    title:"Find all permutations of a string",
+    logic:"Use recursion. At each step, pick one character from the remaining string to be the next character, then recurse on the rest. Base case: when the remaining string is empty, you have built a complete permutation. A string of length n produces n! permutations.",
+    java:"public static void permutations(String remaining, String current) {\n    if (remaining.length() == 0) {\n        System.out.println(current);\n        return;\n    }\n    for (int i = 0; i < remaining.length(); i++) {\n        char ch = remaining.charAt(i);\n        String rest = remaining.substring(0, i) + remaining.substring(i + 1);\n        permutations(rest, current + ch);\n    }\n}\n// Call: permutations(\"abc\", \"\");",
+    js:"function permutations(remaining, current = '') {\n    if (remaining.length === 0) {\n        console.log(current);\n        return;\n    }\n    for (let i = 0; i < remaining.length; i++) {\n        let ch = remaining[i];\n        let rest = remaining.slice(0, i) + remaining.slice(i + 1);\n        permutations(rest, current + ch);\n    }\n}\npermutations('abc');",
+    python:"def permutations(remaining, current=''):\n    if len(remaining) == 0:\n        print(current)\n        return\n    for i in range(len(remaining)):\n        ch = remaining[i]\n        rest = remaining[:i] + remaining[i+1:]\n        permutations(rest, current + ch)\n\npermutations('abc')",
+    timeComplexity:"O(n x n!) — n! permutations each taking O(n) to build",
+    spaceComplexity:"O(n) recursion depth, O(n!) if collecting all results in a list",
+    tip:"Explain the recursion tree on paper: at each level you pick one character. Depth equals string length, branching factor decreases by 1 each level. For 'abc': 3 choices at level 1, 2 at level 2, 1 at level 3 — total 3! = 6 permutations.",
+    edgeCases:["Empty string → one permutation (the empty string)","Single character → one permutation","Duplicate characters like 'aab' → will produce duplicate permutations; mention using a Set to deduplicate","Long strings → output grows as n!, so 10 chars = 3.6M permutations"],
+    followups:[
+      {q:"How do you avoid duplicate permutations when the string has repeated characters?",a:"Sort the string first. During the loop, skip index i if remaining.charAt(i) equals remaining.charAt(i-1) — same value as previous at the same recursion level. This prevents choosing the same character twice at the same position."},
+      {q:"How would you return all permutations as a list?",a:"Pass a List through the recursion and add to it at the base case instead of printing. Same recursion structure, just collect results instead of printing them."}
+    ]
+  },
+  {
+    id:10070,
+    category:"strings",
+    diff:"Easy",
+    title:"Find all substrings of a string",
+    logic:"Use two nested loops. The outer loop fixes the start index i. The inner loop varies the end index j from i+1 up to the string length. The substring from i to j is extracted at each iteration. A string of length n has n*(n+1)/2 total substrings.",
+    java:"public static void allSubstrings(String s) {\n    for (int i = 0; i < s.length(); i++) {\n        for (int j = i + 1; j <= s.length(); j++) {\n            System.out.println(s.substring(i, j));\n        }\n    }\n}\n// allSubstrings(\"abc\") prints: a ab abc b bc c",
+    js:"function allSubstrings(s) {\n    for (let i = 0; i < s.length; i++) {\n        for (let j = i + 1; j <= s.length; j++) {\n            console.log(s.slice(i, j));\n        }\n    }\n}\nallSubstrings('abc');",
+    python:"def all_substrings(s):\n    for i in range(len(s)):\n        for j in range(i + 1, len(s) + 1):\n            print(s[i:j])\n\nall_substrings('abc')",
+    timeComplexity:"O(n^3) — O(n^2) pairs of indices, each substring extraction is O(n)",
+    spaceComplexity:"O(n) for each extracted substring (O(1) extra if just printing)",
+    tip:"Know the total count formula: a string of length n has n*(n+1)/2 substrings. For n=4 that is 10. Quoting this formula shows you understand the combinatorics, not just the loop.",
+    edgeCases:["Empty string → no substrings printed","Single character → one substring (the character itself)","All same characters like 'aaa' → substrings differ by position even though value is the same"],
+    followups:[
+      {q:"How would you count substrings without printing them?",a:"The count is always n*(n+1)/2 where n is the string length, so you can calculate it directly as a formula without any loops."},
+      {q:"How would you find all UNIQUE substrings?",a:"Collect substrings into a HashSet instead of printing. The set automatically discards duplicates. For large strings, a Suffix Array or Trie is more efficient."}
+    ]
+  },
+  {
+    id:10071,
+    category:"strings",
+    diff:"Easy",
+    title:"Find string length without using the built-in length method",
+    logic:"Convert the string to a character array, then loop through it incrementing a counter for each element. The loop naturally visits every character exactly once. This directly demonstrates what the built-in length method does internally.",
+    java:"public static int stringLength(String s) {\n    int count = 0;\n    for (char c : s.toCharArray()) {\n        count++;\n    }\n    return count;\n}\n// stringLength(\"hello\") -> 5",
+    js:"function stringLength(s) {\n    let count = 0;\n    for (let ch of s) {\n        count++;\n    }\n    return count;\n}\nconsole.log(stringLength('hello')); // 5",
+    python:"def string_length(s):\n    count = 0\n    for ch in s:\n        count += 1\n    return count\n\nprint(string_length('hello'))  # 5",
+    timeComplexity:"O(n) — visits every character once",
+    spaceComplexity:"O(n) for the char array in Java; O(1) in JS/Python with direct iteration",
+    tip:"This is a warm-up question testing whether you understand that length is simply a count of characters. Keep it simple — one loop, one counter. In Java you can also use charAt(i) in a for-loop to avoid creating a copy of the char array.",
+    edgeCases:["Empty string → returns 0","String with only spaces → spaces count as characters","String with numbers or special characters → all counted normally"],
+    followups:[
+      {q:"Can you find the length without a loop?",a:"Yes — use recursion. Base case: if the string is empty return 0. Recursive case: return 1 + length(s.substring(1)). This strips one character per call. Not practical for large strings due to stack depth but it demonstrates recursion."},
+      {q:"What is the difference between toCharArray() and using charAt(i) in a loop?",a:"toCharArray() creates a new array by copying all characters — O(n) extra space. charAt(i) reads directly from the String's internal storage at index i in O(1) time with no allocation. Use charAt(i) when memory matters."}
+    ]
+  },
+  {
+    id:10072,
+    category:"strings",
+    diff:"Easy",
+    title:"Compress a string: aaabbcccc becomes a3b2c4",
+    logic:"Walk through the string counting consecutive identical characters. When the character changes, append the character and its count to the result. Use a while-loop inside another while-loop: the outer advances the start position, the inner counts the run of the same character.",
+    java:"public static String compress(String s) {\n    StringBuilder result = new StringBuilder();\n    int i = 0;\n    while (i < s.length()) {\n        char ch = s.charAt(i);\n        int count = 1;\n        while (i + count < s.length() && s.charAt(i + count) == ch) {\n            count++;\n        }\n        result.append(ch).append(count);\n        i += count;\n    }\n    return result.toString();\n}\n// compress(\"aaabbcccc\") -> \"a3b2c4\"",
+    js:"function compress(s) {\n    let result = '';\n    let i = 0;\n    while (i < s.length) {\n        let ch = s[i];\n        let count = 1;\n        while (i + count < s.length && s[i + count] === ch) {\n            count++;\n        }\n        result += ch + count;\n        i += count;\n    }\n    return result;\n}\nconsole.log(compress('aaabbcccc')); // 'a3b2c4'",
+    python:"def compress(s):\n    result = ''\n    i = 0\n    while i < len(s):\n        ch = s[i]\n        count = 1\n        while i + count < len(s) and s[i + count] == ch:\n            count += 1\n        result += ch + str(count)\n        i += count\n    return result\n\nprint(compress('aaabbcccc'))  # 'a3b2c4'",
+    timeComplexity:"O(n) — each character is visited exactly once",
+    spaceComplexity:"O(n) — for the result string",
+    tip:"Ask the interviewer whether a count of 1 should be included (e.g. 'abc' → 'a1b1c1') or omitted (stays 'abc'). The two-while-loop pattern — outer for position, inner for counting runs — is the standard readable approach.",
+    edgeCases:["Empty string → return empty string","No consecutive duplicates 'abc' → 'a1b1c1' or 'abc' depending on the spec","Single character 'a' → 'a1'","All same characters 'aaaa' → 'a4'"],
+    followups:[
+      {q:"Should compressed output always be shorter than the input?",a:"No. 'abc' compresses to 'a1b1c1' which is longer. A real compressor should compare lengths and return the original if the compressed version is not shorter."},
+      {q:"How would you decompress 'a3b2c4' back to 'aaabbcccc'?",a:"Walk through the compressed string two characters at a time — a letter followed by a digit. Append the letter digit-many times to a StringBuilder. If counts can be more than one digit, read ahead until you hit the next letter."}
+    ]
+  },
+  {
+    id:10073,
+    category:"strings",
+    diff:"Easy",
+    title:"Check if a string contains only digits",
+    logic:"Loop through every character and check if it falls between '0' and '9'. If any character is outside that range, return false immediately. If the entire loop completes without returning false, all characters are digits — return true.",
+    java:"public static boolean isAllDigits(String s) {\n    if (s == null || s.isEmpty()) return false;\n    for (int i = 0; i < s.length(); i++) {\n        char c = s.charAt(i);\n        if (c < '0' || c > '9') return false;\n    }\n    return true;\n}\n// isAllDigits(\"12345\") -> true\n// isAllDigits(\"123a5\") -> false",
+    js:"function isAllDigits(s) {\n    if (!s || s.length === 0) return false;\n    for (let ch of s) {\n        if (ch < '0' || ch > '9') return false;\n    }\n    return true;\n}\nconsole.log(isAllDigits('12345')); // true\nconsole.log(isAllDigits('123a5')); // false",
+    python:"def is_all_digits(s):\n    if not s:\n        return False\n    for ch in s:\n        if ch < '0' or ch > '9':\n            return False\n    return True\n\nprint(is_all_digits('12345'))  # True\nprint(is_all_digits('123a5'))  # False",
+    timeComplexity:"O(n) — checks each character once",
+    spaceComplexity:"O(1)",
+    tip:"Using c < '0' || c > '9' shows you understand ASCII values. Mention the built-in alternatives: Character.isDigit(c) in Java, /^\\d+$/.test(s) in JS, s.isdigit() in Python — but walk through the manual approach to show the underlying logic.",
+    edgeCases:["Empty or null string → return false","Negative numbers like '-123' → the minus sign fails; clarify if negatives are allowed","Decimal numbers like '3.14' → the dot fails; clarify the requirement","Leading/trailing spaces → space character fails"],
+    followups:[
+      {q:"How would you allow an optional leading minus sign for negative numbers?",a:"Check the first character separately: if it is '-' and string length is greater than 1, start the digit check from index 1. Otherwise check from index 0. Cleanly handles the special case without modifying the main loop."},
+      {q:"What are the ASCII values of '0' and '9'?",a:"'0' is 48 and '9' is 57. Digits are contiguous in ASCII so checking c >= 48 && c <= 57 is equivalent to c >= '0' && c <= '9'. Using character literals is preferred for readability."}
+    ]
+  },
+  {
+    id:10074,
+    category:"strings",
+    diff:"Easy",
+    title:"Convert a string to title case: hello world becomes Hello World",
+    logic:"Split the sentence on spaces to get individual words. For each word, uppercase the first character and lowercase the rest, then rejoin everything with spaces. Applying toLowerCase to the tail ensures words like 'hELLO' become 'Hello', not 'HELLO'.",
+    java:"public static String toTitleCase(String s) {\n    String[] words = s.split(\" \");\n    StringBuilder result = new StringBuilder();\n    for (String word : words) {\n        if (word.length() > 0) {\n            result.append(Character.toUpperCase(word.charAt(0)));\n            result.append(word.substring(1).toLowerCase());\n            result.append(\" \");\n        }\n    }\n    return result.toString().trim();\n}\n// toTitleCase(\"hello world\") -> \"Hello World\"",
+    js:"function toTitleCase(s) {\n    return s.split(' ')\n            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())\n            .join(' ');\n}\nconsole.log(toTitleCase('hello world')); // 'Hello World'",
+    python:"def to_title_case(s):\n    words = s.split(' ')\n    result = []\n    for word in words:\n        if word:\n            result.append(word[0].upper() + word[1:].lower())\n    return ' '.join(result)\n\nprint(to_title_case('hello world'))  # 'Hello World'",
+    timeComplexity:"O(n) — processes each character once",
+    spaceComplexity:"O(n) — for the result string",
+    tip:"The key step is capitalising the FIRST letter and lowercasing the REST — not just uppercasing the first. Without toLowerCase on the tail, 'hELLO' becomes 'HELLO' instead of 'Hello'.",
+    edgeCases:["Multiple consecutive spaces — split on space produces empty strings; guard with if (word.length() > 0)","All-uppercase input like 'HELLO WORLD' → becomes 'Hello World' due to toLowerCase on the tail","Single-word string — works with no special handling","Empty string → returns empty string"],
+    followups:[
+      {q:"How would you skip capitalising small words like 'a', 'the', 'of'?",a:"Keep a Set of stop words. In the loop, capitalise the word only if it is not in the stop-word set — except always capitalise the first and last word of the sentence regardless."},
+      {q:"What if there are multiple spaces between words?",a:"Split with split(\"\\\\s+\") which treats any run of whitespace as a single delimiter, eliminating empty strings from the array. Rejoin with a single space."}
+    ]
+  },
+  {
+    id:10075,
+    category:"strings",
+    diff:"Easy",
+    title:"Find the most frequent word in a sentence",
+    logic:"Split the sentence into words, then count appearances of each word using a HashMap. After building the counts, scan the map to find the word with the highest count. Two passes total: one to count, one to find the maximum.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static String mostFrequentWord(String sentence) {\n    String[] words = sentence.toLowerCase().split(\" \");\n    Map<String, Integer> count = new HashMap<>();\n    for (String word : words) {\n        count.put(word, count.getOrDefault(word, 0) + 1);\n    }\n    String maxWord = \"\";\n    int maxCount = 0;\n    for (Map.Entry<String, Integer> entry : count.entrySet()) {\n        if (entry.getValue() > maxCount) {\n            maxCount = entry.getValue();\n            maxWord = entry.getKey();\n        }\n    }\n    return maxWord;\n}",
+    js:"function mostFrequentWord(sentence) {\n    let words = sentence.toLowerCase().split(' ');\n    let count = {};\n    for (let word of words) {\n        count[word] = (count[word] || 0) + 1;\n    }\n    let maxWord = '';\n    let maxCount = 0;\n    for (let word in count) {\n        if (count[word] > maxCount) {\n            maxCount = count[word];\n            maxWord = word;\n        }\n    }\n    return maxWord;\n}",
+    python:"def most_frequent_word(sentence):\n    words = sentence.lower().split()\n    count = {}\n    for word in words:\n        count[word] = count.get(word, 0) + 1\n    max_word = ''\n    max_count = 0\n    for word, cnt in count.items():\n        if cnt > max_count:\n            max_count = cnt\n            max_word = word\n    return max_word",
+    timeComplexity:"O(n) — one pass to count, one pass over unique words to find max",
+    spaceComplexity:"O(k) — HashMap stores k unique words",
+    tip:"Always lowercase the input before splitting so 'The' and 'the' count as the same word. Mention punctuation as a follow-up concern — 'word.' and 'word' are counted separately unless you strip punctuation first.",
+    edgeCases:["Empty string → no words, return empty or null","Single word → that word is the most frequent","Tie between words → return any one; clarify with the interviewer which is preferred","Punctuation attached to words like 'hello,' — strip non-letter characters first if comparing meanings"],
+    followups:[
+      {q:"How would you return the top 3 most frequent words?",a:"Sort the map entries by count in descending order and take the first 3. Or use a max-heap (Priority Queue sorted by count) and poll 3 times. Sorting is O(k log k) where k is the number of unique words."},
+      {q:"How would you strip punctuation before counting?",a:"In Java use word.replaceAll(\"[^a-zA-Z]\", \"\") to remove all non-letter characters. In Python use word.strip('.,!?;:'). In JS use word.replace(/[^a-zA-Z]/g, '')."}
+    ]
+  },
+  {
+    id:10076,
+    category:"strings",
+    diff:"Easy",
+    title:"Check if two strings are equal without using .equals()",
+    logic:"First check if both strings have the same length — different lengths mean they cannot be equal. Then compare character by character at every index. Return false the moment any pair differs. If the loop completes with no mismatch, return true.",
+    java:"public static boolean stringsEqual(String s1, String s2) {\n    if (s1.length() != s2.length()) return false;\n    for (int i = 0; i < s1.length(); i++) {\n        if (s1.charAt(i) != s2.charAt(i)) return false;\n    }\n    return true;\n}\n// stringsEqual(\"hello\", \"hello\") -> true\n// stringsEqual(\"hello\", \"world\") -> false",
+    js:"function stringsEqual(s1, s2) {\n    if (s1.length !== s2.length) return false;\n    for (let i = 0; i < s1.length; i++) {\n        if (s1[i] !== s2[i]) return false;\n    }\n    return true;\n}\nconsole.log(stringsEqual('hello', 'hello')); // true",
+    python:"def strings_equal(s1, s2):\n    if len(s1) != len(s2):\n        return False\n    for i in range(len(s1)):\n        if s1[i] != s2[i]:\n            return False\n    return True\n\nprint(strings_equal('hello', 'hello'))  # True",
+    timeComplexity:"O(n) — worst case visits every character when strings are equal",
+    spaceComplexity:"O(1)",
+    tip:"This replicates what .equals() does internally. In Java, == compares object references (memory addresses), not content — two separate String objects with the same value will have == return false. Always use .equals() (or this manual approach) for string content comparison.",
+    edgeCases:["Both empty strings → equal (length 0 == 0, loop does not run)","One empty and one not → different lengths, return false immediately","Same content but different case → not equal by default; lowercase both first for case-insensitive comparison","Null input in Java — add null checks before calling .length()"],
+    followups:[
+      {q:"In Java what is the difference between == and .equals() for strings?",a:"== checks if both references point to the same object in memory. .equals() checks whether the character content is the same. Two separately created String objects with the same value will have == return false but .equals() return true."},
+      {q:"How would you make the comparison case-insensitive?",a:"Lowercase both strings before comparing: s1.toLowerCase() and s2.toLowerCase(). Then run the same character-by-character loop. 'Hello' and 'hello' would then be considered equal."}
+    ]
+  },
+  {
+    id:10077,
+    category:"strings",
+    diff:"Easy",
+    title:"Remove adjacent duplicate characters: aabbcc becomes abc",
+    logic:"Walk through the string and include a character in the result only when it differs from the character immediately before it. For the first character (index 0) always include it. This single-pass approach handles any run of duplicates in one sweep.",
+    java:"public static String removeAdjacentDuplicates(String s) {\n    StringBuilder result = new StringBuilder();\n    for (int i = 0; i < s.length(); i++) {\n        if (i == 0 || s.charAt(i) != s.charAt(i - 1)) {\n            result.append(s.charAt(i));\n        }\n    }\n    return result.toString();\n}\n// removeAdjacentDuplicates(\"aabbcc\") -> \"abc\"\n// removeAdjacentDuplicates(\"aabba\")  -> \"aba\"",
+    js:"function removeAdjacentDuplicates(s) {\n    let result = '';\n    for (let i = 0; i < s.length; i++) {\n        if (i === 0 || s[i] !== s[i - 1]) {\n            result += s[i];\n        }\n    }\n    return result;\n}\nconsole.log(removeAdjacentDuplicates('aabbcc')); // 'abc'",
+    python:"def remove_adjacent_duplicates(s):\n    result = ''\n    for i in range(len(s)):\n        if i == 0 or s[i] != s[i - 1]:\n            result += s[i]\n    return result\n\nprint(remove_adjacent_duplicates('aabbcc'))  # 'abc'",
+    timeComplexity:"O(n) — one pass through the string",
+    spaceComplexity:"O(n) — for the result string",
+    tip:"This only removes ADJACENT duplicates, not all duplicates. 'aabba' becomes 'aba', not 'a' — the two a's are not adjacent in the original string. Clarify this with the interviewer because they may mean all duplicates.",
+    edgeCases:["Empty string → return empty","Single character → return unchanged","No adjacent duplicates like 'abcde' → return unchanged","All same character 'aaaa' → returns single character","Non-adjacent duplicates 'abba' → returns 'aba' not 'a'"],
+    followups:[
+      {q:"How would you remove ALL duplicate occurrences regardless of position?",a:"Use a HashSet to track seen characters. Loop through the string and include a character only if it has not been seen before. This removes all duplicates, keeping only the first occurrence of each."},
+      {q:"How would you repeatedly remove adjacent duplicates until none remain?",a:"Use a stack. For each character, if the stack top equals the current character pop it; otherwise push the current character. After processing the whole string, the stack contains the result with no adjacent duplicates anywhere."}
+    ]
+  },
+  {
+    id:10078,
+    category:"strings",
+    diff:"Medium",
+    title:"Find the longest palindromic substring",
+    logic:"For every index in the string, treat it as the centre of a palindrome and expand outward as long as the characters on both sides match. Do this twice per position: once for odd-length palindromes (single centre character) and once for even-length (two centre characters). Track the longest palindrome found.",
+    java:"static String expand(String s, int left, int right) {\n    while (left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)) {\n        left--;\n        right++;\n    }\n    return s.substring(left + 1, right);\n}\n\npublic static String longestPalindrome(String s) {\n    String longest = \"\";\n    for (int i = 0; i < s.length(); i++) {\n        String odd  = expand(s, i, i);     // odd-length: aba\n        String even = expand(s, i, i + 1); // even-length: abba\n        if (odd.length()  > longest.length()) longest = odd;\n        if (even.length() > longest.length()) longest = even;\n    }\n    return longest;\n}\n// longestPalindrome(\"babad\") -> \"bab\"",
+    js:"function expand(s, left, right) {\n    while (left >= 0 && right < s.length && s[left] === s[right]) {\n        left--;\n        right++;\n    }\n    return s.slice(left + 1, right);\n}\n\nfunction longestPalindrome(s) {\n    let longest = '';\n    for (let i = 0; i < s.length; i++) {\n        let odd  = expand(s, i, i);\n        let even = expand(s, i, i + 1);\n        if (odd.length  > longest.length) longest = odd;\n        if (even.length > longest.length) longest = even;\n    }\n    return longest;\n}\nconsole.log(longestPalindrome('babad')); // 'bab'",
+    python:"def expand(s, left, right):\n    while left >= 0 and right < len(s) and s[left] == s[right]:\n        left -= 1\n        right += 1\n    return s[left + 1:right]\n\ndef longest_palindrome(s):\n    longest = ''\n    for i in range(len(s)):\n        odd  = expand(s, i, i)\n        even = expand(s, i, i + 1)\n        if len(odd)  > len(longest): longest = odd\n        if len(even) > len(longest): longest = even\n    return longest\n\nprint(longest_palindrome('babad'))  # 'bab'",
+    timeComplexity:"O(n^2) — n centres, each expanding up to O(n) characters",
+    spaceComplexity:"O(n) — for storing the longest substring found",
+    tip:"Always check both odd and even centres. 'aba' has a single middle character (odd), 'abba' has no single middle (even). Forgetting the even case is the most common bug on this problem.",
+    edgeCases:["Empty string → return empty string","Single character → it is its own palindrome","All same characters 'aaaa' → entire string is the answer","Two different characters 'ab' → either single character is the answer (length 1)"],
+    followups:[
+      {q:"How would you return just the length instead of the substring?",a:"Track bestStart and bestLength as integers. When you find a longer palindrome, update both. At the end return bestLength. This avoids substring allocation and is slightly more efficient."},
+      {q:"What is the brute force approach and why is it worse?",a:"Check every possible pair of indices with two nested loops, then verify each substring is a palindrome in O(n). Total O(n^3). The expand-from-centre approach is O(n^2) because expanding naturally stops as soon as characters stop matching."}
+    ]
+  },
+  {
+    id:10079,
+    category:"strings",
+    diff:"Easy",
+    title:"Validate email format using regex",
+    logic:"A valid basic email has: one or more characters, then @, then one or more domain characters, then a dot, then 2 or more letters. Write a regex that matches this structure and test the input against it. Using [.] in Java for the dot avoids complex backslash escaping.",
+    java:"import java.util.regex.Pattern;\n\npublic static boolean isValidEmail(String email) {\n    String pattern = \"[a-zA-Z0-9]+@[a-zA-Z0-9]+[.][a-zA-Z]{2,}\";\n    return Pattern.matches(pattern, email);\n}\n// isValidEmail(\"test@example.com\") -> true\n// isValidEmail(\"testexample.com\")  -> false\n// isValidEmail(\"test@\")            -> false",
+    js:"function isValidEmail(email) {\n    let pattern = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,}$/;\n    return pattern.test(email);\n}\nconsole.log(isValidEmail('test@example.com')); // true\nconsole.log(isValidEmail('testexample.com'));  // false",
+    python:"import re\n\ndef is_valid_email(email):\n    pattern = r'[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,}'\n    return bool(re.match(pattern, email))\n\nprint(is_valid_email('test@example.com'))  # True\nprint(is_valid_email('testexample.com'))   # False",
+    timeComplexity:"O(n) — regex engine scans the string once",
+    spaceComplexity:"O(1)",
+    tip:"A basic regex is sufficient for interviews. Use [.] in Java (dot inside character class = literal dot) instead of \\\\. to avoid confusing double-backslash escaping. Mention that production email validation uses more complex patterns or just sends a confirmation link.",
+    edgeCases:["No @ symbol → fails","Multiple @ symbols → fails (pattern expects exactly one @)","No dot after domain → fails","Domain extension shorter than 2 chars → fails","Empty string → fails"],
+    followups:[
+      {q:"Why is regex alone not enough to fully validate an email?",a:"A correctly formatted email may still not exist or may belong to someone else. The only reliable validation is to send a confirmation email and have the user click the link."},
+      {q:"How would you extract all email addresses from a paragraph of text?",a:"Use Matcher.find() in Java or String.match() with global flag in JS to search for the pattern anywhere in the text rather than matching the whole string. Collect all matches into a list."}
+    ]
+  },
+  {
+    id:10080,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find missing number in array 1 to N",
+    logic:"The sum of 1 to N is N*(N+1)/2. Add up all numbers actually present in the array. The difference between the expected sum and the actual sum is the missing number. One loop to sum, one formula — no sorting or extra space needed.",
+    java:"public static int findMissing(int[] arr, int n) {\n    int expectedSum = n * (n + 1) / 2;\n    int actualSum = 0;\n    for (int num : arr) {\n        actualSum += num;\n    }\n    return expectedSum - actualSum;\n}\n// arr = {1,2,4,5,6}, n = 6 -> missing is 3",
+    js:"function findMissing(arr, n) {\n    let expectedSum = n * (n + 1) / 2;\n    let actualSum = 0;\n    for (let num of arr) {\n        actualSum += num;\n    }\n    return expectedSum - actualSum;\n}\nconsole.log(findMissing([1,2,4,5,6], 6)); // 3",
+    python:"def find_missing(arr, n):\n    expected_sum = n * (n + 1) // 2\n    actual_sum = sum(arr)\n    return expected_sum - actual_sum\n\nprint(find_missing([1, 2, 4, 5, 6], 6))  # 3",
+    timeComplexity:"O(n) — one pass to sum the array",
+    spaceComplexity:"O(1)",
+    tip:"The sum formula trick is the expected interview answer. Mention XOR as an alternative: XOR all numbers 1..N, then XOR with all array elements — the result is the missing number. Same O(n) time and O(1) space but avoids potential overflow on very large n.",
+    edgeCases:["Missing number is 1 (first) or N (last) — the formula handles both correctly","Array is empty — sum is 0, so missing is N*(N+1)/2","Very large N — use long in Java to avoid integer overflow in the sum"],
+    followups:[
+      {q:"What if two numbers are missing?",a:"The single-sum trick only works for one missing number. For two missing numbers, use sum AND sum-of-squares: two equations, two unknowns. Or sort the array and scan for gaps — O(n log n)."},
+      {q:"What if numbers can repeat and you need to find the missing one?",a:"Sort the array and scan for the first index where arr[i] != i+1. Or use a boolean presence array of size N+1 and mark which numbers exist, then scan for the unmarked position."}
+    ]
+  },
+  {
+    id:10081,
+    category:"arrays",
+    diff:"Easy",
+    title:"Rotate array by K positions",
+    logic:"The simplest approach: use extra space. Copy the array and place each element at its new index: newIndex = (i + k) % n. This avoids in-place complexity. Alternatively, reverse the whole array, then reverse the first k elements, then reverse the rest — three reverses, O(1) extra space.",
+    java:"public static int[] rotateArray(int[] arr, int k) {\n    int n = arr.length;\n    k = k % n; // handle k > n\n    int[] result = new int[n];\n    for (int i = 0; i < n; i++) {\n        result[(i + k) % n] = arr[i];\n    }\n    return result;\n}\n// rotateArray({1,2,3,4,5}, 2) -> {3,4,5,1,2}",
+    js:"function rotateArray(arr, k) {\n    let n = arr.length;\n    k = k % n;\n    let result = new Array(n);\n    for (let i = 0; i < n; i++) {\n        result[(i + k) % n] = arr[i];\n    }\n    return result;\n}\nconsole.log(rotateArray([1,2,3,4,5], 2)); // [3,4,5,1,2]",
+    python:"def rotate_array(arr, k):\n    n = len(arr)\n    k = k % n\n    result = [0] * n\n    for i in range(n):\n        result[(i + k) % n] = arr[i]\n    return result\n\nprint(rotate_array([1, 2, 3, 4, 5], 2))  # [3, 4, 5, 1, 2]",
+    timeComplexity:"O(n) — one pass to fill the result array",
+    spaceComplexity:"O(n) — extra array; O(1) with the three-reversal trick",
+    tip:"Always apply k = k % n first. If k equals n, rotation brings the array back to its original state — without this mod, you could rotate more than necessary or go out of bounds.",
+    edgeCases:["k = 0 → no change","k >= n → apply k % n first","n = 1 → single element, rotation changes nothing","k = n → same as k = 0"],
+    followups:[
+      {q:"How would you rotate in-place using O(1) extra space?",a:"Three-reversal trick: (1) reverse the entire array, (2) reverse the first k elements, (3) reverse the remaining n-k elements. Each reversal is O(n) and uses O(1) extra space. Total O(n) time, O(1) space."},
+      {q:"How do you rotate left instead of right?",a:"Left rotation by k is the same as right rotation by (n - k). Apply the same algorithm with k = n - k. Alternatively, reverse the first k elements, then reverse the last n-k elements, then reverse the whole array."}
+    ]
+  },
+  {
+    id:10082,
+    category:"arrays",
+    diff:"Easy",
+    title:"Merge two sorted arrays",
+    logic:"Use three pointers: i for the first array, j for the second, k for the result. Compare arr1[i] and arr2[j], copy the smaller to result[k], then advance that pointer and k. When one array is exhausted, copy all remaining elements from the other array.",
+    java:"public static int[] mergeSorted(int[] a, int[] b) {\n    int[] result = new int[a.length + b.length];\n    int i = 0, j = 0, k = 0;\n    while (i < a.length && j < b.length) {\n        if (a[i] <= b[j]) result[k++] = a[i++];\n        else              result[k++] = b[j++];\n    }\n    while (i < a.length) result[k++] = a[i++];\n    while (j < b.length) result[k++] = b[j++];\n    return result;\n}\n// mergeSorted({1,3,5},{2,4,6}) -> {1,2,3,4,5,6}",
+    js:"function mergeSorted(a, b) {\n    let result = [];\n    let i = 0, j = 0;\n    while (i < a.length && j < b.length) {\n        if (a[i] <= b[j]) result.push(a[i++]);\n        else              result.push(b[j++]);\n    }\n    while (i < a.length) result.push(a[i++]);\n    while (j < b.length) result.push(b[j++]);\n    return result;\n}\nconsole.log(mergeSorted([1,3,5],[2,4,6])); // [1,2,3,4,5,6]",
+    python:"def merge_sorted(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i]); i += 1\n        else:\n            result.append(b[j]); j += 1\n    while i < len(a):\n        result.append(a[i]); i += 1\n    while j < len(b):\n        result.append(b[j]); j += 1\n    return result\n\nprint(merge_sorted([1,3,5],[2,4,6]))  # [1,2,3,4,5,6]",
+    timeComplexity:"O(m + n) — each element from both arrays is visited once",
+    spaceComplexity:"O(m + n) — for the result array",
+    tip:"The three-pointer approach is the merge step inside Merge Sort. Make sure to handle the tail: after the main while-loop, one array may still have elements left — the two cleanup while-loops copy those remaining elements.",
+    edgeCases:["One array is empty → just copy the other","Arrays of different lengths — handled naturally by the cleanup loops","Duplicate values across arrays — the <= condition keeps them in order","Arrays with all elements smaller than the other — one cleanup loop copies everything"],
+    followups:[
+      {q:"What if you need to merge k sorted arrays instead of 2?",a:"Use a Min-Heap (Priority Queue) of size k. Initially insert the first element from each array. Repeatedly extract the minimum, add it to the result, and insert the next element from the same array. O(n log k) total where n is total elements."},
+      {q:"How does this relate to Merge Sort?",a:"This merge step is exactly the combine phase of Merge Sort. Merge Sort recursively splits the array into halves (divide), sorts them (conquer), and then uses this merge to combine two sorted halves back into one sorted array."}
+    ]
+  },
+  {
+    id:10083,
+    category:"arrays",
+    diff:"Medium",
+    title:"Maximum subarray sum (Kadane's Algorithm)",
+    logic:"Keep two variables: currentSum (best sum ending at the current position) and maxSum (best sum seen so far). At each element, decide: extend the current subarray by adding the element, or start fresh from the element itself — whichever is larger. Update maxSum if currentSum beats it.",
+    java:"public static int maxSubarraySum(int[] arr) {\n    int currentSum = arr[0];\n    int maxSum = arr[0];\n    for (int i = 1; i < arr.length; i++) {\n        if (currentSum + arr[i] > arr[i]) {\n            currentSum = currentSum + arr[i];\n        } else {\n            currentSum = arr[i]; // start fresh\n        }\n        if (currentSum > maxSum) {\n            maxSum = currentSum;\n        }\n    }\n    return maxSum;\n}\n// maxSubarraySum({-2,1,-3,4,-1,2,1,-5,4}) -> 6",
+    js:"function maxSubarraySum(arr) {\n    let currentSum = arr[0];\n    let maxSum = arr[0];\n    for (let i = 1; i < arr.length; i++) {\n        if (currentSum + arr[i] > arr[i]) {\n            currentSum = currentSum + arr[i];\n        } else {\n            currentSum = arr[i];\n        }\n        if (currentSum > maxSum) maxSum = currentSum;\n    }\n    return maxSum;\n}\nconsole.log(maxSubarraySum([-2,1,-3,4,-1,2,1,-5,4])); // 6",
+    python:"def max_subarray_sum(arr):\n    current_sum = arr[0]\n    max_sum = arr[0]\n    for i in range(1, len(arr)):\n        if current_sum + arr[i] > arr[i]:\n            current_sum = current_sum + arr[i]\n        else:\n            current_sum = arr[i]\n        if current_sum > max_sum:\n            max_sum = current_sum\n    return max_sum\n\nprint(max_subarray_sum([-2,1,-3,4,-1,2,1,-5,4]))  # 6",
+    timeComplexity:"O(n) — single pass through the array",
+    spaceComplexity:"O(1)",
+    tip:"The key decision at each step: is it better to extend the current subarray or start a new one from this element? If currentSum goes negative, it can only hurt future sums — start fresh. Initialise both variables to arr[0] not 0, to handle all-negative arrays correctly.",
+    edgeCases:["All negative numbers → answer is the least-negative element (not 0)","Single element → that element is the answer","All positive numbers → sum of entire array","Array with one very large positive element surrounded by negatives"],
+    followups:[
+      {q:"How would you also return the start and end indices of the maximum subarray?",a:"Track a start variable. When you reset currentSum to arr[i], update start to i. When you update maxSum, save start as the best start and i as the best end index."},
+      {q:"What if you need the maximum subarray product instead of sum?",a:"Products behave differently because two negatives multiply to a positive. Track both the maximum and minimum product ending at each position. At each step the new max could come from: current element alone, previous max * current, or previous min * current (two negatives)."}
+    ]
+  },
+  {
+    id:10084,
+    category:"arrays",
+    diff:"Easy",
+    title:"Move all negative numbers to one side of the array",
+    logic:"Use two pointers: left starting at 0, right starting at the end. Move left forward while it points at a negative number. Move right backward while it points at a positive number. When both stop, swap arr[left] and arr[right], then continue. Stop when left and right cross.",
+    java:"public static void moveNegatives(int[] arr) {\n    int left = 0, right = arr.length - 1;\n    while (left <= right) {\n        if (arr[left] < 0) {\n            left++;\n        } else if (arr[right] >= 0) {\n            right--;\n        } else {\n            int temp = arr[left];\n            arr[left] = arr[right];\n            arr[right] = temp;\n            left++;\n            right--;\n        }\n    }\n}\n// {-1,2,-3,4,-5} -> negatives on left, positives on right",
+    js:"function moveNegatives(arr) {\n    let left = 0, right = arr.length - 1;\n    while (left <= right) {\n        if (arr[left] < 0)  { left++; }\n        else if (arr[right] >= 0) { right--; }\n        else {\n            [arr[left], arr[right]] = [arr[right], arr[left]];\n            left++; right--;\n        }\n    }\n    return arr;\n}\nconsole.log(moveNegatives([-1,2,-3,4,-5]));",
+    python:"def move_negatives(arr):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        if arr[left] < 0:\n            left += 1\n        elif arr[right] >= 0:\n            right -= 1\n        else:\n            arr[left], arr[right] = arr[right], arr[left]\n            left += 1\n            right -= 1\n    return arr\n\nprint(move_negatives([-1, 2, -3, 4, -5]))",
+    timeComplexity:"O(n) — each element is visited at most once",
+    spaceComplexity:"O(1) — in-place swapping",
+    tip:"This is the partition step from QuickSort. The relative order of negatives and positives is NOT preserved (it is not a stable partition). If order must be preserved, use a separate result array or a stable partition algorithm.",
+    edgeCases:["All negatives → nothing to move, loop exits quickly","All positives → nothing to move","Array with zeros — decide whether zero counts as negative or positive; place with positives (>= 0) here","Single element — loop does not execute"],
+    followups:[
+      {q:"How would you preserve the relative order of negatives and positives?",a:"Use a two-pass approach with an extra array: first pass copies all negatives, second pass copies all positives. O(n) time, O(n) space. In-place stable partition is complex and O(n^2)."},
+      {q:"How is this related to QuickSort?",a:"This is exactly the partition step in QuickSort where the pivot is 0: elements less than the pivot (negatives) go left, elements greater than or equal (non-negatives) go right. QuickSort then recursively sorts each side."}
+    ]
+  },
+  {
+    id:10085,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find leader elements in an array",
+    logic:"A leader is an element greater than all elements to its right. The rightmost element is always a leader. Walk from right to left, tracking the current maximum so far. Any element greater than the running maximum is a leader — update the maximum when you find one.",
+    java:"public static void findLeaders(int[] arr) {\n    int n = arr.length;\n    int maxFromRight = arr[n - 1];\n    System.out.println(arr[n - 1]); // rightmost is always a leader\n    for (int i = n - 2; i >= 0; i--) {\n        if (arr[i] > maxFromRight) {\n            maxFromRight = arr[i];\n            System.out.println(arr[i]);\n        }\n    }\n}\n// {16,17,4,3,5,2} -> leaders: 2, 5, 17",
+    js:"function findLeaders(arr) {\n    let n = arr.length;\n    let leaders = [];\n    let maxFromRight = arr[n - 1];\n    leaders.push(arr[n - 1]);\n    for (let i = n - 2; i >= 0; i--) {\n        if (arr[i] > maxFromRight) {\n            maxFromRight = arr[i];\n            leaders.push(arr[i]);\n        }\n    }\n    return leaders.reverse();\n}\nconsole.log(findLeaders([16,17,4,3,5,2])); // [17,5,2]",
+    python:"def find_leaders(arr):\n    n = len(arr)\n    leaders = []\n    max_from_right = arr[n - 1]\n    leaders.append(arr[n - 1])\n    for i in range(n - 2, -1, -1):\n        if arr[i] > max_from_right:\n            max_from_right = arr[i]\n            leaders.append(arr[i])\n    return leaders[::-1]\n\nprint(find_leaders([16, 17, 4, 3, 5, 2]))  # [17, 5, 2]",
+    timeComplexity:"O(n) — single right-to-left pass",
+    spaceComplexity:"O(1) if printing, O(k) if collecting leaders into a list",
+    tip:"Walking right-to-left with a running maximum is the key insight. The naive O(n^2) approach compares each element to every element on its right. The right-to-left scan reduces it to a single pass by keeping track of the largest element seen so far from the right.",
+    edgeCases:["Sorted ascending like {1,2,3,4,5} → only the last element (5) is a leader","Sorted descending like {5,4,3,2,1} → every element is a leader","All same elements → only the last is a leader","Single element → it is the only leader"],
+    followups:[
+      {q:"How would you find leaders using the naive O(n^2) approach?",a:"For each element at index i, loop through all elements from i+1 to n-1. If none are greater than arr[i], it is a leader. Simple to understand but O(n^2) time."},
+      {q:"What if you want leaders in their original left-to-right order?",a:"Collect leaders in a list while scanning right-to-left, then reverse the list before returning. The right-to-left scan adds them in reverse order; reversing at the end restores original order."}
+    ]
+  },
+  {
+    id:10086,
+    category:"arrays",
+    diff:"Easy",
+    title:"Separate odd and even numbers in an array",
+    logic:"Walk through the array and split elements into two separate lists: one for evens, one for odds. Then combine: copy evens first, then odds into the result. Simple two-pass approach with an extra array. Alternatively use the two-pointer partition in-place.",
+    java:"public static int[] separateOddEven(int[] arr) {\n    int[] result = new int[arr.length];\n    int idx = 0;\n    for (int num : arr) {\n        if (num % 2 == 0) result[idx++] = num; // evens first\n    }\n    for (int num : arr) {\n        if (num % 2 != 0) result[idx++] = num; // then odds\n    }\n    return result;\n}\n// {1,2,3,4,5,6} -> {2,4,6,1,3,5}",
+    js:"function separateOddEven(arr) {\n    let evens = arr.filter(n => n % 2 === 0);\n    let odds  = arr.filter(n => n % 2 !== 0);\n    return [...evens, ...odds];\n}\nconsole.log(separateOddEven([1,2,3,4,5,6])); // [2,4,6,1,3,5]",
+    python:"def separate_odd_even(arr):\n    evens = [n for n in arr if n % 2 == 0]\n    odds  = [n for n in arr if n % 2 != 0]\n    return evens + odds\n\nprint(separate_odd_even([1, 2, 3, 4, 5, 6]))  # [2, 4, 6, 1, 3, 5]",
+    timeComplexity:"O(n) — two passes through the array",
+    spaceComplexity:"O(n) — for the result array",
+    tip:"Ask whether order within the even and odd groups must be preserved. The two-pass approach preserves relative order. The in-place two-pointer approach is O(1) space but does not preserve relative order — mention both.",
+    edgeCases:["All even → result is just the original array","All odd → same","Array with 0 → 0 is even (0 % 2 == 0)","Negative numbers — modulo works for negatives in Java and Python (may give negative remainder in Java; use Math.abs(num % 2) == 0 to be safe)"],
+    followups:[
+      {q:"How would you do it in-place without extra space?",a:"Two-pointer partition: left starts at 0, right at n-1. Move left forward while it points to an even. Move right backward while it points to an odd. When both stop, swap. Continue until they cross. O(n) time, O(1) space but does not preserve relative order."},
+      {q:"How does % behave with negative numbers in Java?",a:"In Java, -3 % 2 gives -1, not 1. To safely check for odd, use Math.abs(num % 2) == 1, or equivalently (num & 1) == 1 using bitwise AND, which always gives 0 for even and 1 for odd regardless of sign."}
+    ]
+  },
+  {
+    id:10087,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find common elements in three sorted arrays",
+    logic:"Use three pointers, one for each array. Compare the three current elements. If all three are equal, that element is common — add it to results and advance all three pointers. Otherwise advance the pointer pointing to the smallest value. Repeat until any pointer goes past its array end.",
+    java:"public static List<Integer> commonElements(int[] a, int[] b, int[] c) {\n    List<Integer> result = new ArrayList<>();\n    int i = 0, j = 0, k = 0;\n    while (i < a.length && j < b.length && k < c.length) {\n        if (a[i] == b[j] && b[j] == c[k]) {\n            result.add(a[i]);\n            i++; j++; k++;\n        } else if (a[i] <= b[j] && a[i] <= c[k]) {\n            i++;\n        } else if (b[j] <= a[i] && b[j] <= c[k]) {\n            j++;\n        } else {\n            k++;\n        }\n    }\n    return result;\n}",
+    js:"function commonElements(a, b, c) {\n    let result = [];\n    let i = 0, j = 0, k = 0;\n    while (i < a.length && j < b.length && k < c.length) {\n        if (a[i] === b[j] && b[j] === c[k]) {\n            result.push(a[i]);\n            i++; j++; k++;\n        } else if (a[i] <= b[j] && a[i] <= c[k]) { i++; }\n        else if (b[j] <= a[i] && b[j] <= c[k])   { j++; }\n        else                                       { k++; }\n    }\n    return result;\n}\nconsole.log(commonElements([1,2,4,6],[2,4,5,6],[2,3,4,6])); // [2,4,6]",
+    python:"def common_elements(a, b, c):\n    result = []\n    i = j = k = 0\n    while i < len(a) and j < len(b) and k < len(c):\n        if a[i] == b[j] == c[k]:\n            result.append(a[i])\n            i += 1; j += 1; k += 1\n        elif a[i] <= b[j] and a[i] <= c[k]: i += 1\n        elif b[j] <= a[i] and b[j] <= c[k]: j += 1\n        else: k += 1\n    return result\n\nprint(common_elements([1,2,4,6],[2,4,5,6],[2,3,4,6]))  # [2,4,6]",
+    timeComplexity:"O(m + n + p) — each pointer advances at most the length of its array",
+    spaceComplexity:"O(k) — where k is the number of common elements",
+    tip:"This extends the two-array merge pattern. The rule is simple: when elements are not equal, advance the pointer with the smallest value because larger values cannot match anything behind the current position in the other arrays.",
+    edgeCases:["No common elements → return empty list","One array is empty → loop does not execute, return empty","Duplicate common values — if all three arrays contain duplicates, advance all three when a match is found to avoid re-counting","Arrays of very different lengths — the loop stops when the shortest is exhausted"],
+    followups:[
+      {q:"How would you find common elements in two unsorted arrays?",a:"Put all elements of the first array into a HashSet. Loop through the second array and collect elements that exist in the set. O(n) time and O(n) space. Sorting first and then using two pointers works too but is O(n log n)."},
+      {q:"What if you need common elements across an arbitrary number of arrays?",a:"Use a HashMap to count how many arrays each element appears in. For each array, add its unique elements to the count map. At the end, collect elements whose count equals the total number of arrays."}
+    ]
+  },
+  {
+    id:10088,
+    category:"arrays",
+    diff:"Easy",
+    title:"Reverse an array without using an extra array",
+    logic:"Use two pointers: left at the start, right at the end. Swap arr[left] and arr[right], then move left forward and right backward. Stop when they meet in the middle. This modifies the original array in place using only a single temporary variable.",
+    java:"public static void reverseArray(int[] arr) {\n    int left = 0, right = arr.length - 1;\n    while (left < right) {\n        int temp = arr[left];\n        arr[left] = arr[right];\n        arr[right] = temp;\n        left++;\n        right--;\n    }\n}\n// {1,2,3,4,5} -> {5,4,3,2,1}",
+    js:"function reverseArray(arr) {\n    let left = 0, right = arr.length - 1;\n    while (left < right) {\n        [arr[left], arr[right]] = [arr[right], arr[left]];\n        left++;\n        right--;\n    }\n    return arr;\n}\nconsole.log(reverseArray([1,2,3,4,5])); // [5,4,3,2,1]",
+    python:"def reverse_array(arr):\n    left, right = 0, len(arr) - 1\n    while left < right:\n        arr[left], arr[right] = arr[right], arr[left]\n        left += 1\n        right -= 1\n    return arr\n\nprint(reverse_array([1, 2, 3, 4, 5]))  # [5, 4, 3, 2, 1]",
+    timeComplexity:"O(n) — visits each element once (half the array, two elements per swap)",
+    spaceComplexity:"O(1) — only one temp variable",
+    tip:"This two-pointer swap is the building block for many other problems: palindrome check, rotation, anagram. The condition is left < right (strict), not left <= right — when they are equal you are at the centre of an odd-length array and no swap is needed.",
+    edgeCases:["Empty array → loop does not execute","Single element → no swap needed","Even vs odd length — two-pointer handles both without special cases","Already reversed → still works correctly, just swaps back to original"],
+    followups:[
+      {q:"Can you reverse without using a temp variable?",a:"Yes — XOR swap: arr[left] ^= arr[right]; arr[right] ^= arr[left]; arr[left] ^= arr[right]. Avoid using it in practice because it fails when left == right (zeroes out the element) and reduces readability."},
+      {q:"How would you reverse only a portion of the array from index i to j?",a:"Same two-pointer approach, just initialise left = i and right = j instead of 0 and n-1. The loop logic is identical."}
+    ]
+  },
+  {
+    id:10089,
+    category:"arrays",
+    diff:"Medium",
+    title:"Find equilibrium index of an array",
+    logic:"An equilibrium index is where the sum of elements to the left equals the sum to the right. First compute the total sum. Then walk left to right: at each index, the right sum is (totalSum - leftSum - arr[i]). If leftSum equals rightSum, that index is an equilibrium point. Update leftSum after checking.",
+    java:"public static int findEquilibrium(int[] arr) {\n    int totalSum = 0;\n    for (int num : arr) totalSum += num;\n    int leftSum = 0;\n    for (int i = 0; i < arr.length; i++) {\n        int rightSum = totalSum - leftSum - arr[i];\n        if (leftSum == rightSum) return i;\n        leftSum += arr[i];\n    }\n    return -1; // no equilibrium index\n}\n// {-7,1,5,2,-4,3,0} -> index 3 (element 2)",
+    js:"function findEquilibrium(arr) {\n    let totalSum = arr.reduce((a, b) => a + b, 0);\n    let leftSum = 0;\n    for (let i = 0; i < arr.length; i++) {\n        let rightSum = totalSum - leftSum - arr[i];\n        if (leftSum === rightSum) return i;\n        leftSum += arr[i];\n    }\n    return -1;\n}\nconsole.log(findEquilibrium([-7,1,5,2,-4,3,0])); // 3",
+    python:"def find_equilibrium(arr):\n    total_sum = sum(arr)\n    left_sum = 0\n    for i in range(len(arr)):\n        right_sum = total_sum - left_sum - arr[i]\n        if left_sum == right_sum:\n            return i\n        left_sum += arr[i]\n    return -1\n\nprint(find_equilibrium([-7, 1, 5, 2, -4, 3, 0]))  # 3",
+    timeComplexity:"O(n) — one pass to sum, one pass to find equilibrium",
+    spaceComplexity:"O(1)",
+    tip:"The rightSum formula (totalSum - leftSum - arr[i]) avoids computing the right sum from scratch each time. Update leftSum AFTER the check — at the time of checking, arr[i] must not be included in either leftSum or rightSum.",
+    edgeCases:["No equilibrium index → return -1","First element as equilibrium (index 0) → leftSum is 0, rightSum is totalSum - arr[0]","Last element as equilibrium → rightSum is 0","Array with all zeros → every index is an equilibrium index; return the first one"],
+    followups:[
+      {q:"What if you need to return all equilibrium indices, not just the first?",a:"Collect results into a list instead of returning on the first match. Same O(n) logic, just continue scanning rather than stopping."},
+      {q:"How would the brute force approach work?",a:"For each index i, compute the left sum by looping 0 to i-1 and the right sum by looping i+1 to n-1. Check if they are equal. O(n^2) time. The prefix-sum approach reduces this to O(n) by avoiding redundant recomputation."}
+    ]
+  },
+  {
+    id:10090,
+    category:"arrays",
+    diff:"Easy",
+    title:"Check if an array is sorted in ascending order",
+    logic:"Loop through the array from the second element to the end. At each position, compare the current element with the previous one. If any element is smaller than its predecessor, the array is not sorted — return false. If the loop completes without finding such a pair, return true.",
+    java:"public static boolean isSorted(int[] arr) {\n    for (int i = 1; i < arr.length; i++) {\n        if (arr[i] < arr[i - 1]) return false;\n    }\n    return true;\n}\n// isSorted({1,2,3,4,5}) -> true\n// isSorted({1,3,2,4,5}) -> false",
+    js:"function isSorted(arr) {\n    for (let i = 1; i < arr.length; i++) {\n        if (arr[i] < arr[i - 1]) return false;\n    }\n    return true;\n}\nconsole.log(isSorted([1,2,3,4,5])); // true\nconsole.log(isSorted([1,3,2,4,5])); // false",
+    python:"def is_sorted(arr):\n    for i in range(1, len(arr)):\n        if arr[i] < arr[i - 1]:\n            return False\n    return True\n\nprint(is_sorted([1, 2, 3, 4, 5]))  # True\nprint(is_sorted([1, 3, 2, 4, 5]))  # False",
+    timeComplexity:"O(n) — worst case visits every element",
+    spaceComplexity:"O(1)",
+    tip:"This is O(n) in the worst case but early-exit makes it fast on nearly-sorted data. Clarify with the interviewer whether equal adjacent elements are allowed — use arr[i] < arr[i-1] to allow equals (non-strictly ascending), or arr[i] <= arr[i-1] to require strictly ascending.",
+    edgeCases:["Empty array → return true (vacuously sorted)","Single element → return true","All equal elements → sorted (non-strictly ascending)","Sorted in descending order → returns false on the very first comparison"],
+    followups:[
+      {q:"How would you check for descending order?",a:"Same approach but flip the condition: return false if arr[i] > arr[i-1]. Or check that arr[i] < arr[i-1] is always true (for strictly descending). Alternatively sort a copy and compare with the reverse."},
+      {q:"How would you find the index where the array first becomes unsorted?",a:"Return the index i where arr[i] < arr[i-1] instead of returning false. This gives you the position of the first violation, useful for nearly-sorted data analysis."}
+    ]
+  },
+  {
+    id:10091,
+    category:"arrays",
+    diff:"Easy",
+    title:"Find frequency of each element using HashMap",
+    logic:"Loop through the array. For each element, look it up in a HashMap. If it is already there, increment its count by 1. If it is not there, add it with a count of 1. After the loop, the HashMap contains every element mapped to how many times it appeared.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static void elementFrequency(int[] arr) {\n    Map<Integer, Integer> freq = new HashMap<>();\n    for (int num : arr) {\n        freq.put(num, freq.getOrDefault(num, 0) + 1);\n    }\n    for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {\n        System.out.println(entry.getKey() + \" -> \" + entry.getValue());\n    }\n}\n// {1,2,2,3,3,3} -> 1:1, 2:2, 3:3",
+    js:"function elementFrequency(arr) {\n    let freq = {};\n    for (let num of arr) {\n        freq[num] = (freq[num] || 0) + 1;\n    }\n    for (let key in freq) {\n        console.log(key + ' -> ' + freq[key]);\n    }\n}\nelementFrequency([1,2,2,3,3,3]);",
+    python:"def element_frequency(arr):\n    freq = {}\n    for num in arr:\n        freq[num] = freq.get(num, 0) + 1\n    for key, val in freq.items():\n        print(str(key) + ' -> ' + str(val))\n\nelement_frequency([1, 2, 2, 3, 3, 3])",
+    timeComplexity:"O(n) — one pass to build the map, O(k) to print where k is unique elements",
+    spaceComplexity:"O(k) — HashMap stores one entry per unique element",
+    tip:"getOrDefault(num, 0) in Java is cleaner than checking containsKey first. This frequency-map pattern appears in many other problems — anagram checking, most frequent element, two-sum — so it is worth knowing cold.",
+    edgeCases:["All elements the same → one entry in the map with count n","All elements unique → every entry has count 1","Negative numbers → HashMap handles them the same as positives","Empty array → empty map, nothing printed"],
+    followups:[
+      {q:"How would you find the element with the highest frequency?",a:"After building the frequency map, scan all entries tracking the key with the maximum value. Same O(n) + O(k) total. Or use Collections.max(map.entrySet(), Map.Entry.comparingByValue()) in Java."},
+      {q:"How would you sort elements by their frequency?",a:"Convert the map entries to a list and sort by value descending. In Java: entries.sort((a,b) -> b.getValue() - a.getValue()). In Python: sorted(freq.items(), key=lambda x: -x[1])."}
+    ]
+  },
+  {
+    id:10092,
+    category:"numbers",
+    diff:"Easy",
+    title:"Find GCD (HCF) of two numbers",
+    logic:"Use the Euclidean algorithm: the GCD of two numbers does not change if you replace the larger number with the remainder of dividing by the smaller. Repeat until the remainder is 0 — the non-zero number at that point is the GCD. Simple loop: keep replacing (a, b) with (b, a % b).",
+    java:"public static int gcd(int a, int b) {\n    while (b != 0) {\n        int remainder = a % b;\n        a = b;\n        b = remainder;\n    }\n    return a;\n}\n// gcd(48, 18) -> 6",
+    js:"function gcd(a, b) {\n    while (b !== 0) {\n        let remainder = a % b;\n        a = b;\n        b = remainder;\n    }\n    return a;\n}\nconsole.log(gcd(48, 18)); // 6",
+    python:"def gcd(a, b):\n    while b != 0:\n        a, b = b, a % b\n    return a\n\nprint(gcd(48, 18))  # 6",
+    timeComplexity:"O(log(min(a,b))) — the Euclidean algorithm converges very quickly",
+    spaceComplexity:"O(1)",
+    tip:"The Euclidean algorithm is efficient and easy to explain. An alternative is to loop from min(a,b) down to 1 and return the first number that divides both — correct but O(min(a,b)) which is much slower.",
+    edgeCases:["GCD(0, n) = n by convention — the loop handles this correctly","GCD(n, n) = n","Negative numbers — take absolute values first","GCD(1, n) = 1 for any n"],
+    followups:[
+      {q:"How would you write this recursively?",a:"public static int gcd(int a, int b) { return b == 0 ? a : gcd(b, a % b); }. Same logic as the loop, just expressed as a recursive call. Base case: b == 0, return a."},
+      {q:"What is GCD used for in practice?",a:"Simplifying fractions (divide numerator and denominator by their GCD), finding LCM, and in cryptography algorithms like RSA where modular arithmetic with large numbers is fundamental."}
+    ]
+  },
+  {
+    id:10093,
+    category:"numbers",
+    diff:"Easy",
+    title:"Find LCM of two numbers",
+    logic:"LCM(a, b) = (a * b) / GCD(a, b). First compute the GCD using the Euclidean algorithm, then use the formula. This is efficient and avoids looping through all multiples.",
+    java:"public static int lcm(int a, int b) {\n    return (a * b) / gcd(a, b);\n}\n\npublic static int gcd(int a, int b) {\n    while (b != 0) {\n        int r = a % b;\n        a = b;\n        b = r;\n    }\n    return a;\n}\n// lcm(4, 6) -> 12",
+    js:"function gcd(a, b) {\n    while (b !== 0) { let r = a % b; a = b; b = r; }\n    return a;\n}\n\nfunction lcm(a, b) {\n    return (a * b) / gcd(a, b);\n}\nconsole.log(lcm(4, 6)); // 12",
+    python:"def gcd(a, b):\n    while b != 0:\n        a, b = b, a % b\n    return a\n\ndef lcm(a, b):\n    return (a * b) // gcd(a, b)\n\nprint(lcm(4, 6))  # 12",
+    timeComplexity:"O(log(min(a,b))) — dominated by the GCD calculation",
+    spaceComplexity:"O(1)",
+    tip:"Always compute LCM via GCD — never loop through multiples. Use (a / gcd(a, b)) * b (divide before multiplying) instead of (a * b) / gcd to avoid integer overflow when a and b are large.",
+    edgeCases:["LCM(0, n) = 0 — handle separately since GCD(0,n) = n","LCM(n, n) = n","LCM(1, n) = n","Potential overflow: a * b can overflow int for large inputs — use long in Java"],
+    followups:[
+      {q:"How would you find LCM of more than two numbers?",a:"LCM(a, b, c) = LCM(LCM(a, b), c). Apply the pairwise LCM formula iteratively: start with result = arr[0], then result = LCM(result, arr[i]) for each subsequent element."},
+      {q:"What is the relationship between GCD and LCM?",a:"GCD(a,b) * LCM(a,b) = a * b. This is the formula we use. GCD finds the largest common divisor (the overlap), LCM finds the smallest number both divide into (the union of prime factors)."}
+    ]
+  },
+  {
+    id:10094,
+    category:"numbers",
+    diff:"Easy",
+    title:"Check if a number is a perfect square without sqrt()",
+    logic:"Multiply integers starting from 1 upward and compare to the target number. If i*i equals n, n is a perfect square. If i*i exceeds n, stop — n is not a perfect square. No floating-point is involved, so there are no precision issues.",
+    java:"public static boolean isPerfectSquare(int n) {\n    if (n < 0) return false;\n    for (int i = 0; i * i <= n; i++) {\n        if (i * i == n) return true;\n    }\n    return false;\n}\n// isPerfectSquare(16) -> true\n// isPerfectSquare(14) -> false",
+    js:"function isPerfectSquare(n) {\n    if (n < 0) return false;\n    for (let i = 0; i * i <= n; i++) {\n        if (i * i === n) return true;\n    }\n    return false;\n}\nconsole.log(isPerfectSquare(16)); // true\nconsole.log(isPerfectSquare(14)); // false",
+    python:"def is_perfect_square(n):\n    if n < 0:\n        return False\n    i = 0\n    while i * i <= n:\n        if i * i == n:\n            return True\n        i += 1\n    return False\n\nprint(is_perfect_square(16))  # True\nprint(is_perfect_square(14))  # False",
+    timeComplexity:"O(sqrt(n)) — the loop runs up to sqrt(n) iterations",
+    spaceComplexity:"O(1)",
+    tip:"The loop condition i*i <= n stops the loop without ever calling sqrt(). Mention binary search as an O(log n) upgrade: search for i in range [0, n] such that i*i == n.",
+    edgeCases:["n = 0 → true (0 = 0*0)","n = 1 → true","Negative numbers → false","Very large numbers — i*i can overflow int; use long in Java"],
+    followups:[
+      {q:"How would you check using binary search for O(log n) time?",a:"Search for the integer square root in the range [1, n]. At each midpoint m, check if m*m == n (found), m*m < n (go right), or m*m > n (go left). Return true only when m*m == n exactly."},
+      {q:"Why avoid Math.sqrt()?",a:"Math.sqrt() returns a floating-point double which can have precision errors. For example, sqrt(49) might return 6.9999999... instead of 7.0 exactly. Integer multiplication avoids this entirely."}
+    ]
+  },
+  {
+    id:10095,
+    category:"numbers",
+    diff:"Easy",
+    title:"Decimal to binary conversion",
+    logic:"Repeatedly divide the number by 2 and record each remainder (0 or 1). The binary representation is the remainders read in reverse order (last remainder first). Build the result by prepending each remainder or by collecting them and reversing at the end.",
+    java:"public static String decimalToBinary(int n) {\n    if (n == 0) return \"0\";\n    StringBuilder binary = new StringBuilder();\n    while (n > 0) {\n        binary.append(n % 2);\n        n = n / 2;\n    }\n    return binary.reverse().toString();\n}\n// decimalToBinary(10) -> \"1010\"",
+    js:"function decimalToBinary(n) {\n    if (n === 0) return '0';\n    let binary = '';\n    while (n > 0) {\n        binary = (n % 2) + binary; // prepend\n        n = Math.floor(n / 2);\n    }\n    return binary;\n}\nconsole.log(decimalToBinary(10)); // '1010'",
+    python:"def decimal_to_binary(n):\n    if n == 0:\n        return '0'\n    binary = ''\n    while n > 0:\n        binary = str(n % 2) + binary  # prepend\n        n = n // 2\n    return binary\n\nprint(decimal_to_binary(10))  # '1010'",
+    timeComplexity:"O(log n) — the number of divisions equals the number of bits",
+    spaceComplexity:"O(log n) — for the result string",
+    tip:"The key is reading remainders in reverse: the first remainder is the least-significant bit. Prepending to a string (or appending then reversing) achieves this. Mention the built-in shortcuts — Integer.toBinaryString(n) in Java, bin(n) in Python — after explaining the manual approach.",
+    edgeCases:["n = 0 → return '0' (handle before the loop since the loop condition n > 0 would skip immediately)","n = 1 → returns '1'","Powers of 2 → only one '1' bit followed by zeros"],
+    followups:[
+      {q:"How would you convert binary back to decimal?",a:"Walk the binary string from left to right. Start with result = 0. For each character, result = result * 2 + (current digit). Multiply by 2 shifts left by one bit, then add the current bit."},
+      {q:"How would you convert to octal or hexadecimal?",a:"Same algorithm, but divide by 8 (octal) or 16 (hexadecimal) instead of 2. For hexadecimal, remainders 10-15 must be mapped to letters A-F."}
+    ]
+  },
+  {
+    id:10096,
+    category:"numbers",
+    diff:"Easy",
+    title:"Calculate power without using Math.pow()",
+    logic:"Multiply base by itself exponent times using a simple loop. Start with result = 1, then multiply by base for each iteration from 1 to exponent. This directly computes base^exponent without any built-in power function.",
+    java:"public static long power(int base, int exp) {\n    long result = 1;\n    for (int i = 1; i <= exp; i++) {\n        result = result * base;\n    }\n    return result;\n}\n// power(2, 10) -> 1024",
+    js:"function power(base, exp) {\n    let result = 1;\n    for (let i = 1; i <= exp; i++) {\n        result = result * base;\n    }\n    return result;\n}\nconsole.log(power(2, 10)); // 1024",
+    python:"def power(base, exp):\n    result = 1\n    for i in range(exp):\n        result = result * base\n    return result\n\nprint(power(2, 10))  # 1024",
+    timeComplexity:"O(n) — n multiplications where n is the exponent",
+    spaceComplexity:"O(1)",
+    tip:"The simple loop is the easy-to-explain approach. Mention fast exponentiation (exponentiation by squaring) as an O(log n) upgrade: if exp is even, compute power(base*base, exp/2); if odd, compute base * power(base, exp-1).",
+    edgeCases:["exp = 0 → return 1 (anything to the power 0 is 1)","exp = 1 → return base","base = 0 → return 0 for any positive exp","Negative exponents — 2^-3 = 1/(2^3); return a double/float"],
+    followups:[
+      {q:"How would you implement fast power (exponentiation by squaring)?",a:"If exp == 0, return 1. If exp is even, return power(base*base, exp/2). If exp is odd, return base * power(base, exp-1). This halves the exponent on each even step, giving O(log n) multiplications."},
+      {q:"How would you handle negative exponents?",a:"For a negative exponent, compute the positive power first, then return 1.0 / result. Change the return type to double to preserve the fractional value."}
+    ]
+  },
+  {
+    id:10097,
+    category:"numbers",
+    diff:"Easy",
+    title:"Print all factors of a number",
+    logic:"A factor of n is any number that divides n with zero remainder. Loop from 1 up to n and print every number where n % i == 0. You can optimise by only looping up to sqrt(n) and printing both i and n/i for each factor found.",
+    java:"public static void printFactors(int n) {\n    System.out.print(\"Factors of \" + n + \": \");\n    for (int i = 1; i <= n; i++) {\n        if (n % i == 0) {\n            System.out.print(i + \" \");\n        }\n    }\n    System.out.println();\n}\n// printFactors(12) -> 1 2 3 4 6 12",
+    js:"function printFactors(n) {\n    let factors = [];\n    for (let i = 1; i <= n; i++) {\n        if (n % i === 0) factors.push(i);\n    }\n    console.log(factors.join(' '));\n}\nprintFactors(12); // 1 2 3 4 6 12",
+    python:"def print_factors(n):\n    factors = []\n    for i in range(1, n + 1):\n        if n % i == 0:\n            factors.append(i)\n    print(' '.join(map(str, factors)))\n\nprint_factors(12)  # 1 2 3 4 6 12",
+    timeComplexity:"O(n) for the simple loop; O(sqrt(n)) with the optimised approach",
+    spaceComplexity:"O(k) where k is the number of factors",
+    tip:"The simple loop from 1 to n is easy to explain. For the optimised version: loop from 1 to sqrt(n). For each i that divides n, print both i and n/i (they come in pairs). Be careful when i == n/i (perfect square root) to avoid printing it twice.",
+    edgeCases:["n = 1 → only factor is 1","Prime numbers → only factors are 1 and n","n = 0 → every positive integer divides 0; usually not a valid input — clarify","Negative numbers — factors are usually defined for positive integers only"],
+    followups:[
+      {q:"How would you check if a number is prime using factors?",a:"Count the factors. If a number has exactly 2 factors (1 and itself), it is prime. Or simply loop from 2 to sqrt(n) and check if any i divides n — if yes, it is not prime."},
+      {q:"How would you find only the prime factors?",a:"Start with the smallest prime (2) and divide n by it while it divides evenly, printing 2 each time. Move to 3, then 5, and so on. When you reach sqrt(n), if the remaining n is greater than 1, it is also a prime factor."}
+    ]
+  },
+  {
+    id:10098,
+    category:"numbers",
+    diff:"Easy",
+    title:"Check if a number is a Harshad (Niven) number",
+    logic:"A Harshad number is divisible by the sum of its own digits. First extract every digit by repeatedly taking n % 10 (last digit) and dividing by 10. Sum all the digits. Then check if the original number is divisible by that digit sum.",
+    java:"public static boolean isHarshad(int n) {\n    int temp = n;\n    int digitSum = 0;\n    while (temp > 0) {\n        digitSum += temp % 10;\n        temp = temp / 10;\n    }\n    return n % digitSum == 0;\n}\n// isHarshad(18) -> true  (1+8=9, 18%9==0)\n// isHarshad(19) -> false (1+9=10, 19%10!=0)",
+    js:"function isHarshad(n) {\n    let temp = n;\n    let digitSum = 0;\n    while (temp > 0) {\n        digitSum += temp % 10;\n        temp = Math.floor(temp / 10);\n    }\n    return n % digitSum === 0;\n}\nconsole.log(isHarshad(18)); // true\nconsole.log(isHarshad(19)); // false",
+    python:"def is_harshad(n):\n    digit_sum = sum(int(d) for d in str(n))\n    return n % digit_sum == 0\n\nprint(is_harshad(18))  # True\nprint(is_harshad(19))  # False",
+    timeComplexity:"O(d) where d is the number of digits in n",
+    spaceComplexity:"O(1)",
+    tip:"Harshad means 'joy-giver' in Sanskrit. The pattern — extract digits by mod 10, divide by 10, sum up — is reused in many digit-based problems (digit sum, Armstrong numbers, palindrome check for integers). Know this pattern cold.",
+    edgeCases:["n = 0 → digit sum is 0, causes division by zero — handle separately","Single digit 1-9 → all are Harshad (a digit is always divisible by itself)","Large numbers — the digit sum grows slowly (log n digits), so overflow is unlikely"],
+    followups:[
+      {q:"What other numbers are Harshad numbers below 20?",a:"1,2,3,4,5,6,7,8,9,10,12,18,20. Every single digit number qualifies. 10: 1+0=1, 10%1=0. 12: 1+2=3, 12%3=0. 18: 1+8=9, 18%9=0."},
+      {q:"How is this similar to the Armstrong number check?",a:"Both extract digits the same way (mod 10 + divide by 10). Armstrong sums the cubes of digits and compares to the original number. Harshad sums the digits and checks divisibility. Same digit-extraction pattern, different formula."}
+    ]
+  },
+  {
+    id:10099,
+    category:"numbers",
+    diff:"Easy",
+    title:"Find sum of first N natural numbers",
+    logic:"Two approaches: (1) Loop from 1 to N and add each number — simple but O(n). (2) Use the formula N*(N+1)/2 — O(1) and the preferred answer in interviews. Both give the same result; the formula shows mathematical insight.",
+    java:"// Formula approach (O(1))\npublic static long sumFormula(int n) {\n    return (long) n * (n + 1) / 2;\n}\n\n// Loop approach (O(n))\npublic static long sumLoop(int n) {\n    long sum = 0;\n    for (int i = 1; i <= n; i++) {\n        sum += i;\n    }\n    return sum;\n}\n// sumFormula(100) -> 5050",
+    js:"// Formula approach\nfunction sumFormula(n) {\n    return n * (n + 1) / 2;\n}\n\n// Loop approach\nfunction sumLoop(n) {\n    let sum = 0;\n    for (let i = 1; i <= n; i++) sum += i;\n    return sum;\n}\nconsole.log(sumFormula(100)); // 5050",
+    python:"# Formula approach\ndef sum_formula(n):\n    return n * (n + 1) // 2\n\n# Loop approach\ndef sum_loop(n):\n    total = 0\n    for i in range(1, n + 1):\n        total += i\n    return total\n\nprint(sum_formula(100))  # 5050",
+    timeComplexity:"O(1) with formula; O(n) with loop",
+    spaceComplexity:"O(1) for both",
+    tip:"Always give the formula answer first, then mention the loop. The story of Gauss discovering N*(N+1)/2 as a child (pairing 1+100, 2+99, ...) is a good way to explain WHY the formula works.",
+    edgeCases:["n = 0 → sum is 0","n = 1 → sum is 1","Large n — N*(N+1) can overflow int; use long in Java (cast before multiplying: (long)n * (n+1) / 2)"],
+    followups:[
+      {q:"How would you find the sum of squares of first N natural numbers?",a:"Formula: N*(N+1)*(2N+1)/6. For example, sum of squares 1 to 3 = 1+4+9=14. Verify: 3*4*7/6 = 84/6 = 14."},
+      {q:"How would you find the sum of first N even or odd numbers?",a:"Sum of first N even numbers = N*(N+1). Sum of first N odd numbers = N^2. For example, first 4 odd numbers: 1+3+5+7=16=4^2."}
+    ]
+  },
+  {
+    id:10100,
+    category:"numbers",
+    diff:"Easy",
+    title:"Check even or odd without using the modulo operator",
+    logic:"Use bitwise AND with 1. The last bit of any integer is 1 for odd numbers and 0 for even numbers. So (n & 1) == 1 means odd, (n & 1) == 0 means even. No division or modulo needed.",
+    java:"public static String evenOrOdd(int n) {\n    if ((n & 1) == 0) {\n        return n + \" is Even\";\n    } else {\n        return n + \" is Odd\";\n    }\n}\n// evenOrOdd(4) -> \"4 is Even\"\n// evenOrOdd(7) -> \"7 is Odd\"",
+    js:"function evenOrOdd(n) {\n    if ((n & 1) === 0) {\n        return n + ' is Even';\n    } else {\n        return n + ' is Odd';\n    }\n}\nconsole.log(evenOrOdd(4)); // '4 is Even'\nconsole.log(evenOrOdd(7)); // '7 is Odd'",
+    python:"def even_or_odd(n):\n    if (n & 1) == 0:\n        return str(n) + ' is Even'\n    else:\n        return str(n) + ' is Odd'\n\nprint(even_or_odd(4))  # '4 is Even'\nprint(even_or_odd(7))  # '7 is Odd'",
+    timeComplexity:"O(1) — single bitwise operation",
+    spaceComplexity:"O(1)",
+    tip:"The bitwise AND trick works because in binary, even numbers always end in 0 and odd numbers always end in 1. For example: 4 = 100b (last bit 0, even), 7 = 111b (last bit 1, odd). This is slightly faster than % but more importantly shows knowledge of bitwise operations.",
+    edgeCases:["Negative numbers — bitwise AND works correctly for negatives in two's complement: -3 & 1 == 1 (odd), -4 & 1 == 0 (even)","n = 0 → even (0 & 1 == 0)"],
+    followups:[
+      {q:"Can you check even/odd using division without modulo?",a:"Yes: if n/2*2 == n then n is even. Integer division truncates, so if n is odd, n/2*2 is one less than n. Simple to understand but less elegant than the bitwise approach."},
+      {q:"What other useful things can you do with bitwise AND?",a:"Check if a specific bit is set: (n & (1 << k)) != 0 checks if bit k is 1. Count set bits (Brian Kernighan's algorithm: n = n & (n-1) clears the lowest set bit). Swap without temp: a ^= b; b ^= a; a ^= b."}
+    ]
+  },
+  {
+    id:10101,
+    category:"numbers",
+    diff:"Easy",
+    title:"Find the largest of three numbers without if-else",
+    logic:"Use the ternary operator (condition ? valueIfTrue : valueIfFalse) nested twice. First compare a and b to get the larger of the two, then compare that result with c. This expresses the if-else logic in a single expression without any if keyword.",
+    java:"public static int largestOfThree(int a, int b, int c) {\n    return (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);\n}\n// largestOfThree(3, 7, 5) -> 7",
+    js:"function largestOfThree(a, b, c) {\n    return (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);\n}\nconsole.log(largestOfThree(3, 7, 5)); // 7",
+    python:"def largest_of_three(a, b, c):\n    return a if (a > b and a > c) else (b if b > c else c)\n\nprint(largest_of_three(3, 7, 5))  # 7",
+    timeComplexity:"O(1) — constant number of comparisons",
+    spaceComplexity:"O(1)",
+    tip:"The ternary approach is the expected answer. Also mention Math.max(a, Math.max(b, c)) in Java or max(a, b, c) in Python as clean alternatives. Using a variable to store the intermediate max is also valid: int max = (a > b) ? a : b; return (max > c) ? max : c;",
+    edgeCases:["All three equal → any of them is returned","Two equal and both larger → the first one encountered in the ternary chain is returned","Negative numbers — comparisons work the same for negatives"],
+    followups:[
+      {q:"How would you find the largest without ternary, if-else, or Math.max?",a:"Sort all three into an array and take the last element. Or use the formula: max(a,b) = (a+b + Math.abs(a-b)) / 2. Chain it for three values. This works because |a-b| is the absolute difference."},
+      {q:"How would you extend this to find the largest of N numbers?",a:"Loop through the array tracking a running maximum. Initialise max = arr[0], then for each subsequent element update max = (element > max) ? element : max. O(n) time, O(1) space."}
+    ]
+  },
+  {
+    id:10102,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print inverted right triangle of stars",
+    logic:"The outer loop runs from h down to 1. Row i prints i stars. On the first row you print the most stars (h), on the last row you print just 1 star. This is the mirror image of the standard right triangle — just reverse the outer loop direction.",
+    java:"public static void invertedTriangle(int h) {\n    for (int i = h; i >= 1; i--) {\n        for (int j = 1; j <= i; j++) {\n            System.out.print(\"*\");\n        }\n        System.out.println();\n    }\n}\n// invertedTriangle(4) prints:\n// ****\n// ***\n// **\n// *",
+    js:"function invertedTriangle(h) {\n    for (let i = h; i >= 1; i--) {\n        console.log('*'.repeat(i));\n    }\n}\ninvertedTriangle(4);",
+    python:"def inverted_triangle(h):\n    for i in range(h, 0, -1):\n        print('*' * i)\n\ninverted_triangle(4)",
+    timeComplexity:"O(h^2) — total stars printed",
+    spaceComplexity:"O(1)",
+    tip:"The only difference from a normal right triangle is that the outer loop counts DOWN instead of up. Point this out explicitly — it shows you understand the pattern, not just a memorised shape.",
+    edgeCases:["h = 0 → no output","h = 1 → single star on one line"],
+    followups:[
+      {q:"How would you right-align the inverted triangle?",a:"Add leading spaces before the stars. Row i prints (h - i) spaces followed by i stars. As i decreases, leading spaces increase, pushing the stars to the right."},
+      {q:"How would you print an inverted triangle of numbers instead of stars?",a:"Replace the inner print of '*' with the value of j (1,2,3...) or i (the row number). Same loop structure, different printed value."}
+    ]
+  },
+  {
+    id:10103,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print a pyramid (centered triangle) of stars",
+    logic:"Row i (1-indexed) prints (h - i) leading spaces followed by (2*i - 1) stars. The spaces shrink as the stars grow, keeping the triangle centred. Outer loop runs from 1 to h; inner loops handle spaces then stars separately.",
+    java:"public static void pyramid(int h) {\n    for (int i = 1; i <= h; i++) {\n        for (int j = 1; j <= h - i; j++) {\n            System.out.print(\" \");\n        }\n        for (int j = 1; j <= 2 * i - 1; j++) {\n            System.out.print(\"*\");\n        }\n        System.out.println();\n    }\n}\n// pyramid(4) prints:\n//    *\n//   ***\n//  *****\n// *******",
+    js:"function pyramid(h) {\n    for (let i = 1; i <= h; i++) {\n        let row = ' '.repeat(h - i) + '*'.repeat(2 * i - 1);\n        console.log(row);\n    }\n}\npyramid(4);",
+    python:"def pyramid(h):\n    for i in range(1, h + 1):\n        spaces = ' ' * (h - i)\n        stars  = '*' * (2 * i - 1)\n        print(spaces + stars)\n\npyramid(4)",
+    timeComplexity:"O(h^2) — total characters printed",
+    spaceComplexity:"O(1)",
+    tip:"The two key formulas: (h - i) spaces and (2*i - 1) stars. Memorise these. Row 1 has h-1 spaces and 1 star. Row h has 0 spaces and 2h-1 stars. The star count is always odd: 1, 3, 5, 7...",
+    edgeCases:["h = 1 → single star, no spaces","h = 0 → no output"],
+    followups:[
+      {q:"How would you print an inverted pyramid?",a:"Run the outer loop from h down to 1. Row i has (h - i) spaces and (2*i - 1) stars — same formulas, just the loop direction reverses so the widest row appears first."},
+      {q:"How would you print a full diamond?",a:"Print a pyramid of size h, then print an inverted pyramid of size h-1 below it (so the middle row is not duplicated). Stack the two loops sequentially."}
+    ]
+  },
+  {
+    id:10104,
+    category:"patterns",
+    diff:"Medium",
+    title:"Print a diamond pattern of stars",
+    logic:"A diamond is a pyramid on top and an inverted pyramid on the bottom. The top half: row i prints (h - i) spaces and (2*i - 1) stars. The bottom half: row i prints i spaces and (2*(h-i) - 1) stars. Run from 1 to h for the top, then h-1 down to 1 for the bottom.",
+    java:"public static void diamond(int h) {\n    // top half\n    for (int i = 1; i <= h; i++) {\n        for (int j = 1; j <= h - i; j++) System.out.print(\" \");\n        for (int j = 1; j <= 2 * i - 1; j++) System.out.print(\"*\");\n        System.out.println();\n    }\n    // bottom half\n    for (int i = h - 1; i >= 1; i--) {\n        for (int j = 1; j <= h - i; j++) System.out.print(\" \");\n        for (int j = 1; j <= 2 * i - 1; j++) System.out.print(\"*\");\n        System.out.println();\n    }\n}",
+    js:"function diamond(h) {\n    for (let i = 1; i <= h; i++) {\n        console.log(' '.repeat(h - i) + '*'.repeat(2 * i - 1));\n    }\n    for (let i = h - 1; i >= 1; i--) {\n        console.log(' '.repeat(h - i) + '*'.repeat(2 * i - 1));\n    }\n}\ndiamond(4);",
+    python:"def diamond(h):\n    for i in range(1, h + 1):\n        print(' ' * (h - i) + '*' * (2 * i - 1))\n    for i in range(h - 1, 0, -1):\n        print(' ' * (h - i) + '*' * (2 * i - 1))\n\ndiamond(4)",
+    timeComplexity:"O(h^2) — total characters printed",
+    spaceComplexity:"O(1)",
+    tip:"Notice that the bottom half uses the SAME space/star formulas as the top half — only the loop direction changes. This means you can extract a helper method to print one half and call it twice. Point this out to show clean thinking.",
+    edgeCases:["h = 1 → single star (top half is one row, bottom half loop does not execute)","h = 2 → a small 3-row diamond: *, ***, *"],
+    followups:[
+      {q:"How would you hollow out the diamond so only the border is printed?",a:"Print a star at position j only when j is 1 (leftmost), j equals 2*i-1 (rightmost), or when i is 1 or h (top/bottom tip). Otherwise print a space."},
+      {q:"Can you print the diamond using a single loop?",a:"Yes — compute the row number relative to the centre. Absolute distance from the middle row determines spacing and star count. One loop from 1 to 2h-1 with calculated spaces/stars per row."}
+    ]
+  },
+  {
+    id:10105,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print Floyd's Triangle",
+    logic:"Floyd's Triangle fills rows with consecutive integers. Keep a running counter starting at 1. The outer loop controls the row number (1 to n). The inner loop prints i numbers per row, incrementing the counter after each print. Row 1 has 1 number, row 2 has 2, and so on.",
+    java:"public static void floydsTriangle(int n) {\n    int num = 1;\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= i; j++) {\n            System.out.print(num + \" \");\n            num++;\n        }\n        System.out.println();\n    }\n}\n// floydsTriangle(4) prints:\n// 1\n// 2 3\n// 4 5 6\n// 7 8 9 10",
+    js:"function floydsTriangle(n) {\n    let num = 1;\n    for (let i = 1; i <= n; i++) {\n        let row = [];\n        for (let j = 1; j <= i; j++) {\n            row.push(num++);\n        }\n        console.log(row.join(' '));\n    }\n}\nfloydsTriangle(4);",
+    python:"def floyds_triangle(n):\n    num = 1\n    for i in range(1, n + 1):\n        row = []\n        for j in range(i):\n            row.append(str(num))\n            num += 1\n        print(' '.join(row))\n\nfloyds_triangle(4)",
+    timeComplexity:"O(n^2) — total numbers printed is n*(n+1)/2",
+    spaceComplexity:"O(1)",
+    tip:"The key is that the counter is EXTERNAL to both loops — it keeps incrementing continuously regardless of which row you are on. This is different from number patterns where the counter resets each row.",
+    edgeCases:["n = 0 → no output","n = 1 → prints just '1'"],
+    followups:[
+      {q:"How many total numbers are printed for Floyd's Triangle of n rows?",a:"n*(n+1)/2 — same as the number of cells in a triangular arrangement. Row 1 has 1, row 2 has 2, ..., row n has n. Sum is the triangular number formula."},
+      {q:"How would you print each row in reverse order?",a:"Build each row into an array, then reverse it before printing. Or change the inner loop: start j at the end of the row and decrement. The running counter still increments left-to-right but you print from right to left."}
+    ]
+  },
+  {
+    id:10106,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print a hollow square of stars",
+    logic:"Print an n×n grid. A cell at row i, column j gets a star if it is on the border: i==1 (top row), i==n (bottom row), j==1 (left column), or j==n (right column). All interior cells get a space. Two nested loops with one condition.",
+    java:"public static void hollowSquare(int n) {\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (i == 1 || i == n || j == 1 || j == n) {\n                System.out.print(\"*\");\n            } else {\n                System.out.print(\" \");\n            }\n        }\n        System.out.println();\n    }\n}\n// hollowSquare(4) prints:\n// ****\n// *  *\n// *  *\n// ****",
+    js:"function hollowSquare(n) {\n    for (let i = 1; i <= n; i++) {\n        let row = '';\n        for (let j = 1; j <= n; j++) {\n            row += (i===1 || i===n || j===1 || j===n) ? '*' : ' ';\n        }\n        console.log(row);\n    }\n}\nhollowSquare(4);",
+    python:"def hollow_square(n):\n    for i in range(1, n + 1):\n        row = ''\n        for j in range(1, n + 1):\n            if i == 1 or i == n or j == 1 or j == n:\n                row += '*'\n            else:\n                row += ' '\n        print(row)\n\nhollow_square(4)",
+    timeComplexity:"O(n^2) — visits every cell in the grid",
+    spaceComplexity:"O(1)",
+    tip:"The border condition (first/last row OR first/last column) is the entire logic. Interior cells are simply spaces. This same border-check pattern is used for hollow diamonds, hollow triangles, and matrix border problems.",
+    edgeCases:["n = 1 → single star (every condition is true simultaneously)","n = 2 → all four cells are on the border so it prints as a filled 2x2 square"],
+    followups:[
+      {q:"How would you print a filled square instead?",a:"Remove the condition entirely and always print '*'. Two nested loops both from 1 to n, print '*' at every position."},
+      {q:"How would you hollow a triangle instead of a square?",a:"Print a star only at the start (j==1), end (j==i) of each row, or on the last row (i==n). Interior positions in middle rows get spaces."}
+    ]
+  },
+  {
+    id:10107,
+    category:"patterns",
+    diff:"Medium",
+    title:"Print butterfly pattern of stars",
+    logic:"A butterfly has two halves. Top half: row i prints i stars, then (2*(h-i)) spaces, then i stars. Bottom half: same formula but the outer loop runs from h down to 1. The spaces in the middle shrink going down (top) and grow going up (bottom).",
+    java:"public static void butterfly(int h) {\n    // top half\n    for (int i = 1; i <= h; i++) {\n        for (int j = 1; j <= i; j++) System.out.print(\"*\");\n        for (int j = 1; j <= 2 * (h - i); j++) System.out.print(\" \");\n        for (int j = 1; j <= i; j++) System.out.print(\"*\");\n        System.out.println();\n    }\n    // bottom half\n    for (int i = h; i >= 1; i--) {\n        for (int j = 1; j <= i; j++) System.out.print(\"*\");\n        for (int j = 1; j <= 2 * (h - i); j++) System.out.print(\" \");\n        for (int j = 1; j <= i; j++) System.out.print(\"*\");\n        System.out.println();\n    }\n}",
+    js:"function butterfly(h) {\n    for (let i = 1; i <= h; i++) {\n        console.log('*'.repeat(i) + ' '.repeat(2*(h-i)) + '*'.repeat(i));\n    }\n    for (let i = h; i >= 1; i--) {\n        console.log('*'.repeat(i) + ' '.repeat(2*(h-i)) + '*'.repeat(i));\n    }\n}\nbutterfly(4);",
+    python:"def butterfly(h):\n    for i in range(1, h + 1):\n        print('*' * i + ' ' * (2 * (h - i)) + '*' * i)\n    for i in range(h, 0, -1):\n        print('*' * i + ' ' * (2 * (h - i)) + '*' * i)\n\nbutterfly(4)",
+    timeComplexity:"O(h^2) — total characters printed",
+    spaceComplexity:"O(1)",
+    tip:"Each row follows the same three-part formula: i stars + 2*(h-i) spaces + i stars. The top half counts i up, the bottom counts it down. Recognising that both halves use the same row formula (just different loop direction) simplifies the code.",
+    edgeCases:["h = 1 → two rows, each with '**' (1 star, 0 spaces, 1 star)","h = 0 → no output"],
+    followups:[
+      {q:"How would you print only the top half of the butterfly?",a:"Run only the first loop from i = 1 to h. The result is a shape with expanding wings — widest at the bottom."},
+      {q:"How would you verify the total character count per row?",a:"Each row has i + 2*(h-i) + i = i + 2h - 2i + i = 2h characters. Every row in the butterfly has exactly 2h characters — a useful sanity check."}
+    ]
+  },
+  {
+    id:10108,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print number pyramid",
+    logic:"Row i (1-indexed) has (h - i) leading spaces followed by numbers 1 to i. This is the pyramid shape with numbers instead of stars. The spacing is the same as a star pyramid: (h - i) spaces per row to keep it centred.",
+    java:"public static void numberPyramid(int h) {\n    for (int i = 1; i <= h; i++) {\n        for (int j = 1; j <= h - i; j++) System.out.print(\" \");\n        for (int j = 1; j <= i; j++) System.out.print(j + \" \");\n        System.out.println();\n    }\n}\n// numberPyramid(4) prints:\n//    1\n//   1 2\n//  1 2 3\n// 1 2 3 4",
+    js:"function numberPyramid(h) {\n    for (let i = 1; i <= h; i++) {\n        let row = ' '.repeat(h - i);\n        for (let j = 1; j <= i; j++) {\n            row += j + ' ';\n        }\n        console.log(row.trimEnd());\n    }\n}\nnumberPyramid(4);",
+    python:"def number_pyramid(h):\n    for i in range(1, h + 1):\n        spaces = ' ' * (h - i)\n        nums = ' '.join(str(j) for j in range(1, i + 1))\n        print(spaces + nums)\n\nnumber_pyramid(4)",
+    timeComplexity:"O(h^2) — total numbers printed",
+    spaceComplexity:"O(1)",
+    tip:"This is the star pyramid with the inner print changed from '*' to the column number j. The spacing formula is identical. Recognising reuse across patterns shows interviewers you understand structure.",
+    edgeCases:["h = 0 → no output","h = 1 → single row: '1'"],
+    followups:[
+      {q:"How would you print the numbers in reverse on each row (i, i-1, ..., 1)?",a:"Run the inner loop backwards: for j from i down to 1. The spacing stays the same."},
+      {q:"How would you print the row number repeated on each row instead (1 / 2 2 / 3 3 3)?",a:"Change the inner print from j to i — the row number is constant while the inner loop just controls repetition count."}
+    ]
+  },
+  {
+    id:10109,
+    category:"patterns",
+    diff:"Easy",
+    title:"Print alphabet pattern (A / AB / ABC / ABCD)",
+    logic:"Same right-triangle structure as the number and star patterns. Outer loop runs from 1 to h (rows). Inner loop runs from 1 to i (columns). Print the letter corresponding to the column index: 'A' + (j - 1) gives the ASCII offset, so column 1 is A, column 2 is B, and so on.",
+    java:"public static void alphabetPattern(int h) {\n    for (int i = 1; i <= h; i++) {\n        for (int j = 1; j <= i; j++) {\n            System.out.print((char)('A' + j - 1));\n        }\n        System.out.println();\n    }\n}\n// alphabetPattern(4) prints:\n// A\n// AB\n// ABC\n// ABCD",
+    js:"function alphabetPattern(h) {\n    for (let i = 1; i <= h; i++) {\n        let row = '';\n        for (let j = 1; j <= i; j++) {\n            row += String.fromCharCode('A'.charCodeAt(0) + j - 1);\n        }\n        console.log(row);\n    }\n}\nalphabetPattern(4);",
+    python:"def alphabet_pattern(h):\n    for i in range(1, h + 1):\n        row = ''.join(chr(ord('A') + j) for j in range(i))\n        print(row)\n\nalphabet_pattern(4)",
+    timeComplexity:"O(h^2) — total characters printed",
+    spaceComplexity:"O(1)",
+    tip:"The key operation is converting a number to a letter using ASCII arithmetic: (char)('A' + offset). 'A' has ASCII value 65. Adding 0 gives A, adding 1 gives B, and so on. Limit h to 26 to stay within the alphabet.",
+    edgeCases:["h > 26 → would go past 'Z'; guard against this or wrap around using offset % 26","h = 0 → no output","h = 1 → single 'A'"],
+    followups:[
+      {q:"How would you print each row showing the row's letter repeated (A / BB / CCC)?",a:"The outer loop index i determines the letter: (char)('A' + i - 1). The inner loop runs i times and prints that same letter each time."},
+      {q:"How would you print a pyramid with letters (centred alphabet triangle)?",a:"Add leading spaces exactly like the star pyramid: (h - i) spaces before the letters. The letter printing stays the same — just prepend the spaces."}
+    ]
+  },
+  {
+    id:10110,
+    category:"hashmap",
+    diff:"Easy",
+    title:"Find first repeating element using HashMap",
+    logic:"Walk through the array. For each element, check if it already exists in the HashMap. If yes, it is the first repeating element — return it. If no, add it to the map. The first element that is already in the map when we encounter it is our answer.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static int firstRepeating(int[] arr) {\n    Map<Integer, Boolean> seen = new HashMap<>();\n    for (int num : arr) {\n        if (seen.containsKey(num)) {\n            return num; // first element seen twice\n        }\n        seen.put(num, true);\n    }\n    return -1; // no repeating element\n}\n// firstRepeating({1,2,3,2,1}) -> 2",
+    js:"function firstRepeating(arr) {\n    let seen = new Set();\n    for (let num of arr) {\n        if (seen.has(num)) return num;\n        seen.add(num);\n    }\n    return -1;\n}\nconsole.log(firstRepeating([1,2,3,2,1])); // 2",
+    python:"def first_repeating(arr):\n    seen = set()\n    for num in arr:\n        if num in seen:\n            return num\n        seen.add(num)\n    return -1\n\nprint(first_repeating([1, 2, 3, 2, 1]))  # 2",
+    timeComplexity:"O(n) — single pass with O(1) HashMap lookups",
+    spaceComplexity:"O(n) — HashMap stores up to n elements",
+    tip:"A Set is sufficient here since you only need presence (not count). A HashMap works too. The question asks for the FIRST element that REPEATS — meaning the first one you encounter for the second time, which is found by checking before inserting.",
+    edgeCases:["No repeating element → return -1 or null","All elements the same → second element in the array is the first repeat","First element repeated → loop detects it at the second occurrence"],
+    followups:[
+      {q:"How would you find the element that repeats the most times?",a:"Use a HashMap with counts: increment count for each element, then scan the map for the maximum count. O(n) time, O(k) space where k is unique element count."},
+      {q:"How would you find all elements that repeat?",a:"First pass: count frequencies in a HashMap. Second pass: collect all elements whose count is greater than 1. Return as a list."}
+    ]
+  },
+  {
+    id:10111,
+    category:"hashmap",
+    diff:"Medium",
+    title:"Group anagrams from a list of strings",
+    logic:"Two strings are anagrams if their sorted characters are the same. Use a HashMap where the key is the sorted version of a word and the value is a list of all original words that sort to that key. Walk through each word, sort it, and add the original to the appropriate list.",
+    java:"import java.util.*;\n\npublic static Map<String, List<String>> groupAnagrams(String[] words) {\n    Map<String, List<String>> map = new HashMap<>();\n    for (String word : words) {\n        char[] chars = word.toCharArray();\n        Arrays.sort(chars);\n        String key = new String(chars);\n        map.computeIfAbsent(key, k -> new ArrayList<>()).add(word);\n    }\n    return map;\n}\n// {\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"}\n// -> {\"aet\": [eat, tea, ate], \"ant\": [tan, nat], \"abt\": [bat]}",
+    js:"function groupAnagrams(words) {\n    let map = {};\n    for (let word of words) {\n        let key = word.split('').sort().join('');\n        if (!map[key]) map[key] = [];\n        map[key].push(word);\n    }\n    return Object.values(map);\n}\nconsole.log(groupAnagrams(['eat','tea','tan','ate','nat','bat']));",
+    python:"def group_anagrams(words):\n    groups = {}\n    for word in words:\n        key = ''.join(sorted(word))\n        if key not in groups:\n            groups[key] = []\n        groups[key].append(word)\n    return list(groups.values())\n\nprint(group_anagrams(['eat','tea','tan','ate','nat','bat']))",
+    timeComplexity:"O(n * k log k) — n words, each sorted in O(k log k) where k is word length",
+    spaceComplexity:"O(n * k) — to store all words in the map",
+    tip:"The sorted string as a key is elegant and easy to explain. An alternative key is a character-count array (26 integers for lowercase letters) serialised as a string — O(k) to build instead of O(k log k) for sorting.",
+    edgeCases:["Empty list → return empty map","Single word → one group with one entry","All words are anagrams of each other → one group with all words","No words are anagrams → each word is its own group"],
+    followups:[
+      {q:"How would you use a character-frequency key instead of sorting?",a:"For each word build an array of 26 integers (one per letter). The key is that array converted to a string like '1,0,1,0...' . This is O(k) to build instead of O(k log k) for sorting — faster for long words."},
+      {q:"How would you find the largest anagram group?",a:"After building the map, iterate over all values (lists) and track the one with the maximum size. O(n) additional scan."}
+    ]
+  },
+  {
+    id:10112,
+    category:"hashmap",
+    diff:"Easy",
+    title:"Two Sum using HashMap",
+    logic:"For each number in the array, check if its complement (target - current number) already exists in the HashMap. If yes, we found the pair — return the indices. If no, store the current number with its index in the map. One pass is enough.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static int[] twoSum(int[] nums, int target) {\n    Map<Integer, Integer> map = new HashMap<>();\n    for (int i = 0; i < nums.length; i++) {\n        int complement = target - nums[i];\n        if (map.containsKey(complement)) {\n            return new int[]{map.get(complement), i};\n        }\n        map.put(nums[i], i);\n    }\n    return new int[]{};\n}\n// twoSum({2,7,11,15}, 9) -> {0,1}",
+    js:"function twoSum(nums, target) {\n    let map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        let complement = target - nums[i];\n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        map.set(nums[i], i);\n    }\n    return [];\n}\nconsole.log(twoSum([2,7,11,15], 9)); // [0,1]",
+    python:"def two_sum(nums, target):\n    seen = {}  # value -> index\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []\n\nprint(two_sum([2, 7, 11, 15], 9))  # [0, 1]",
+    timeComplexity:"O(n) — single pass with O(1) HashMap lookups",
+    spaceComplexity:"O(n) — HashMap stores up to n entries",
+    tip:"Always mention the brute-force O(n^2) approach first (check every pair), then explain why the HashMap brings it to O(n). The key insight: instead of searching for the complement, store what you have seen and check if the complement was already stored.",
+    edgeCases:["No valid pair → return empty array","Duplicate values like [3,3] with target=6 → inserting after the check handles this correctly","Negative numbers → complement calculation works the same","Same element cannot be used twice — the check happens before insertion prevents this"],
+    followups:[
+      {q:"What if the array is sorted? Can you do better on space?",a:"Two-pointer approach: left at index 0, right at the last index. If sum equals target, done. If less, move left right. If more, move right left. O(n) time, O(1) space — no HashMap needed."},
+      {q:"How would you return all pairs instead of just the first?",a:"Do not return on the first match — collect all matching pairs into a list and continue. Also store all indices for each value (not just the latest) in case of duplicate values appearing multiple times."}
+    ]
+  },
+  {
+    id:10113,
+    category:"hashmap",
+    diff:"Easy",
+    title:"Check if two arrays are equal using HashMap",
+    logic:"Two arrays are equal if they contain the same elements with the same frequencies. Build a frequency HashMap from the first array. Then for each element in the second array, decrement its count. If any element is missing or its count goes below zero, the arrays are not equal.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static boolean arraysEqual(int[] a, int[] b) {\n    if (a.length != b.length) return false;\n    Map<Integer, Integer> freq = new HashMap<>();\n    for (int num : a) {\n        freq.put(num, freq.getOrDefault(num, 0) + 1);\n    }\n    for (int num : b) {\n        if (!freq.containsKey(num) || freq.get(num) == 0) return false;\n        freq.put(num, freq.get(num) - 1);\n    }\n    return true;\n}\n// arraysEqual({1,2,3},{3,1,2}) -> true",
+    js:"function arraysEqual(a, b) {\n    if (a.length !== b.length) return false;\n    let freq = {};\n    for (let num of a) freq[num] = (freq[num] || 0) + 1;\n    for (let num of b) {\n        if (!freq[num]) return false;\n        freq[num]--;\n    }\n    return true;\n}\nconsole.log(arraysEqual([1,2,3],[3,1,2])); // true\nconsole.log(arraysEqual([1,2,3],[1,2,4])); // false",
+    python:"def arrays_equal(a, b):\n    if len(a) != len(b):\n        return False\n    freq = {}\n    for num in a:\n        freq[num] = freq.get(num, 0) + 1\n    for num in b:\n        if freq.get(num, 0) == 0:\n            return False\n        freq[num] -= 1\n    return True\n\nprint(arrays_equal([1,2,3],[3,1,2]))  # True\nprint(arrays_equal([1,2,3],[1,2,4]))  # False",
+    timeComplexity:"O(n) — two passes, one per array",
+    spaceComplexity:"O(n) — frequency HashMap",
+    tip:"Check lengths first — different lengths immediately means not equal. The decrement approach avoids building two separate maps. An alternative is to sort both arrays and compare element by element — O(n log n) but no extra space.",
+    edgeCases:["Different lengths → false immediately","Both empty → true","Duplicate values: [1,1,2] vs [1,2,2] → frequency counts expose the difference","Arrays with same elements but different counts: [1,1,2] vs [1,2,2] → false"],
+    followups:[
+      {q:"How would you check if the arrays are identical (same elements in same order)?",a:"Simply compare element by element with a single loop: if any arr1[i] != arr2[i], return false. No HashMap needed. O(n) time, O(1) space."},
+      {q:"How would you check equality for arrays of strings?",a:"Same approach — the HashMap works with any hashable type including strings. No change in logic, just change the type from int to String."}
+    ]
+  },
+  {
+    id:10114,
+    category:"hashmap",
+    diff:"Easy",
+    title:"Find most frequent element in array using HashMap",
+    logic:"Build a frequency HashMap: loop through the array incrementing the count for each element. Then scan the map to find the entry with the highest count. Two passes: one to count, one to find the maximum.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static int mostFrequent(int[] arr) {\n    Map<Integer, Integer> freq = new HashMap<>();\n    for (int num : arr) {\n        freq.put(num, freq.getOrDefault(num, 0) + 1);\n    }\n    int maxElement = arr[0];\n    int maxCount = 0;\n    for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {\n        if (entry.getValue() > maxCount) {\n            maxCount = entry.getValue();\n            maxElement = entry.getKey();\n        }\n    }\n    return maxElement;\n}\n// mostFrequent({1,2,2,3,3,3}) -> 3",
+    js:"function mostFrequent(arr) {\n    let freq = {};\n    for (let num of arr) freq[num] = (freq[num] || 0) + 1;\n    let maxEl = arr[0], maxCount = 0;\n    for (let key in freq) {\n        if (freq[key] > maxCount) {\n            maxCount = freq[key];\n            maxEl = Number(key);\n        }\n    }\n    return maxEl;\n}\nconsole.log(mostFrequent([1,2,2,3,3,3])); // 3",
+    python:"def most_frequent(arr):\n    freq = {}\n    for num in arr:\n        freq[num] = freq.get(num, 0) + 1\n    max_el = arr[0]\n    max_count = 0\n    for num, count in freq.items():\n        if count > max_count:\n            max_count = count\n            max_el = num\n    return max_el\n\nprint(most_frequent([1, 2, 2, 3, 3, 3]))  # 3",
+    timeComplexity:"O(n) — one pass to build map, one pass over unique elements",
+    spaceComplexity:"O(k) — where k is the number of unique elements",
+    tip:"This is the same frequency-map pattern used in word frequency counting. Mention that Python's Counter class and Java's Collections.frequency() can simplify this — but walk through the manual approach first to show you understand it.",
+    edgeCases:["All elements the same → that element is the answer","All elements unique → returns the first element encountered (all have count 1)","Tie in frequency → returns whichever the map iteration encounters first"],
+    followups:[
+      {q:"How would you find the LEAST frequent element?",a:"Same approach but track the minimum count instead of maximum. Initialise minCount to Integer.MAX_VALUE. Update whenever you find a count smaller than the current minimum."},
+      {q:"How would you return the top k most frequent elements?",a:"Build the frequency map, then sort the entries by count descending and take the first k. Or use a Min-Heap of size k: evict the smallest-count element when size exceeds k. O(n log k) time."}
+    ]
+  },
+  {
+    id:10115,
+    category:"hashmap",
+    diff:"Medium",
+    title:"Find distinct elements in each window of size K",
+    logic:"Slide a window of size K across the array. For each window position, count distinct elements using a HashMap (element -> count). When the window slides right, add the new element (increment its count) and remove the outgoing element (decrement count; if count reaches 0, delete from map). The map size at each step is the distinct count.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static void distinctInWindow(int[] arr, int k) {\n    Map<Integer, Integer> freq = new HashMap<>();\n    // build first window\n    for (int i = 0; i < k; i++) {\n        freq.put(arr[i], freq.getOrDefault(arr[i], 0) + 1);\n    }\n    System.out.println(\"Window 1: \" + freq.size());\n    // slide the window\n    for (int i = k; i < arr.length; i++) {\n        // add new element\n        freq.put(arr[i], freq.getOrDefault(arr[i], 0) + 1);\n        // remove outgoing element\n        int out = arr[i - k];\n        freq.put(out, freq.get(out) - 1);\n        if (freq.get(out) == 0) freq.remove(out);\n        System.out.println(\"Window \" + (i - k + 2) + \": \" + freq.size());\n    }\n}",
+    js:"function distinctInWindow(arr, k) {\n    let freq = new Map();\n    for (let i = 0; i < k; i++) {\n        freq.set(arr[i], (freq.get(arr[i]) || 0) + 1);\n    }\n    let results = [freq.size];\n    for (let i = k; i < arr.length; i++) {\n        freq.set(arr[i], (freq.get(arr[i]) || 0) + 1);\n        let out = arr[i - k];\n        freq.set(out, freq.get(out) - 1);\n        if (freq.get(out) === 0) freq.delete(out);\n        results.push(freq.size);\n    }\n    return results;\n}\nconsole.log(distinctInWindow([1,2,1,3,4,2,3], 4));",
+    python:"def distinct_in_window(arr, k):\n    freq = {}\n    for i in range(k):\n        freq[arr[i]] = freq.get(arr[i], 0) + 1\n    results = [len(freq)]\n    for i in range(k, len(arr)):\n        freq[arr[i]] = freq.get(arr[i], 0) + 1\n        out = arr[i - k]\n        freq[out] -= 1\n        if freq[out] == 0:\n            del freq[out]\n        results.append(len(freq))\n    return results\n\nprint(distinct_in_window([1,2,1,3,4,2,3], 4))",
+    timeComplexity:"O(n) — each element is added and removed from the map at most once",
+    spaceComplexity:"O(k) — HashMap holds at most k elements",
+    tip:"The sliding window + HashMap is a powerful pattern. The trick: removing an element does NOT mean deleting it from the map immediately — only delete when its count drops to 0. This preserves counts for elements still in the window.",
+    edgeCases:["k = 1 → every element is its own window, distinct count is always 1","k = n → one window covering the entire array","k > n → not a valid input; check for this","All elements the same → distinct count is always 1"],
+    followups:[
+      {q:"How would you find the window with the maximum number of distinct elements?",a:"Track the maximum distinct count across all windows while sliding. Return the start index of the window where the max was achieved alongside the count."},
+      {q:"How would you find the smallest window containing all distinct elements?",a:"This is a different problem — use a sliding window that expands until all distinct elements are included, then shrinks from the left while still containing all distinct elements. Track the minimum window size found."}
+    ]
+  },
+  {
+    id:10116,
+    category:"hashmap",
+    diff:"Easy",
+    title:"Find all pairs with a given sum using HashMap",
+    logic:"Store each element in a HashMap as you walk through the array. For each element, check if (target - element) already exists in the map. If it does, you have found a pair. Print or collect it. Insert the current element into the map after checking.",
+    java:"import java.util.HashMap;\nimport java.util.Map;\n\npublic static void pairsWithSum(int[] arr, int target) {\n    Map<Integer, Boolean> seen = new HashMap<>();\n    for (int num : arr) {\n        int complement = target - num;\n        if (seen.containsKey(complement)) {\n            System.out.println(complement + \" + \" + num + \" = \" + target);\n        }\n        seen.put(num, true);\n    }\n}\n// pairsWithSum({1,5,3,7,4,2,6}, 8) -> 1+7, 5+3, 2+6",
+    js:"function pairsWithSum(arr, target) {\n    let seen = new Set();\n    let pairs = [];\n    for (let num of arr) {\n        let complement = target - num;\n        if (seen.has(complement)) {\n            pairs.push([complement, num]);\n        }\n        seen.add(num);\n    }\n    return pairs;\n}\nconsole.log(pairsWithSum([1,5,3,7,4,2,6], 8));",
+    python:"def pairs_with_sum(arr, target):\n    seen = set()\n    pairs = []\n    for num in arr:\n        complement = target - num\n        if complement in seen:\n            pairs.append((complement, num))\n        seen.add(num)\n    return pairs\n\nprint(pairs_with_sum([1, 5, 3, 7, 4, 2, 6], 8))",
+    timeComplexity:"O(n) — single pass with O(1) HashMap/Set lookups",
+    spaceComplexity:"O(n) — the Set/Map stores up to n elements",
+    tip:"A Set is enough here since you only need to know presence. Insert AFTER checking to avoid pairing an element with itself (unless the same value appears twice in the array, in which case it is a valid pair).",
+    edgeCases:["No pairs exist → print nothing / return empty list","Duplicate elements like [3,3] with target=6 → second 3 finds the first 3 in the set, producing the pair (3,3) correctly","Negative numbers — complement calculation works the same"],
+    followups:[
+      {q:"How would you avoid printing duplicate pairs?",a:"Use a Set of sorted pairs. Before printing (a,b), check that {min(a,b), max(a,b)} is not already in the pairs set. Add it after printing."},
+      {q:"How would you solve it with sorting and two pointers instead?",a:"Sort the array. Place one pointer at the left and one at the right. If their sum equals target, record the pair and move both pointers inward. If sum is less, move left pointer right. If more, move right pointer left. O(n log n) time, O(1) space."}
+    ]
+  },
+  {
+    id:10117,
+    category:"search",
+    diff:"Easy",
+    title:"Linear search",
+    logic:"Walk through the array from index 0 to the end. Compare each element with the target value. As soon as you find a match, return that index. If the loop finishes without finding the target, return -1 to signal it is not present.",
+    java:"public static int linearSearch(int[] arr, int target) {\n    for (int i = 0; i < arr.length; i++) {\n        if (arr[i] == target) return i;\n    }\n    return -1;\n}\n// linearSearch({5,3,8,1,9}, 8) -> 2\n// linearSearch({5,3,8,1,9}, 7) -> -1",
+    js:"function linearSearch(arr, target) {\n    for (let i = 0; i < arr.length; i++) {\n        if (arr[i] === target) return i;\n    }\n    return -1;\n}\nconsole.log(linearSearch([5,3,8,1,9], 8)); // 2",
+    python:"def linear_search(arr, target):\n    for i in range(len(arr)):\n        if arr[i] == target:\n            return i\n    return -1\n\nprint(linear_search([5, 3, 8, 1, 9], 8))  # 2",
+    timeComplexity:"O(n) — worst case checks every element",
+    spaceComplexity:"O(1)",
+    tip:"Linear search works on UNSORTED arrays. Binary search needs a sorted array but is O(log n). For a one-time search on an unsorted array, linear is fine. If you will search the same array many times, sorting once and binary searching each time is better overall.",
+    edgeCases:["Empty array → return -1","Target appears multiple times → returns the FIRST index found","Target not present → return -1","Single element array — checks one element"],
+    followups:[
+      {q:"How would you find all indices where the target appears, not just the first?",a:"Do not return on the first match. Instead push the index into a result list and continue the loop. Return the list at the end. O(n) always since you visit every element."},
+      {q:"When would you prefer linear search over binary search?",a:"When the array is unsorted and sorting would be too expensive. When the array is very small (overhead of sorting is not worth it). When you are searching a linked list (no random access, so binary search does not apply)."}
+    ]
+  },
+  {
+    id:10118,
+    category:"search",
+    diff:"Easy",
+    title:"Binary search",
+    logic:"Works only on a sorted array. Maintain low and high pointers. Find the middle index: mid = (low + high) / 2. If arr[mid] equals target, found. If target is less than arr[mid], search the left half (high = mid - 1). If target is greater, search the right half (low = mid + 1). Repeat until found or low > high.",
+    java:"public static int binarySearch(int[] arr, int target) {\n    int low = 0, high = arr.length - 1;\n    while (low <= high) {\n        int mid = low + (high - low) / 2; // avoids overflow\n        if (arr[mid] == target) return mid;\n        else if (arr[mid] < target) low = mid + 1;\n        else high = mid - 1;\n    }\n    return -1;\n}\n// binarySearch({1,3,5,7,9}, 7) -> 3",
+    js:"function binarySearch(arr, target) {\n    let low = 0, high = arr.length - 1;\n    while (low <= high) {\n        let mid = Math.floor((low + high) / 2);\n        if (arr[mid] === target) return mid;\n        else if (arr[mid] < target) low = mid + 1;\n        else high = mid - 1;\n    }\n    return -1;\n}\nconsole.log(binarySearch([1,3,5,7,9], 7)); // 3",
+    python:"def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n\nprint(binary_search([1, 3, 5, 7, 9], 7))  # 3",
+    timeComplexity:"O(log n) — each iteration halves the search space",
+    spaceComplexity:"O(1) for iterative; O(log n) for recursive due to call stack",
+    tip:"Use mid = low + (high - low) / 2 instead of (low + high) / 2 to prevent integer overflow when low and high are both very large. The array MUST be sorted — always state this precondition.",
+    edgeCases:["Element not present → return -1","Single element array — mid == 0, check once","Target is the first or last element — low or high pointer reaches it","Duplicate elements — binary search finds ONE occurrence, not necessarily the first"],
+    followups:[
+      {q:"How would you find the first occurrence of a target in a sorted array with duplicates?",a:"When arr[mid] == target, do not return immediately. Instead set high = mid - 1 and record mid as a candidate. When the loop ends, return the last recorded candidate. O(log n)."},
+      {q:"How would you write binary search recursively?",a:"Pass low and high as parameters. Base case: low > high, return -1. Compute mid, check arr[mid], and recurse on the left or right half. Each call reduces the problem size by half — O(log n) depth."}
+    ]
+  },
+  {
+    id:10119,
+    category:"search",
+    diff:"Easy",
+    title:"Bubble sort",
+    logic:"Repeatedly walk through the array comparing adjacent pairs. If a pair is out of order, swap them. After each full pass, the largest unsorted element bubbles to its correct position at the end. Repeat for n-1 passes total. Add an early-exit flag: if no swaps happen in a pass, the array is already sorted.",
+    java:"public static void bubbleSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 0; i < n - 1; i++) {\n        boolean swapped = false;\n        for (int j = 0; j < n - 1 - i; j++) {\n            if (arr[j] > arr[j + 1]) {\n                int temp = arr[j];\n                arr[j] = arr[j + 1];\n                arr[j + 1] = temp;\n                swapped = true;\n            }\n        }\n        if (!swapped) break; // already sorted\n    }\n}",
+    js:"function bubbleSort(arr) {\n    let n = arr.length;\n    for (let i = 0; i < n - 1; i++) {\n        let swapped = false;\n        for (let j = 0; j < n - 1 - i; j++) {\n            if (arr[j] > arr[j + 1]) {\n                [arr[j], arr[j+1]] = [arr[j+1], arr[j]];\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n    return arr;\n}\nconsole.log(bubbleSort([64,34,25,12,22,11,90]));",
+    python:"def bubble_sort(arr):\n    n = len(arr)\n    for i in range(n - 1):\n        swapped = False\n        for j in range(n - 1 - i):\n            if arr[j] > arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n                swapped = True\n        if not swapped:\n            break\n    return arr\n\nprint(bubble_sort([64, 34, 25, 12, 22, 11, 90]))",
+    timeComplexity:"O(n^2) worst/average; O(n) best case with swapped flag when already sorted",
+    spaceComplexity:"O(1) — in-place sorting",
+    tip:"Bubble sort is rarely used in practice but appears in every interview basics list. Always mention the swapped optimisation — it shows you know more than just the naive version. Also know that the inner loop shrinks by i each pass because the last i elements are already in place.",
+    edgeCases:["Already sorted → O(n) with swapped flag, loop exits after first pass","Reverse sorted → O(n^2), worst case","Single element or empty → no iterations needed","All same elements → no swaps, exits after first pass"],
+    followups:[
+      {q:"What is stable sorting and is bubble sort stable?",a:"A stable sort preserves the relative order of equal elements. Bubble sort IS stable because it only swaps when arr[j] > arr[j+1] (strict greater than), never when they are equal."},
+      {q:"Why is bubble sort rarely used in production?",a:"O(n^2) average time makes it slow for large datasets. QuickSort (O(n log n) average) and MergeSort (O(n log n) guaranteed) are far more efficient. Bubble sort is mainly used to teach sorting concepts."}
+    ]
+  },
+  {
+    id:10120,
+    category:"search",
+    diff:"Easy",
+    title:"Selection sort",
+    logic:"Divide the array into a sorted left portion and an unsorted right portion. In each pass, find the minimum element in the unsorted portion and swap it with the first element of the unsorted portion. After each pass, the sorted portion grows by one. Repeat n-1 times.",
+    java:"public static void selectionSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 0; i < n - 1; i++) {\n        int minIndex = i;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] < arr[minIndex]) {\n                minIndex = j;\n            }\n        }\n        int temp = arr[minIndex];\n        arr[minIndex] = arr[i];\n        arr[i] = temp;\n    }\n}",
+    js:"function selectionSort(arr) {\n    let n = arr.length;\n    for (let i = 0; i < n - 1; i++) {\n        let minIndex = i;\n        for (let j = i + 1; j < n; j++) {\n            if (arr[j] < arr[minIndex]) minIndex = j;\n        }\n        [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];\n    }\n    return arr;\n}\nconsole.log(selectionSort([64,25,12,22,11]));",
+    python:"def selection_sort(arr):\n    n = len(arr)\n    for i in range(n - 1):\n        min_index = i\n        for j in range(i + 1, n):\n            if arr[j] < arr[min_index]:\n                min_index = j\n        arr[i], arr[min_index] = arr[min_index], arr[i]\n    return arr\n\nprint(selection_sort([64, 25, 12, 22, 11]))",
+    timeComplexity:"O(n^2) always — the inner loop always scans the full unsorted portion",
+    spaceComplexity:"O(1) — in-place sorting",
+    tip:"Selection sort makes at most n-1 swaps — useful when the cost of swapping is high. Bubble sort can make O(n^2) swaps. Selection sort's number of comparisons is always O(n^2) regardless of input — no early exit optimisation is possible.",
+    edgeCases:["Already sorted → still O(n^2), no optimisation possible unlike bubble sort","All same elements → minIndex never changes, swaps are no-ops","Single element → outer loop does not execute"],
+    followups:[
+      {q:"Is selection sort stable?",a:"Not by default. When you swap arr[i] with arr[minIndex], equal elements can change their relative order. You can make it stable by shifting elements instead of swapping, but that increases the constant factor."},
+      {q:"How does selection sort compare to insertion sort?",a:"Both are O(n^2) in the worst case. Insertion sort is O(n) on nearly-sorted data and is stable. Selection sort always does O(n^2) comparisons but fewer swaps. Insertion sort is generally preferred in practice for small arrays."}
+    ]
+  },
+  {
+    id:10121,
+    category:"search",
+    diff:"Easy",
+    title:"Insertion sort",
+    logic:"Build a sorted portion starting with the first element. For each new element, compare it with elements in the sorted portion from right to left, shifting them one position right until you find the correct insertion position. Insert the element there. The sorted portion grows by one element each pass.",
+    java:"public static void insertionSort(int[] arr) {\n    for (int i = 1; i < arr.length; i++) {\n        int key = arr[i];\n        int j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j--;\n        }\n        arr[j + 1] = key;\n    }\n}",
+    js:"function insertionSort(arr) {\n    for (let i = 1; i < arr.length; i++) {\n        let key = arr[i];\n        let j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j--;\n        }\n        arr[j + 1] = key;\n    }\n    return arr;\n}\nconsole.log(insertionSort([12,11,13,5,6]));",
+    python:"def insertion_sort(arr):\n    for i in range(1, len(arr)):\n        key = arr[i]\n        j = i - 1\n        while j >= 0 and arr[j] > key:\n            arr[j + 1] = arr[j]\n            j -= 1\n        arr[j + 1] = key\n    return arr\n\nprint(insertion_sort([12, 11, 13, 5, 6]))",
+    timeComplexity:"O(n^2) worst case; O(n) best case on already-sorted input",
+    spaceComplexity:"O(1) — in-place sorting",
+    tip:"Insertion sort is efficient for small arrays and nearly-sorted data. Python's built-in sort (Timsort) uses insertion sort for small subarrays. It is also a stable sort and works naturally as an online algorithm (can sort as elements arrive one by one).",
+    edgeCases:["Already sorted → O(n), the inner while loop never executes","Reverse sorted → O(n^2), every element shifts all the way to the front","Single element → outer loop does not execute"],
+    followups:[
+      {q:"Is insertion sort stable?",a:"Yes. The while loop condition is arr[j] > key (strict greater than), so equal elements are never shifted past each other. Elements with the same value retain their original relative order."},
+      {q:"Why does Java's Arrays.sort() use insertion sort for small arrays?",a:"For arrays smaller than about 32 elements, the overhead of recursive algorithms (QuickSort, MergeSort) outweighs their benefits. Insertion sort has small constant factors, is cache-friendly, and runs in O(n) on nearly-sorted data — perfect for tiny subarrays."}
+    ]
+  },
+  {
+    id:10122,
+    category:"search",
+    diff:"Easy",
+    title:"Find position of a value using binary search",
+    logic:"Standard binary search on a sorted array. Maintain low and high pointers and repeatedly compute the midpoint. Return the index when a match is found, or -1 if low exceeds high without finding the value. This is identical to the binary search template but framed around returning a position.",
+    java:"public static int findPosition(int[] arr, int target) {\n    int low = 0, high = arr.length - 1;\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n        if (arr[mid] == target) {\n            return mid; // position (0-indexed)\n        } else if (arr[mid] < target) {\n            low = mid + 1;\n        } else {\n            high = mid - 1;\n        }\n    }\n    return -1; // not found\n}\n// findPosition({2,5,8,12,16,23}, 12) -> 3",
+    js:"function findPosition(arr, target) {\n    let low = 0, high = arr.length - 1;\n    while (low <= high) {\n        let mid = Math.floor((low + high) / 2);\n        if (arr[mid] === target) return mid;\n        else if (arr[mid] < target) low = mid + 1;\n        else high = mid - 1;\n    }\n    return -1;\n}\nconsole.log(findPosition([2,5,8,12,16,23], 12)); // 3",
+    python:"def find_position(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n\nprint(find_position([2, 5, 8, 12, 16, 23], 12))  # 3",
+    timeComplexity:"O(log n) — search space halves each iteration",
+    spaceComplexity:"O(1)",
+    tip:"This is the same as binary search. The key prerequisite is that the array is sorted. If you need to find the position to INSERT a value (not find it), modify to return low when low > high — that is the correct insertion point.",
+    edgeCases:["Value not in array → return -1","Value at index 0 (smallest) → high collapses to 0","Value at last index (largest) → low rises to last index","Array of size 1 → one comparison only"],
+    followups:[
+      {q:"How would you find the insertion position if the value is not present?",a:"Run normal binary search. When the loop ends with low > high, return low — that is the index where the value would be inserted to keep the array sorted. Java's Arrays.binarySearch() returns -(insertion_point + 1) for missing values."},
+      {q:"How would you count how many times a value appears in a sorted array?",a:"Use binary search twice: once to find the first occurrence (move high = mid-1 on match), once to find the last (move low = mid+1 on match). Count = last index - first index + 1. O(log n) total."}
+    ]
+  },
+  {
+    id:10123,
+    category:"search",
+    diff:"Hard",
+    title:"Search in a rotated sorted array",
+    logic:"A sorted array rotated at some pivot. At each step, find mid. One half of the array is always sorted. Check which half is sorted: if arr[low] <= arr[mid], the left half is sorted; otherwise the right half is sorted. Use the sorted half's boundaries to decide which half the target falls in, then discard the other half.",
+    java:"public static int searchRotated(int[] arr, int target) {\n    int low = 0, high = arr.length - 1;\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n        if (arr[mid] == target) return mid;\n        if (arr[low] <= arr[mid]) { // left half is sorted\n            if (target >= arr[low] && target < arr[mid]) {\n                high = mid - 1;\n            } else {\n                low = mid + 1;\n            }\n        } else { // right half is sorted\n            if (target > arr[mid] && target <= arr[high]) {\n                low = mid + 1;\n            } else {\n                high = mid - 1;\n            }\n        }\n    }\n    return -1;\n}\n// searchRotated({4,5,6,7,0,1,2}, 0) -> 4",
+    js:"function searchRotated(arr, target) {\n    let low = 0, high = arr.length - 1;\n    while (low <= high) {\n        let mid = Math.floor((low + high) / 2);\n        if (arr[mid] === target) return mid;\n        if (arr[low] <= arr[mid]) { // left sorted\n            if (target >= arr[low] && target < arr[mid]) high = mid - 1;\n            else low = mid + 1;\n        } else { // right sorted\n            if (target > arr[mid] && target <= arr[high]) low = mid + 1;\n            else high = mid - 1;\n        }\n    }\n    return -1;\n}\nconsole.log(searchRotated([4,5,6,7,0,1,2], 0)); // 4",
+    python:"def search_rotated(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target:\n            return mid\n        if arr[low] <= arr[mid]:  # left half sorted\n            if arr[low] <= target < arr[mid]:\n                high = mid - 1\n            else:\n                low = mid + 1\n        else:  # right half sorted\n            if arr[mid] < target <= arr[high]:\n                low = mid + 1\n            else:\n                high = mid - 1\n    return -1\n\nprint(search_rotated([4, 5, 6, 7, 0, 1, 2], 0))  # 4",
+    timeComplexity:"O(log n) — binary search is preserved",
+    spaceComplexity:"O(1)",
+    tip:"The key insight: even in a rotated array, ONE of the two halves is always sorted. You can tell which half is sorted by comparing arr[low] with arr[mid]. Once you know the sorted half, check if target falls within its range — if yes, search there; if no, search the other half.",
+    edgeCases:["No rotation (pivot = 0) → behaves like normal binary search","Target not present → return -1","Duplicates — this algorithm assumes no duplicates; with duplicates the arr[low] <= arr[mid] check can be ambiguous"],
+    followups:[
+      {q:"How would you find the rotation pivot first, then do normal binary search?",a:"Binary search for the minimum element (pivot). The pivot is at the index where arr[mid] > arr[mid+1]. Once found, determine which sorted half the target falls in and apply normal binary search. Same O(log n) but two passes."},
+      {q:"What if the array has duplicate elements?",a:"When arr[low] == arr[mid], you cannot tell which half is sorted. The safe fallback is to increment low and decrement high by one (linear step). This degrades to O(n) worst case when many duplicates exist."}
+    ]
+  },
+  {
+    id:10124,
+    category:"matrix",
+    diff:"Easy",
+    title:"Transpose a matrix",
+    logic:"The transpose of a matrix swaps rows and columns: element at [i][j] moves to [j][i]. For a square matrix, do this in-place by swapping elements across the main diagonal (only the upper triangle, to avoid swapping back). For a non-square matrix, create a new matrix with swapped dimensions.",
+    java:"public static int[][] transpose(int[][] matrix) {\n    int rows = matrix.length;\n    int cols = matrix[0].length;\n    int[][] result = new int[cols][rows];\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            result[j][i] = matrix[i][j];\n        }\n    }\n    return result;\n}\n// [[1,2,3],[4,5,6]] -> [[1,4],[2,5],[3,6]]",
+    js:"function transpose(matrix) {\n    let rows = matrix.length;\n    let cols = matrix[0].length;\n    let result = Array.from({length: cols}, () => new Array(rows));\n    for (let i = 0; i < rows; i++) {\n        for (let j = 0; j < cols; j++) {\n            result[j][i] = matrix[i][j];\n        }\n    }\n    return result;\n}",
+    python:"def transpose(matrix):\n    rows = len(matrix)\n    cols = len(matrix[0])\n    result = [[0] * rows for _ in range(cols)]\n    for i in range(rows):\n        for j in range(cols):\n            result[j][i] = matrix[i][j]\n    return result\n\nprint(transpose([[1,2,3],[4,5,6]]))",
+    timeComplexity:"O(m * n) — visits every element once",
+    spaceComplexity:"O(m * n) for the result matrix; O(1) extra for in-place square transpose",
+    tip:"For in-place square matrix transpose, only iterate the upper triangle: outer loop i from 0 to n-1, inner loop j from i+1 to n-1. Swap matrix[i][j] with matrix[j][i]. Only iterate above the diagonal to avoid swapping twice.",
+    edgeCases:["1x1 matrix → same matrix","Row vector (1 row) → becomes a column vector","Non-square matrix → dimensions change; new matrix has swapped rows/cols"],
+    followups:[
+      {q:"How would you transpose in-place for a square matrix?",a:"Loop i from 0 to n-1, j from i+1 to n-1. Swap matrix[i][j] with matrix[j][i]. Using the upper triangle avoids double-swapping. O(n^2) time, O(1) space."},
+      {q:"What is the relationship between transpose and matrix rotation?",a:"Rotating a matrix 90 degrees clockwise = transpose first, then reverse each row. Rotating 90 degrees counter-clockwise = reverse each row first, then transpose. These are the standard two-step approaches."}
+    ]
+  },
+  {
+    id:10125,
+    category:"matrix",
+    diff:"Medium",
+    title:"Print matrix in spiral order",
+    logic:"Define four boundaries: top, bottom, left, right. Peel the matrix layer by layer: traverse the top row left-to-right, right column top-to-bottom, bottom row right-to-left, left column bottom-to-top. After each traversal, shrink the corresponding boundary inward. Stop when top > bottom or left > right.",
+    java:"public static List<Integer> spiralOrder(int[][] matrix) {\n    List<Integer> result = new ArrayList<>();\n    int top = 0, bottom = matrix.length - 1;\n    int left = 0, right = matrix[0].length - 1;\n    while (top <= bottom && left <= right) {\n        for (int i = left; i <= right; i++)  result.add(matrix[top][i]);\n        top++;\n        for (int i = top; i <= bottom; i++)  result.add(matrix[i][right]);\n        right--;\n        if (top <= bottom) {\n            for (int i = right; i >= left; i--) result.add(matrix[bottom][i]);\n            bottom--;\n        }\n        if (left <= right) {\n            for (int i = bottom; i >= top; i--) result.add(matrix[i][left]);\n            left++;\n        }\n    }\n    return result;\n}",
+    js:"function spiralOrder(matrix) {\n    let result = [];\n    let top = 0, bottom = matrix.length - 1;\n    let left = 0, right = matrix[0].length - 1;\n    while (top <= bottom && left <= right) {\n        for (let i = left; i <= right; i++)  result.push(matrix[top][i]);\n        top++;\n        for (let i = top; i <= bottom; i++)  result.push(matrix[i][right]);\n        right--;\n        if (top <= bottom) {\n            for (let i = right; i >= left; i--) result.push(matrix[bottom][i]);\n            bottom--;\n        }\n        if (left <= right) {\n            for (let i = bottom; i >= top; i--) result.push(matrix[i][left]);\n            left++;\n        }\n    }\n    return result;\n}",
+    python:"def spiral_order(matrix):\n    result = []\n    top, bottom = 0, len(matrix) - 1\n    left, right = 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for i in range(left, right + 1):  result.append(matrix[top][i])\n        top += 1\n        for i in range(top, bottom + 1):  result.append(matrix[i][right])\n        right -= 1\n        if top <= bottom:\n            for i in range(right, left - 1, -1): result.append(matrix[bottom][i])\n            bottom -= 1\n        if left <= right:\n            for i in range(bottom, top - 1, -1): result.append(matrix[i][left])\n            left += 1\n    return result",
+    timeComplexity:"O(m * n) — every element is visited exactly once",
+    spaceComplexity:"O(m * n) for the result list; O(1) extra",
+    tip:"The two extra if-checks (if top <= bottom and if left <= right) prevent double-traversal of a single row or column when the matrix is not square. Forgetting these is the most common bug on this problem.",
+    edgeCases:["Single row → just traverse left-to-right, other directions are skipped","Single column → traverse top-to-bottom only","1x1 matrix → single element","Non-square (more rows than columns or vice versa)"],
+    followups:[
+      {q:"How would you generate a matrix filled in spiral order?",a:"Same boundary approach but instead of reading, write values 1 to n*n into the positions as you traverse. Keep a counter starting at 1 and assign it to matrix[row][col] at each step."},
+      {q:"How would you rotate the spiral direction (counter-clockwise)?",a:"Reverse the traversal order: go top-to-bottom first (left column), then left-to-right (bottom row), then bottom-to-top (right column), then right-to-left (top row). Adjust boundary shrinking accordingly."}
+    ]
+  },
+  {
+    id:10126,
+    category:"matrix",
+    diff:"Easy",
+    title:"Add two matrices",
+    logic:"Two matrices can be added only if they have the same dimensions. Create a result matrix of the same size. For each position [i][j], the result is mat1[i][j] + mat2[i][j]. Simple nested loop over all rows and columns.",
+    java:"public static int[][] addMatrices(int[][] a, int[][] b) {\n    int rows = a.length, cols = a[0].length;\n    int[][] result = new int[rows][cols];\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            result[i][j] = a[i][j] + b[i][j];\n        }\n    }\n    return result;\n}",
+    js:"function addMatrices(a, b) {\n    let rows = a.length, cols = a[0].length;\n    let result = Array.from({length: rows}, () => new Array(cols).fill(0));\n    for (let i = 0; i < rows; i++) {\n        for (let j = 0; j < cols; j++) {\n            result[i][j] = a[i][j] + b[i][j];\n        }\n    }\n    return result;\n}",
+    python:"def add_matrices(a, b):\n    rows, cols = len(a), len(a[0])\n    result = [[0] * cols for _ in range(rows)]\n    for i in range(rows):\n        for j in range(cols):\n            result[i][j] = a[i][j] + b[i][j]\n    return result",
+    timeComplexity:"O(m * n) — visits every cell once",
+    spaceComplexity:"O(m * n) — for the result matrix",
+    tip:"Always validate that both matrices have the same dimensions before adding. This is a precondition that interviewers often check for. Matrix subtraction is identical — just change + to -.",
+    edgeCases:["Different dimensions → throw an error or return null","1x1 matrices → adds single elements","Zero matrices (all zeros) → result is the other matrix unchanged"],
+    followups:[
+      {q:"How would you add matrices in-place (storing result back in the first matrix)?",a:"Modify a[i][j] = a[i][j] + b[i][j] directly instead of writing to a result array. No extra matrix needed. Destructive — modifies the first input."},
+      {q:"How would you subtract matrices?",a:"Identical code, just replace a[i][j] + b[i][j] with a[i][j] - b[i][j]. Same dimension check applies."}
+    ]
+  },
+  {
+    id:10127,
+    category:"matrix",
+    diff:"Medium",
+    title:"Multiply two matrices",
+    logic:"Matrix multiplication is only possible when the number of columns in the first matrix equals the number of rows in the second. Result[i][j] is the dot product of row i from the first matrix and column j from the second. Use three nested loops: i for result row, j for result column, k for the dot product summation.",
+    java:"public static int[][] multiplyMatrices(int[][] a, int[][] b) {\n    int rows = a.length;\n    int cols = b[0].length;\n    int inner = b.length; // a's cols == b's rows\n    int[][] result = new int[rows][cols];\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            for (int k = 0; k < inner; k++) {\n                result[i][j] += a[i][k] * b[k][j];\n            }\n        }\n    }\n    return result;\n}",
+    js:"function multiplyMatrices(a, b) {\n    let rows = a.length, cols = b[0].length, inner = b.length;\n    let result = Array.from({length: rows}, () => new Array(cols).fill(0));\n    for (let i = 0; i < rows; i++) {\n        for (let j = 0; j < cols; j++) {\n            for (let k = 0; k < inner; k++) {\n                result[i][j] += a[i][k] * b[k][j];\n            }\n        }\n    }\n    return result;\n}",
+    python:"def multiply_matrices(a, b):\n    rows, cols, inner = len(a), len(b[0]), len(b)\n    result = [[0] * cols for _ in range(rows)]\n    for i in range(rows):\n        for j in range(cols):\n            for k in range(inner):\n                result[i][j] += a[i][k] * b[k][j]\n    return result",
+    timeComplexity:"O(m * n * p) — three nested loops where m, n, p are the dimensions",
+    spaceComplexity:"O(m * p) — for the result matrix",
+    tip:"Initialise the result matrix to all zeros before the loops — each result[i][j] is accumulated with +=. The inner loop k goes from 0 to the shared dimension (a's column count = b's row count). Matrix multiplication is NOT commutative: A*B != B*A in general.",
+    edgeCases:["Incompatible dimensions (a.cols != b.rows) → throw an error","Identity matrix multiplication → result is the same matrix","1x1 matrices → reduces to scalar multiplication"],
+    followups:[
+      {q:"What is the difference between matrix multiplication and element-wise multiplication?",a:"Matrix multiplication (dot product) sums products across the inner dimension: result[i][j] = sum(a[i][k]*b[k][j]). Element-wise (Hadamard product) simply multiplies matching positions: result[i][j] = a[i][j]*b[i][j]. Element-wise requires same dimensions."},
+      {q:"Is matrix multiplication commutative?",a:"No. In general A*B is not equal to B*A. The result dimensions are also different: (m x n) * (n x p) = (m x p), while (n x p) * (m x n) is only valid if p == m and produces a (n x n) result."}
+    ]
+  },
+  {
+    id:10128,
+    category:"matrix",
+    diff:"Medium",
+    title:"Rotate matrix 90 degrees clockwise",
+    logic:"Two-step approach: (1) Transpose the matrix — swap element [i][j] with [j][i]. (2) Reverse each row. After transposing, each column becomes a row but in the wrong order; reversing fixes the direction. This achieves a 90-degree clockwise rotation in-place.",
+    java:"public static void rotate90Clockwise(int[][] matrix) {\n    int n = matrix.length;\n    // Step 1: Transpose\n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            int temp = matrix[i][j];\n            matrix[i][j] = matrix[j][i];\n            matrix[j][i] = temp;\n        }\n    }\n    // Step 2: Reverse each row\n    for (int i = 0; i < n; i++) {\n        int left = 0, right = n - 1;\n        while (left < right) {\n            int temp = matrix[i][left];\n            matrix[i][left] = matrix[i][right];\n            matrix[i][right] = temp;\n            left++; right--;\n        }\n    }\n}",
+    js:"function rotate90Clockwise(matrix) {\n    let n = matrix.length;\n    // Transpose\n    for (let i = 0; i < n; i++)\n        for (let j = i + 1; j < n; j++)\n            [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];\n    // Reverse each row\n    for (let i = 0; i < n; i++)\n        matrix[i].reverse();\n    return matrix;\n}",
+    python:"def rotate_90_clockwise(matrix):\n    n = len(matrix)\n    # Transpose\n    for i in range(n):\n        for j in range(i + 1, n):\n            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]\n    # Reverse each row\n    for i in range(n):\n        matrix[i].reverse()\n    return matrix",
+    timeComplexity:"O(n^2) — visit every element twice (once for transpose, once for reverse)",
+    spaceComplexity:"O(1) — in-place rotation",
+    tip:"For 90 counter-clockwise: reverse each row first, then transpose. For 180 degrees: transpose then reverse columns, or simply reverse each row and then each column. These two-step patterns are worth memorising.",
+    edgeCases:["1x1 matrix → no change","2x2 matrix → simple swap of 4 elements","Non-square matrix — this in-place approach only works for square matrices; non-square needs a new result matrix"],
+    followups:[
+      {q:"How would you rotate 90 degrees counter-clockwise?",a:"Reverse each row first, then transpose. Or transpose first, then reverse each column. This is the mirror of the clockwise approach."},
+      {q:"How would you rotate 180 degrees?",a:"Apply the 90-degree clockwise rotation twice. Or directly: reverse the entire matrix row order (reverse the array of rows), then reverse each individual row. Two simple loops instead of four."}
+    ]
+  },
+  {
+    id:10129,
+    category:"matrix",
+    diff:"Easy",
+    title:"Find sum of each row and column of a matrix",
+    logic:"For row sums: one outer loop per row, one inner loop accumulating elements across all columns. For column sums: one outer loop per column, one inner loop accumulating elements down all rows. Store results in two separate arrays of size rows and cols respectively.",
+    java:"public static void rowAndColumnSums(int[][] matrix) {\n    int rows = matrix.length;\n    int cols = matrix[0].length;\n    int[] rowSum = new int[rows];\n    int[] colSum = new int[cols];\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            rowSum[i] += matrix[i][j];\n            colSum[j] += matrix[i][j];\n        }\n    }\n    System.out.println(\"Row sums: \" + Arrays.toString(rowSum));\n    System.out.println(\"Col sums: \" + Arrays.toString(colSum));\n}",
+    js:"function rowAndColumnSums(matrix) {\n    let rows = matrix.length, cols = matrix[0].length;\n    let rowSum = new Array(rows).fill(0);\n    let colSum = new Array(cols).fill(0);\n    for (let i = 0; i < rows; i++) {\n        for (let j = 0; j < cols; j++) {\n            rowSum[i] += matrix[i][j];\n            colSum[j] += matrix[i][j];\n        }\n    }\n    console.log('Row sums:', rowSum);\n    console.log('Col sums:', colSum);\n}",
+    python:"def row_and_column_sums(matrix):\n    rows, cols = len(matrix), len(matrix[0])\n    row_sum = [0] * rows\n    col_sum = [0] * cols\n    for i in range(rows):\n        for j in range(cols):\n            row_sum[i] += matrix[i][j]\n            col_sum[j] += matrix[i][j]\n    print('Row sums:', row_sum)\n    print('Col sums:', col_sum)",
+    timeComplexity:"O(m * n) — one pass through the entire matrix",
+    spaceComplexity:"O(m + n) — two sum arrays",
+    tip:"You can compute both row and column sums in a single nested loop pass by updating both rowSum[i] and colSum[j] at every cell. This is more efficient than two separate nested loops.",
+    edgeCases:["Single row → rowSum has one entry, colSum has n entries","Single column → colSum has one entry","1x1 matrix → both row and column sum equal the single element","All zeros → all sums are zero"],
+    followups:[
+      {q:"How would you find the row with the maximum sum?",a:"After computing rowSum, scan the array for the maximum value and note its index. O(m) extra scan, or track during the sum computation."},
+      {q:"How would you find the diagonal sum of a square matrix?",a:"Main diagonal: sum matrix[i][i] for i from 0 to n-1. Anti-diagonal: sum matrix[i][n-1-i] for i from 0 to n-1. If n is odd, the centre element matrix[n/2][n/2] is on both diagonals — subtract it once to avoid double-counting."}
+    ]
+  },
+  {
+    id:10130,
+    category:"recursion",
+    diff:"Easy",
+    title:"Factorial using recursion",
+    logic:"Factorial of n (written n!) is n * (n-1) * (n-2) * ... * 1. Base case: factorial(0) = 1 and factorial(1) = 1. Recursive case: factorial(n) = n * factorial(n - 1). Each call reduces n by 1 until it reaches the base case.",
+    java:"public static long factorial(int n) {\n    if (n <= 1) return 1; // base case\n    return n * factorial(n - 1);\n}\n// factorial(5) -> 120\n// factorial(0) -> 1",
+    js:"function factorial(n) {\n    if (n <= 1) return 1;\n    return n * factorial(n - 1);\n}\nconsole.log(factorial(5)); // 120",
+    python:"def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))  # 120",
+    timeComplexity:"O(n) — n recursive calls",
+    spaceComplexity:"O(n) — call stack depth of n",
+    tip:"Always state the base case first when explaining recursion: 'when n is 0 or 1, return 1.' Then explain the recursive case. Draw the call stack on paper: factorial(5) -> 5 * factorial(4) -> 5 * 4 * factorial(3) -> ... -> 5 * 4 * 3 * 2 * 1.",
+    edgeCases:["n = 0 → return 1 (0! is defined as 1)","n = 1 → return 1","Negative input → undefined mathematically; add a guard and throw an exception or return -1","Large n (n > 20) → overflow; use BigInteger in Java or Python's arbitrary precision integers"],
+    followups:[
+      {q:"How would you write factorial iteratively?",a:"Use a loop: start with result = 1, then multiply result by each number from 2 to n. Same O(n) time, O(1) space — no call stack overhead."},
+      {q:"What is tail recursion and is factorial tail recursive?",a:"Tail recursion is when the recursive call is the very last operation — no pending multiplication after the call returns. Standard factorial is NOT tail recursive because of the pending n * ... multiplication. A tail-recursive version passes an accumulator parameter."}
+    ]
+  },
+  {
+    id:10131,
+    category:"recursion",
+    diff:"Easy",
+    title:"Fibonacci using recursion",
+    logic:"Fibonacci: each number is the sum of the two before it. F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2). Base cases: F(0)=0, F(1)=1. Recursive case: return fibonacci(n-1) + fibonacci(n-2). Each call branches into two sub-calls until it hits a base case.",
+    java:"public static int fibonacci(int n) {\n    if (n == 0) return 0;\n    if (n == 1) return 1;\n    return fibonacci(n - 1) + fibonacci(n - 2);\n}\n// fibonacci(6) -> 8  (0,1,1,2,3,5,8)",
+    js:"function fibonacci(n) {\n    if (n === 0) return 0;\n    if (n === 1) return 1;\n    return fibonacci(n - 1) + fibonacci(n - 2);\n}\nconsole.log(fibonacci(6)); // 8",
+    python:"def fibonacci(n):\n    if n == 0:\n        return 0\n    if n == 1:\n        return 1\n    return fibonacci(n - 1) + fibonacci(n - 2)\n\nprint(fibonacci(6))  # 8",
+    timeComplexity:"O(2^n) — exponential due to repeated sub-problems",
+    spaceComplexity:"O(n) — maximum call stack depth",
+    tip:"The recursive version is elegant but very slow for large n. Always mention memoisation (store already-computed results in a HashMap) to bring it down to O(n). Or use a simple loop with two variables — O(n) time, O(1) space. Interviewers almost always ask about this.",
+    edgeCases:["n = 0 → 0","n = 1 → 1","Negative n → undefined; add a guard","Large n → extremely slow without memoisation; n=40 already takes seconds"],
+    followups:[
+      {q:"How would you optimise with memoisation?",a:"Store computed values in a Map. Before computing, check if the result is already cached. If yes, return it. If no, compute, store, and return. Changes time from O(2^n) to O(n)."},
+      {q:"How would you compute Fibonacci iteratively in O(1) space?",a:"Use two variables: prev = 0, curr = 1. In a loop from 2 to n, update: int next = prev + curr; prev = curr; curr = next. After the loop, curr is F(n). O(n) time, O(1) space — far more practical."}
+    ]
+  },
+  {
+    id:10132,
+    category:"recursion",
+    diff:"Easy",
+    title:"Sum of digits using recursion",
+    logic:"Extract the last digit of n using n % 10. Add it to the recursive call with n / 10 (the remaining digits). Base case: if n is 0, return 0. Each call strips one digit from the right until nothing is left.",
+    java:"public static int digitSum(int n) {\n    if (n == 0) return 0;\n    return (n % 10) + digitSum(n / 10);\n}\n// digitSum(1234) -> 10 (1+2+3+4)",
+    js:"function digitSum(n) {\n    if (n === 0) return 0;\n    return (n % 10) + digitSum(Math.floor(n / 10));\n}\nconsole.log(digitSum(1234)); // 10",
+    python:"def digit_sum(n):\n    if n == 0:\n        return 0\n    return (n % 10) + digit_sum(n // 10)\n\nprint(digit_sum(1234))  # 10",
+    timeComplexity:"O(d) — where d is the number of digits",
+    spaceComplexity:"O(d) — recursion depth equals number of digits",
+    tip:"This is a great example to explain the recursion pattern: peel one unit of work (last digit) and recurse on the rest. The same pattern applies to digit reversal, digit count, and other digit-by-digit problems.",
+    edgeCases:["n = 0 → sum is 0 (base case)","Single digit → returns that digit","Negative numbers — handle with Math.abs(n) before starting"],
+    followups:[
+      {q:"How would you write this iteratively?",a:"while (n > 0) { sum += n % 10; n /= 10; }. Same digit extraction loop as the recursive version, just expressed with a while loop instead of recursion."},
+      {q:"How would you find the digital root (keep summing digits until single digit)?",a:"Repeatedly call digitSum until the result is less than 10. Or use the formula: digital root of n = 1 + (n-1) % 9 (works for n > 0). Special case: digital root of 0 is 0."}
+    ]
+  },
+  {
+    id:10133,
+    category:"recursion",
+    diff:"Easy",
+    title:"Reverse a string using recursion",
+    logic:"To reverse a string recursively: the reversed string is the last character followed by the reverse of everything except the last character. Base case: a string of length 0 or 1 is already reversed. Each call strips one character from the end until the base case is reached.",
+    java:"public static String reverseString(String s) {\n    if (s.length() <= 1) return s;\n    return s.charAt(s.length() - 1) + reverseString(s.substring(0, s.length() - 1));\n}\n// reverseString(\"hello\") -> \"olleh\"",
+    js:"function reverseString(s) {\n    if (s.length <= 1) return s;\n    return s[s.length - 1] + reverseString(s.slice(0, s.length - 1));\n}\nconsole.log(reverseString('hello')); // 'olleh'",
+    python:"def reverse_string(s):\n    if len(s) <= 1:\n        return s\n    return s[-1] + reverse_string(s[:-1])\n\nprint(reverse_string('hello'))  # 'olleh'",
+    timeComplexity:"O(n^2) — each call creates a new substring of length n-1, n-2, ...",
+    spaceComplexity:"O(n) — call stack depth, plus O(n^2) for string allocations",
+    tip:"The recursive approach is less efficient than the iterative two-pointer approach (O(n) time, O(1) space) but demonstrates the recursion pattern clearly. Mention that in Java/Python strings are immutable so each substring creates a new string — using a char array or StringBuilder is more efficient.",
+    edgeCases:["Empty string → return empty","Single character → return unchanged","Palindrome → reversed equals original"],
+    followups:[
+      {q:"How would you reverse a string recursively using a different base case?",a:"Base case: empty string returns ''. Recursive case: take the first character and append it AFTER reversing the rest: return reverseString(s.substring(1)) + s.charAt(0). Same result, different peeling direction."},
+      {q:"Why is the iterative approach better for string reversal?",a:"Recursion creates O(n) stack frames and O(n^2) string objects (each substring is a new allocation). The iterative two-pointer approach uses O(1) extra space and makes fewer allocations."}
+    ]
+  },
+  {
+    id:10134,
+    category:"recursion",
+    diff:"Easy",
+    title:"Check if a string is a palindrome using recursion",
+    logic:"A string is a palindrome if the first and last characters match AND the middle portion (without the first and last) is also a palindrome. Base case: a string of length 0 or 1 is always a palindrome. If the outer characters do not match, return false without recursing.",
+    java:"public static boolean isPalindrome(String s) {\n    if (s.length() <= 1) return true;\n    if (s.charAt(0) != s.charAt(s.length() - 1)) return false;\n    return isPalindrome(s.substring(1, s.length() - 1));\n}\n// isPalindrome(\"racecar\") -> true\n// isPalindrome(\"hello\")   -> false",
+    js:"function isPalindrome(s) {\n    if (s.length <= 1) return true;\n    if (s[0] !== s[s.length - 1]) return false;\n    return isPalindrome(s.slice(1, s.length - 1));\n}\nconsole.log(isPalindrome('racecar')); // true\nconsole.log(isPalindrome('hello'));   // false",
+    python:"def is_palindrome(s):\n    if len(s) <= 1:\n        return True\n    if s[0] != s[-1]:\n        return False\n    return is_palindrome(s[1:-1])\n\nprint(is_palindrome('racecar'))  # True\nprint(is_palindrome('hello'))    # False",
+    timeComplexity:"O(n) — at most n/2 recursive calls, each comparing 2 characters",
+    spaceComplexity:"O(n) — call stack depth",
+    tip:"The early exit when outer characters do not match is important — it avoids unnecessary recursion. Without it, the function still works but makes extra calls. Explain the logic as 'peeling layers of the onion from both sides simultaneously.'",
+    edgeCases:["Empty string → palindrome (base case)","Single character → palindrome","Even length palindromes like 'abba' → middle substring becomes empty (base case)","Case sensitivity — 'Racecar' with capital R vs lowercase r — add toLowerCase() if needed"],
+    followups:[
+      {q:"How would you handle case-insensitive palindrome check?",a:"Convert the string to lowercase before checking: isPalindrome(s.toLowerCase()). Or compare using Character.toLowerCase() at each character comparison inside the function."},
+      {q:"How would you ignore spaces and punctuation?",a:"Pre-process the string to keep only letters and digits: s.replaceAll('[^a-zA-Z0-9]', '').toLowerCase() in Java. Then run the palindrome check on the cleaned string."}
+    ]
+  },
+  {
+    id:10135,
+    category:"recursion",
+    diff:"Medium",
+    title:"Tower of Hanoi",
+    logic:"Move n disks from source peg to destination peg using an auxiliary peg. Base case: n = 1 — move the single disk directly from source to destination. Recursive case: (1) Move the top n-1 disks from source to auxiliary. (2) Move the largest disk from source to destination. (3) Move the n-1 disks from auxiliary to destination.",
+    java:"public static void hanoi(int n, String source, String destination, String auxiliary) {\n    if (n == 1) {\n        System.out.println(\"Move disk 1 from \" + source + \" to \" + destination);\n        return;\n    }\n    hanoi(n - 1, source, auxiliary, destination);\n    System.out.println(\"Move disk \" + n + \" from \" + source + \" to \" + destination);\n    hanoi(n - 1, auxiliary, destination, source);\n}\n// hanoi(3, \"A\", \"C\", \"B\");",
+    js:"function hanoi(n, source, destination, auxiliary) {\n    if (n === 1) {\n        console.log('Move disk 1 from ' + source + ' to ' + destination);\n        return;\n    }\n    hanoi(n - 1, source, auxiliary, destination);\n    console.log('Move disk ' + n + ' from ' + source + ' to ' + destination);\n    hanoi(n - 1, auxiliary, destination, source);\n}\nhanoi(3, 'A', 'C', 'B');",
+    python:"def hanoi(n, source, destination, auxiliary):\n    if n == 1:\n        print('Move disk 1 from ' + source + ' to ' + destination)\n        return\n    hanoi(n - 1, source, auxiliary, destination)\n    print('Move disk ' + str(n) + ' from ' + source + ' to ' + destination)\n    hanoi(n - 1, auxiliary, destination, source)\n\nhanoi(3, 'A', 'C', 'B')",
+    timeComplexity:"O(2^n) — total moves equals 2^n - 1",
+    spaceComplexity:"O(n) — call stack depth",
+    tip:"The insight is that before you can move the largest disk, all n-1 smaller disks must be out of the way. That subproblem has the same structure as the original. The total number of moves is always 2^n - 1 — worth knowing to quote.",
+    edgeCases:["n = 1 → single move","n = 0 → no moves (add a guard if needed)","Large n → 2^n - 1 moves grows explosively; n=64 is 18 quintillion moves"],
+    followups:[
+      {q:"How many moves does Tower of Hanoi require for n disks?",a:"Exactly 2^n - 1 moves. For n=3: 7 moves. For n=10: 1023 moves. This is the minimum possible — no algorithm can solve it in fewer moves."},
+      {q:"Can Tower of Hanoi be solved iteratively?",a:"Yes but it is complex. One iterative method uses a loop and the observation that every other move always involves the smallest disk. Another uses a stack to simulate the recursion explicitly. The recursive version is much cleaner to understand and explain."}
+    ]
+  },
+  {
+    id:10136,
+    category:"recursion",
+    diff:"Easy",
+    title:"Calculate power using recursion",
+    logic:"Base cases: any number to the power 0 is 1. Recursive case: power(base, exp) = base * power(base, exp - 1). Each call reduces the exponent by 1 until it reaches 0. An optimised version halves the exponent on even powers: power(base, exp) = power(base*base, exp/2).",
+    java:"public static long power(int base, int exp) {\n    if (exp == 0) return 1;\n    return base * power(base, exp - 1);\n}\n// power(2, 10) -> 1024\n\n// Optimised O(log n) version:\npublic static long fastPower(int base, int exp) {\n    if (exp == 0) return 1;\n    if (exp % 2 == 0) return fastPower(base * base, exp / 2);\n    return base * fastPower(base, exp - 1);\n}",
+    js:"function power(base, exp) {\n    if (exp === 0) return 1;\n    return base * power(base, exp - 1);\n}\n\n// Optimised:\nfunction fastPower(base, exp) {\n    if (exp === 0) return 1;\n    if (exp % 2 === 0) return fastPower(base * base, exp / 2);\n    return base * fastPower(base, exp - 1);\n}\nconsole.log(power(2, 10));     // 1024\nconsole.log(fastPower(2, 10)); // 1024",
+    python:"def power(base, exp):\n    if exp == 0:\n        return 1\n    return base * power(base, exp - 1)\n\n# Optimised:\ndef fast_power(base, exp):\n    if exp == 0:\n        return 1\n    if exp % 2 == 0:\n        return fast_power(base * base, exp // 2)\n    return base * fast_power(base, exp - 1)\n\nprint(power(2, 10))      # 1024\nprint(fast_power(2, 10)) # 1024",
+    timeComplexity:"O(n) simple version; O(log n) fast version",
+    spaceComplexity:"O(n) simple call stack; O(log n) fast version",
+    tip:"Present both: the simple recursive version (easy to understand) and the fast exponentiation version (O(log n)). The fast version is worth explaining: squaring halves the exponent, so 2^10 = (2^2)^5 = (4)^5 = 4 * (4^2)^2 = 4 * 16^2 = 4 * 256 = 1024.",
+    edgeCases:["exp = 0 → return 1","exp = 1 → return base","base = 0 → 0 for any positive exp","Negative exponents — return double (1.0 / power(base, -exp))"],
+    followups:[
+      {q:"How does fast exponentiation achieve O(log n)?",a:"When the exponent is even, power(b, n) = power(b*b, n/2). This halves the exponent each time, so the number of calls is log2(n). Compare: power(2,32) takes 32 steps simply but only 5 steps with fast exponentiation (32->16->8->4->2->1)."},
+      {q:"What is modular exponentiation and where is it used?",a:"Compute (base^exp) % mod — used in cryptography (RSA) where numbers are astronomically large. Add % mod at each multiplication step to keep numbers manageable: result = (base * power) % mod. Works with the fast exponentiation skeleton."}
+    ]
+  },
+  {
+    id:10137,
+    category:"recursion",
+    diff:"Easy",
+    title:"Print numbers 1 to N without using any loops",
+    logic:"Use recursion to count up. Base case: if n is 0, return and do nothing. Recursive case: first call print1toN(n - 1) to print everything up to n-1, then print n. This reverses the natural recursion order so numbers print in ascending order (small to large) not descending.",
+    java:"public static void print1toN(int n) {\n    if (n <= 0) return; // base case\n    print1toN(n - 1);   // print smaller numbers first\n    System.out.println(n); // then print current number\n}\n// print1toN(5) prints: 1 2 3 4 5",
+    js:"function print1toN(n) {\n    if (n <= 0) return;\n    print1toN(n - 1);\n    console.log(n);\n}\nprint1toN(5);",
+    python:"def print_1_to_n(n):\n    if n <= 0:\n        return\n    print_1_to_n(n - 1)\n    print(n)\n\nprint_1_to_n(5)",
+    timeComplexity:"O(n) — one call per number",
+    spaceComplexity:"O(n) — call stack depth of n",
+    tip:"The order of statements matters: placing the recursive call BEFORE the print gives ascending order (1 to N). Placing it AFTER the print gives descending order (N to 1). This is a great question for explaining how the call stack determines execution order.",
+    edgeCases:["n = 0 → prints nothing (base case returns immediately)","n = 1 → prints just '1'","Negative n → base case returns immediately, nothing printed","Large n → risk of stack overflow; typically limited to a few thousand levels"],
+    followups:[
+      {q:"How would you print N down to 1 instead?",a:"Simply print n BEFORE the recursive call: System.out.println(n); print1toN(n-1). The base case stays the same. Now the current number prints first, then the recursive call handles smaller numbers."},
+      {q:"How would you print only even numbers from 1 to N without a loop?",a:"Inside the function, only print n if n is even (n % 2 == 0). The recursion still visits every number but only prints those that are even. Base case and recursive structure remain unchanged."}
+    ]
+  },
+  {
+    id:10138,
+    category:"regex",
+    diff:"Easy",
+    title:"Validate email address using regex",
+    logic:"A valid basic email has: one or more alphanumeric characters, then @, then one or more domain characters, then a dot, then 2 or more letters. Match this structure with a pattern and test the input against it. Use [.] in Java to match a literal dot without backslash escaping complications.",
+    java:"import java.util.regex.Pattern;\n\npublic static boolean isValidEmail(String email) {\n    String pattern = \"[a-zA-Z0-9]+@[a-zA-Z0-9]+[.][a-zA-Z]{2,}\";\n    return Pattern.matches(pattern, email);\n}\n// isValidEmail(\"test@example.com\") -> true\n// isValidEmail(\"testexample.com\")  -> false",
+    js:"function isValidEmail(email) {\n    let pattern = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,}$/;\n    return pattern.test(email);\n}\nconsole.log(isValidEmail('test@example.com')); // true\nconsole.log(isValidEmail('testexample.com'));  // false",
+    python:"import re\n\ndef is_valid_email(email):\n    pattern = r'[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,}'\n    return bool(re.match(pattern, email))\n\nprint(is_valid_email('test@example.com'))  # True",
+    timeComplexity:"O(n) — regex engine scans the string once",
+    spaceComplexity:"O(1)",
+    tip:"Use [.] in Java instead of \\\\. to match a literal dot — it avoids the confusing double-backslash. In production, email validation is best done by sending a confirmation link since the RFC 5322 specification is far more complex than any simple regex.",
+    edgeCases:["No @ symbol → fails","Multiple @ symbols → fails","No dot in domain → fails","Top-level domain shorter than 2 chars → fails","Empty string → fails"],
+    followups:[
+      {q:"Why is sending a confirmation email better than regex validation?",a:"Even a perfectly formatted email address might not exist or might belong to someone else. Regex checks syntax, not existence or ownership. A confirmation link is the only reliable way to verify that the address is real and belongs to the user."},
+      {q:"How would you extract all email addresses from a block of text?",a:"Use Matcher.find() in Java or a global match in JS/Python to find all occurrences of the pattern anywhere in the text (not just the full string). Collect all matches into a list."}
+    ]
+  },
+  {
+    id:10139,
+    category:"regex",
+    diff:"Easy",
+    title:"Validate phone number using regex",
+    logic:"A basic 10-digit phone number pattern: exactly 10 digits, optionally with spaces, dashes, or dots between groups. Pattern [0-9]{10} matches a plain 10-digit number. A more flexible pattern allows separators: [0-9]{3}[-. ]?[0-9]{3}[-. ]?[0-9]{4}.",
+    java:"import java.util.regex.Pattern;\n\npublic static boolean isValidPhone(String phone) {\n    String pattern = \"[0-9]{10}\";\n    return Pattern.matches(pattern, phone);\n}\n// isValidPhone(\"9876543210\") -> true\n// isValidPhone(\"98765\")      -> false\n// isValidPhone(\"987654321a\") -> false",
+    js:"function isValidPhone(phone) {\n    let pattern = /^[0-9]{10}$/;\n    return pattern.test(phone);\n}\nconsole.log(isValidPhone('9876543210')); // true\nconsole.log(isValidPhone('98765'));      // false",
+    python:"import re\n\ndef is_valid_phone(phone):\n    pattern = r'^[0-9]{10}$'\n    return bool(re.match(pattern, phone))\n\nprint(is_valid_phone('9876543210'))  # True\nprint(is_valid_phone('98765'))       # False",
+    timeComplexity:"O(n) — regex scan",
+    spaceComplexity:"O(1)",
+    tip:"Always ask the interviewer what format is expected: plain 10 digits, with dashes, with country code (+91 or +1)? The pattern changes significantly based on requirements. Start with the simplest pattern and extend from there.",
+    edgeCases:["Less than 10 digits → fails","More than 10 digits → fails","Contains letters → fails","Starts with 0 — valid in this pattern, but country rules may forbid it","International format with + prefix — needs a different pattern"],
+    followups:[
+      {q:"How would you allow optional country code like +91 or +1?",a:"Add an optional prefix at the start: ^[+]?[0-9]{1,3}[-. ]?[0-9]{10}$. The [+]? makes the + sign optional, [0-9]{1,3} allows 1 to 3 digit country codes, and [-. ]? allows an optional separator."},
+      {q:"How would you validate a phone number that allows dashes and spaces?",a:"Pattern: ^[0-9]{3}[-. ]?[0-9]{3}[-. ]?[0-9]{4}$. This matches formats like 123-456-7890, 123.456.7890, or 1234567890. The [-. ]? part makes the separator optional."}
+    ]
+  },
+  {
+    id:10140,
+    category:"regex",
+    diff:"Easy",
+    title:"Extract all numbers from a string",
+    logic:"Use a regex pattern that matches one or more consecutive digit characters ([0-9]+). Use findAll or Matcher.find() to locate all non-overlapping matches in the string. Collect each match into a list. This finds all integer numbers embedded anywhere in the text.",
+    java:"import java.util.ArrayList;\nimport java.util.List;\nimport java.util.regex.Matcher;\nimport java.util.regex.Pattern;\n\npublic static List<String> extractNumbers(String text) {\n    List<String> numbers = new ArrayList<>();\n    Pattern pattern = Pattern.compile(\"[0-9]+\");\n    Matcher matcher = pattern.matcher(text);\n    while (matcher.find()) {\n        numbers.add(matcher.group());\n    }\n    return numbers;\n}\n// extractNumbers(\"abc 123 def 456\") -> [\"123\", \"456\"]",
+    js:"function extractNumbers(text) {\n    let matches = text.match(/[0-9]+/g);\n    return matches || [];\n}\nconsole.log(extractNumbers('abc 123 def 456')); // ['123','456']",
+    python:"import re\n\ndef extract_numbers(text):\n    return re.findall(r'[0-9]+', text)\n\nprint(extract_numbers('abc 123 def 456'))  # ['123', '456']",
+    timeComplexity:"O(n) — one scan through the string",
+    spaceComplexity:"O(k) — k is the number of matches found",
+    tip:"[0-9]+ matches one or more digits. \\\\d+ does the same but \\\\d also matches Unicode digits in some engines. For interviews, stick to [0-9]+ to be explicit about exactly what you are matching.",
+    edgeCases:["No numbers in string → return empty list","Consecutive numbers separated by non-digits → each group is a separate match","Number at start or end of string → found normally","Decimal numbers like '3.14' → matched as two separate numbers '3' and '14'"],
+    followups:[
+      {q:"How would you extract decimal numbers including the dot?",a:"Change the pattern to [0-9]+[.][0-9]+ or [0-9]+([.][0-9]+)? to also match integers. The second form makes the decimal part optional so both '3' and '3.14' are matched."},
+      {q:"How would you extract numbers and convert them to integers?",a:"After collecting string matches, convert each with Integer.parseInt() in Java, parseInt() in JS, or int() in Python. In Java: numbers.stream().map(Integer::parseInt).collect(Collectors.toList())."}
+    ]
+  },
+  {
+    id:10141,
+    category:"regex",
+    diff:"Easy",
+    title:"Validate password strength using regex",
+    logic:"A strong password should have: at least 8 characters, at least one uppercase letter, at least one lowercase letter, at least one digit, at least one special character. Check each rule using a separate regex with a lookahead, or check each rule independently and combine the results.",
+    java:"public static boolean isStrongPassword(String pwd) {\n    if (pwd.length() < 8) return false;\n    boolean hasUpper   = pwd.matches(\".*[A-Z].*\");\n    boolean hasLower   = pwd.matches(\".*[a-z].*\");\n    boolean hasDigit   = pwd.matches(\".*[0-9].*\");\n    boolean hasSpecial = pwd.matches(\".*[!@#$%^&*].*\");\n    return hasUpper && hasLower && hasDigit && hasSpecial;\n}\n// isStrongPassword(\"Hello1@x\") -> true\n// isStrongPassword(\"hello123\")  -> false",
+    js:"function isStrongPassword(pwd) {\n    if (pwd.length < 8) return false;\n    let hasUpper   = /[A-Z]/.test(pwd);\n    let hasLower   = /[a-z]/.test(pwd);\n    let hasDigit   = /[0-9]/.test(pwd);\n    let hasSpecial = /[!@#$%^&*]/.test(pwd);\n    return hasUpper && hasLower && hasDigit && hasSpecial;\n}\nconsole.log(isStrongPassword('Hello1@x')); // true",
+    python:"import re\n\ndef is_strong_password(pwd):\n    if len(pwd) < 8:\n        return False\n    has_upper   = bool(re.search(r'[A-Z]', pwd))\n    has_lower   = bool(re.search(r'[a-z]', pwd))\n    has_digit   = bool(re.search(r'[0-9]', pwd))\n    has_special = bool(re.search(r'[!@#$%^&*]', pwd))\n    return has_upper and has_lower and has_digit and has_special\n\nprint(is_strong_password('Hello1@x'))  # True",
+    timeComplexity:"O(n) — each regex check is a single scan",
+    spaceComplexity:"O(1)",
+    tip:"Checking each rule separately with individual patterns is clearer to read and easier to debug than a single complex lookahead pattern. You can also return which rule failed — useful for showing the user specific feedback ('password needs a digit').",
+    edgeCases:["Empty string → fails length check immediately","All rules met except one → returns false","Very long password → all checks still O(n)"],
+    followups:[
+      {q:"How would you return specific feedback about which rule failed?",a:"Check each rule individually and build a list of failure messages: if (!hasUpper) messages.add('Need at least one uppercase letter'). Return the list of messages instead of a boolean."},
+      {q:"What is the difference between matches() and find() in Java regex?",a:"matches() checks if the ENTIRE string matches the pattern — equivalent to anchoring with ^ and $. find() checks if the pattern appears ANYWHERE in the string. For password checks, find() is correct since you are looking for the presence of a character type anywhere."}
+    ]
+  },
+  {
+    id:10142,
+    category:"regex",
+    diff:"Easy",
+    title:"Replace multiple spaces with a single space",
+    logic:"The pattern \\s+ (one or more whitespace characters) matches any run of spaces, tabs, or newlines. Replace every match with a single space. Trim the result to remove any leading or trailing spaces. One method call handles all runs of whitespace regardless of length.",
+    java:"public static String normalizeSpaces(String s) {\n    return s.trim().replaceAll(\"\\\\s+\", \" \");\n}\n// normalizeSpaces(\"hello   world  foo\") -> \"hello world foo\"",
+    js:"function normalizeSpaces(s) {\n    return s.trim().replace(/\\s+/g, ' ');\n}\nconsole.log(normalizeSpaces('hello   world  foo')); // 'hello world foo'",
+    python:"import re\n\ndef normalize_spaces(s):\n    return re.sub(r'\\s+', ' ', s).strip()\n\nprint(normalize_spaces('hello   world  foo'))  # 'hello world foo'",
+    timeComplexity:"O(n) — one regex scan plus one trim",
+    spaceComplexity:"O(n) — for the result string",
+    tip:"\\s matches spaces, tabs (\\t), and newlines (\\n). \\s+ matches one or more of them. The + quantifier is important — without it, each individual space would be replaced with a space (no change). Trim first or last to handle leading/trailing whitespace.",
+    edgeCases:["Single spaces between words → unchanged","Leading/trailing spaces → removed by trim()","Tabs or newlines as separators → also normalised to single space","String with no spaces → returned unchanged"],
+    followups:[
+      {q:"How would you replace only multiple spaces (not tabs or newlines)?",a:"Use a space character with + instead of \\s+: replaceAll(\" +\", \" \") in Java or replace(/ +/g, ' ') in JS. This targets only space characters and leaves tabs and newlines untouched."},
+      {q:"How would you split a string on multiple whitespace without regex?",a:"First normalise spaces with replaceAll(\"\\\\s+\", \" \").trim(), then call split(\" \"). Alternatively split directly on \\\\s+ which handles multiple whitespace as a single delimiter."}
+    ]
+  },
+  {
+    id:10143,
+    category:"regex",
+    diff:"Easy",
+    title:"Validate IP address using regex",
+    logic:"A valid IPv4 address has four groups of digits separated by dots. Each group is a number from 0 to 255. The pattern matches each group: (25[0-5]) for 250-255, (2[0-4][0-9]) for 200-249, ([01]?[0-9][0-9]?) for 0-199. Combine four such groups separated by escaped dots.",
+    java:"import java.util.regex.Pattern;\n\npublic static boolean isValidIP(String ip) {\n    String group = \"(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\";\n    String pattern = group + \"[.]\" + group + \"[.]\" + group + \"[.]\" + group;\n    return Pattern.matches(pattern, ip);\n}\n// isValidIP(\"192.168.1.1\") -> true\n// isValidIP(\"256.1.1.1\")   -> false\n// isValidIP(\"192.168.1\")   -> false",
+    js:"function isValidIP(ip) {\n    let group = '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)';\n    let pattern = new RegExp('^' + group + '[.]' + group + '[.]' + group + '[.]' + group + '$');\n    return pattern.test(ip);\n}\nconsole.log(isValidIP('192.168.1.1')); // true\nconsole.log(isValidIP('256.1.1.1'));   // false",
+    python:"import re\n\ndef is_valid_ip(ip):\n    group = r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'\n    pattern = r'^' + group + r'[.]' + group + r'[.]' + group + r'[.]' + group + r'$'\n    return bool(re.match(pattern, ip))\n\nprint(is_valid_ip('192.168.1.1'))  # True\nprint(is_valid_ip('256.1.1.1'))    # False",
+    timeComplexity:"O(n) — regex scan",
+    spaceComplexity:"O(1)",
+    tip:"The group pattern uses alternation (|) to handle the three ranges: 250-255, 200-249, and 0-199. Each range is checked in order from most specific (250-255) to least (0-199). Using [.] for the dot separator avoids backslash escaping issues in Java.",
+    edgeCases:["256.x.x.x → fails (25[0-5] only goes to 255)","999.x.x.x → fails","Missing one group like '192.168.1' → fails (only 3 dots groups)","Leading zeros like '01.02.03.04' → pattern [01]?[0-9][0-9]? matches these; real systems may or may not allow them"],
+    followups:[
+      {q:"How would you validate without regex by parsing the string?",a:"Split the IP on '.'. Check that exactly 4 parts exist. For each part, check it is a valid integer between 0 and 255 (use Integer.parseInt and catch NumberFormatException in Java). Simpler logic, more code."},
+      {q:"How would you validate an IPv6 address?",a:"IPv6 has 8 groups of 4 hexadecimal digits separated by colons. Pattern per group: [0-9a-fA-F]{1,4}. Full pattern: 8 groups separated by 7 colons. IPv6 also allows :: shorthand for consecutive zero groups — handling that correctly is complex."}
+    ]
   }
 ];
 
