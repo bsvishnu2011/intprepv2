@@ -572,6 +572,21 @@ pre code{background:none!important;padding:0!important;border:none!important;fon
     <div id="sim-start" class="mock-start-wrap" style="display:none">
       <h2>&#9203; Theory &amp; Scenario Simulation</h2>
       <p>Timed interview simulation. Random questions across topics.<br>Answer each one as if the interviewer is sitting in front of you.<br>Full report at the end showing your strengths and weak spots.</p>
+      <div class="mock-filters" id="sim-topic-filter">
+        <span class="pill active" id="sf-all"        onclick="setSimFilter('all',this)">All Topics</span>
+        <span class="pill" id="sf-selenium"   onclick="setSimFilter('selenium',this)">Selenium</span>
+        <span class="pill" id="sf-java"       onclick="setSimFilter('java',this)">Java</span>
+        <span class="pill" id="sf-testng"     onclick="setSimFilter('testng',this)">TestNG</span>
+        <span class="pill" id="sf-api"        onclick="setSimFilter('api',this)">API Testing</span>
+        <span class="pill" id="sf-sql"        onclick="setSimFilter('sql',this)">SQL</span>
+        <span class="pill" id="sf-cicd"       onclick="setSimFilter('cicd',this)">CI/CD</span>
+        <span class="pill" id="sf-git"        onclick="setSimFilter('git',this)">Git</span>
+        <span class="pill" id="sf-cucumber"   onclick="setSimFilter('cucumber',this)">Cucumber</span>
+        <span class="pill" id="sf-automation" onclick="setSimFilter('automation',this)">Automation</span>
+        <span class="pill" id="sf-manual"     onclick="setSimFilter('manual',this)">Manual</span>
+        <span class="pill" id="sf-python"     onclick="setSimFilter('python',this)">Python</span>
+        <span class="pill" id="sf-playwright" onclick="setSimFilter('playwright',this)">Playwright</span>
+      </div>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:28px">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center;cursor:pointer;transition:all .15s" onclick="startSim(10,90)" id="sim-opt-1" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="font-size:20px;font-weight:700;color:var(--accent)">10 Q</div>
@@ -9248,7 +9263,8 @@ var currentTopic = "all";
 var currentDiff  = "all";
 var currentDone  = "all";
 var currentType  = "all";
-var mockFilter   = "all";
+var mockTopics   = new Set();   // empty = All Topics
+var simTopics    = new Set();   // empty = All Topics
 var mockQueue    = [];
 var mockIdx      = 0;
 var mockSessionType  = "theory";
@@ -9640,10 +9656,26 @@ function chooseMockRound(type){
   else document.getElementById("mock-start").style.display="";
 }
 function setMockFilter(f,el){
-  mockFilter=f;
-  var pills=document.querySelectorAll("#mock-start .mock-filters .pill");
-  for(var i=0;i<pills.length;i++)pills[i].classList.remove("active");
-  el.classList.add("active");
+  var allPill=document.getElementById("mf-all");
+  if(f==="all"||f==="weak"){
+    mockTopics.clear();
+    var pills=document.querySelectorAll("#mock-start .mock-filters .pill");
+    for(var i=0;i<pills.length;i++)pills[i].classList.remove("active");
+    el.classList.add("active");
+  } else {
+    if(mockTopics.has(f)){
+      mockTopics.delete(f);
+      el.classList.remove("active");
+    } else {
+      mockTopics.add(f);
+      el.classList.add("active");
+    }
+    // deactivate "All Topics" and "Needs work only" when specific topics chosen
+    allPill.classList.remove("active");
+    document.getElementById("mf-weak").classList.remove("active");
+    // if nothing selected, revert to All Topics
+    if(mockTopics.size===0) allPill.classList.add("active");
+  }
 }
 function setMockCodingCat(cat,el){
   mockCodingCat=cat;
@@ -9666,10 +9698,11 @@ function getMockPool(){
     });
   }
   var r=getRatings();
+  var weakOnly=document.getElementById("mf-weak")&&document.getElementById("mf-weak").classList.contains("active");
   return QUESTIONS.filter(function(q){
-    if(mockFilter==="all")return true;
-    if(mockFilter==="weak")return r[q.id]==="needs"||r[q.id]==="didnt";
-    return q.topic===mockFilter;
+    if(weakOnly) return r[q.id]==="needs"||r[q.id]==="didnt";
+    if(mockTopics.size===0) return true;
+    return mockTopics.has(q.topic);
   });
 }
 function shuffle(arr){
@@ -9802,6 +9835,25 @@ function chooseSimRound(type){
   if(type==="coding")document.getElementById("sim-start-coding").style.display="";
   else document.getElementById("sim-start").style.display="";
 }
+function setSimFilter(f,el){
+  var allPill=document.getElementById("sf-all");
+  if(f==="all"){
+    simTopics.clear();
+    var pills=document.querySelectorAll("#sim-topic-filter .pill");
+    for(var i=0;i<pills.length;i++)pills[i].classList.remove("active");
+    el.classList.add("active");
+  } else {
+    if(simTopics.has(f)){
+      simTopics.delete(f);
+      el.classList.remove("active");
+    } else {
+      simTopics.add(f);
+      el.classList.add("active");
+    }
+    allPill.classList.remove("active");
+    if(simTopics.size===0) allPill.classList.add("active");
+  }
+}
 function setSimCodingCat(cat,el){
   simCodingCat=cat;
   var pills=document.querySelectorAll("#sim-coding-cat-filter .pill");
@@ -9824,7 +9876,11 @@ function startSim(count,timePerQ){
     });
     if(!pool.length){alert("No coding problems match this filter. Try a different category or difficulty.");return;}
   } else {
-    pool=QUESTIONS.slice();
+    pool=QUESTIONS.filter(function(q){
+      if(simTopics.size===0) return true;
+      return simTopics.has(q.topic);
+    });
+    if(!pool.length){alert("No questions found for the selected topics. Try different topics.");return;}
   }
   simTimeLimit=timePerQ;
   simQueue=shuffle(pool.slice()).slice(0,count);
